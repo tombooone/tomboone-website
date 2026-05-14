@@ -1,9 +1,1099 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Tom Boone</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PHI-Safe Work Tools</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17324d;
+      --muted: #5f7283;
+      --line: #d5e4ea;
+      --panel: #ffffff;
+      --soft: #eef7fa;
+      --brand: #007c89;
+      --brand-dark: #005f6b;
+      --brand-blue: #0067a6;
+      --accent: #f3b229;
+      --warn: #9f4f13;
+      --warn-soft: #fff6e5;
+      --ok-soft: #e8f6f3;
+      --shadow: 0 16px 34px rgba(23, 50, 77, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6fbfd;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: #ffffff;
+      border-bottom: 4px solid var(--brand);
+      box-shadow: 0 2px 12px rgba(23, 50, 77, 0.06);
+    }
+
+    .topbar-inner,
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar-inner {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--brand-dark);
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-blue));
+      color: white;
+      font-weight: 800;
+    }
+
+    .privacy-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--brand-dark);
+      background: #eef9f8;
+      border: 1px solid #bddfdc;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.9rem;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    main {
+      flex: 1;
+      padding: 34px 0 56px;
+      background:
+        linear-gradient(180deg, #eef8fb 0, rgba(246, 251, 253, 0) 280px),
+        #f6fbfd;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .page-heading {
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+      color: #17324d;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.2rem;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .lede {
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .tool-tile {
+      min-height: 168px;
+      text-align: left;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+    }
+
+    .tool-tile:hover,
+    .tool-tile:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 42px rgba(23, 50, 77, 0.15);
+      border-color: var(--brand);
+      outline: none;
+    }
+
+    .tool-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #e5f4f6;
+      color: var(--brand);
+      margin-bottom: 18px;
+    }
+
+    .tool-title {
+      display: block;
+      font-size: 1.2rem;
+      font-weight: 780;
+      margin-bottom: 8px;
+    }
+
+    .tool-copy {
+      display: block;
+      color: var(--muted);
+    }
+
+    .back-row {
+      margin-bottom: 18px;
+    }
+
+    .ghost-button,
+    .primary-button,
+    .secondary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-weight: 700;
+    }
+
+    .ghost-button {
+      background: transparent;
+      color: var(--brand-blue);
+    }
+
+    .primary-button {
+      background: var(--brand-blue);
+      color: #ffffff;
+      box-shadow: 0 8px 18px rgba(0, 103, 166, 0.22);
+    }
+
+    .secondary-button {
+      background: #ffffff;
+      color: var(--brand-blue);
+      border: 1px solid var(--line);
+    }
+
+    .primary-button:disabled,
+    .secondary-button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .instructions {
+      display: grid;
+      gap: 12px;
+      color: #315066;
+    }
+
+    .instructions ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    .instructions li + li {
+      margin-top: 8px;
+    }
+
+    .trust-badges {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+    }
+
+    .trust-badge {
+      min-height: 86px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 6px;
+      text-align: center;
+      border: 1px solid #bddfdc;
+      border-radius: 8px;
+      background: #f7fcfb;
+      color: var(--brand-dark);
+      padding: 12px 10px;
+    }
+
+    .trust-badge svg {
+      color: var(--brand);
+    }
+
+    .trust-badge strong {
+      display: block;
+      font-size: 0.82rem;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .local-note {
+      margin-top: 14px;
+      padding: 12px;
+      border: 1px solid #bddfdc;
+      border-radius: 8px;
+      background: var(--ok-soft);
+      color: var(--brand-dark);
+      font-size: 0.94rem;
+      font-weight: 620;
+    }
+
+    .upload-box {
+      display: grid;
+      gap: 14px;
+    }
+
+    .file-input {
+      width: 100%;
+      min-height: 112px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      border: 2px dashed #8fc7cf;
+      border-radius: 8px;
+      background: #f2fafc;
+      color: #3d5a70;
+    }
+
+    .file-input input {
+      width: 100%;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .status {
+      min-height: 24px;
+      color: var(--muted);
+      font-weight: 640;
+    }
+
+    .status.error {
+      color: var(--warn);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      background: #f2fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+    }
+
+    .metric-value {
+      display: block;
+      font-size: 1.65rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: var(--brand-dark);
+    }
+
+    .metric-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-top: 4px;
+    }
+
+    .table-section + .table-section {
+      margin-top: 24px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eaf5f8;
+      font-size: 0.84rem;
+      color: #17324d;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .empty-row td {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .error-row td {
+      background: var(--warn-soft);
+      color: var(--warn);
+      font-weight: 680;
+      border-left: 4px solid var(--accent);
+    }
+
+    .code-list {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.94rem;
+      white-space: normal;
+    }
+
+    @media (max-width: 820px) {
+      .topbar-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        justify-content: center;
+        padding: 12px 0;
+      }
+
+      .privacy-pill {
+        white-space: normal;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>This is Tom's website</h1>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand" aria-label="PHI-Safe Work Tools">
+          <span class="brand-mark">TB</span>
+          <span>PHI-Safe Work Tools</span>
+        </div>
+        <div class="privacy-pill" title="Files are processed locally in this browser session.">
+          <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
+            <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <span>Local browser processing only</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="homeView" class="view active" aria-labelledby="homeTitle">
+        <div class="page-heading">
+          <h1 id="homeTitle">Work Tools</h1>
+          <p class="lede">Upload files only into tools you trust. This site is built to process data locally in your browser and avoid storing PHI.</p>
+        </div>
+
+        <div class="tool-grid">
+          <button class="tool-tile" type="button" id="openAuditTool">
+            <span class="tool-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M8 7h8M8 12h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </span>
+            <span class="tool-title">CPT Audit Tool</span>
+            <span class="tool-copy">Compare Epic report CPTs against panel CPTs and CMS inpatient-only codes.</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="auditView" class="view" aria-labelledby="auditTitle">
+        <div class="back-row">
+          <button class="ghost-button" type="button" id="backHome">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Back to tools</span>
+          </button>
+        </div>
+
+        <div class="page-heading">
+          <h1 id="auditTitle">CPT Audit Tool</h1>
+          <p class="lede">Run the Epic report CPMC CPT Audit [51177697], export it as an .xlsx file, and upload it here. The audit runs in this browser tab without sending or saving the file.</p>
+        </div>
+
+        <div class="workspace">
+          <aside class="panel instructions">
+            <h2>Instructions</h2>
+            <ol>
+              <li>Run the Epic report CPMC CPT Audit [51177697] and export it as an .xlsx file.</li>
+              <li>Upload the report here and select Run audit.</li>
+            </ol>
+            <div class="trust-badges" aria-label="Privacy safeguards">
+              <div class="trust-badge">
+                <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  <path d="m9 12 2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <strong>PHI-Safe Design</strong>
+              </div>
+              <div class="trust-badge">
+                <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                  <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <strong>No File Upload</strong>
+              </div>
+              <div class="trust-badge">
+                <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 7h16M7 7V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2M9 11v6M15 11v6M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <strong>No Data Storage</strong>
+              </div>
+            </div>
+            <div class="local-note">Nothing is uploaded to a server. Use the clear button or close the tab to remove the file data from this session.</div>
+          </aside>
+
+          <section class="panel">
+            <div class="upload-box">
+              <label class="file-input">
+                <span>
+                  <strong>Select Epic XLSX report</strong><br>
+                  <input id="fileInput" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                </span>
+              </label>
+              <div class="actions">
+                <button class="primary-button" type="button" id="runAudit" disabled>Run audit</button>
+                <button class="secondary-button" type="button" id="clearAudit" disabled>Clear</button>
+              </div>
+              <p id="status" class="status">Waiting for a spreadsheet.</p>
+            </div>
+          </section>
+        </div>
+
+        <section id="resultsPanel" class="panel" style="margin-top: 18px;" hidden>
+          <div class="summary-grid" aria-label="Audit summary">
+            <div class="metric">
+              <span class="metric-value" id="totalRows">0</span>
+              <span class="metric-label">Rows reviewed</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value" id="missingCount">0</span>
+              <span class="metric-label">Missing CPT cases</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value" id="inpatientCount">0</span>
+              <span class="metric-label">IPO outpatient cases</span>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <h2>Table 1: Surgical order CPTs missing from procedure panels</h2>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Case #</th>
+                    <th>Missing CPT Codes</th>
+                    <th>Explanation</th>
+                  </tr>
+                </thead>
+                <tbody id="missingTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <h2>Table 2: CMS Inpatient Only CPT Codes for Outpatient Cases</h2>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Case #</th>
+                    <th>Explanation</th>
+                  </tr>
+                </thead>
+                <tbody id="inpatientTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const homeView = document.getElementById("homeView");
+    const auditView = document.getElementById("auditView");
+    const openAuditTool = document.getElementById("openAuditTool");
+    const backHome = document.getElementById("backHome");
+    const fileInput = document.getElementById("fileInput");
+    const runAudit = document.getElementById("runAudit");
+    const clearAudit = document.getElementById("clearAudit");
+    const statusEl = document.getElementById("status");
+    const resultsPanel = document.getElementById("resultsPanel");
+    const missingTable = document.getElementById("missingTable");
+    const inpatientTable = document.getElementById("inpatientTable");
+    const totalRowsEl = document.getElementById("totalRows");
+    const missingCountEl = document.getElementById("missingCount");
+    const inpatientCountEl = document.getElementById("inpatientCount");
+
+    let selectedFile = null;
+    let inpatientOnlyCodes = new Set();
+
+    openAuditTool.addEventListener("click", () => showView("audit"));
+    backHome.addEventListener("click", () => showView("home"));
+    fileInput.addEventListener("change", () => {
+      selectedFile = fileInput.files[0] || null;
+      runAudit.disabled = !selectedFile;
+      clearAudit.disabled = !selectedFile;
+      resultsPanel.hidden = true;
+      setStatus(selectedFile ? `Ready: ${selectedFile.name}` : "Waiting for a spreadsheet.");
+    });
+    runAudit.addEventListener("click", auditSelectedFile);
+    clearAudit.addEventListener("click", clearAuditState);
+
+    loadInpatientOnlyCodes();
+
+    function showView(viewName) {
+      homeView.classList.toggle("active", viewName === "home");
+      auditView.classList.toggle("active", viewName === "audit");
+    }
+
+    function setStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.classList.toggle("error", isError);
+    }
+
+    function clearAuditState() {
+      selectedFile = null;
+      fileInput.value = "";
+      runAudit.disabled = true;
+      clearAudit.disabled = true;
+      resultsPanel.hidden = true;
+      missingTable.textContent = "";
+      inpatientTable.textContent = "";
+      setStatus("Cleared. No spreadsheet data is retained in this page.");
+    }
+
+    async function loadInpatientOnlyCodes() {
+      try {
+        const response = await fetch("AddendumE2004.txt", { cache: "no-store" });
+        if (!response.ok) throw new Error("CMS addendum file was not found.");
+        const text = await response.text();
+        const codes = text.match(/\[nt\]([A-Z]?\d{4}[A-Z]?|\d{5})\[nt\]/g) || [];
+        inpatientOnlyCodes = new Set(codes.map((item) => item.replace(/\[nt\]/g, "").toUpperCase()));
+      } catch (error) {
+        setStatus("CMS Addendum E could not be loaded. Start a local web server before running the audit.", true);
+      }
+    }
+
+    async function auditSelectedFile() {
+      if (!selectedFile) return;
+      runAudit.disabled = true;
+      setStatus("Reading spreadsheet locally...");
+
+      try {
+        if (!inpatientOnlyCodes.size) {
+          await loadInpatientOnlyCodes();
+        }
+
+        const workbookRows = await readXlsxRows(selectedFile);
+        const result = auditRows(workbookRows);
+        renderResults(result);
+        setStatus(`Audit complete. Reviewed ${result.totalRows} data row${result.totalRows === 1 ? "" : "s"}.`);
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || "Unable to process this spreadsheet.", true);
+      } finally {
+        runAudit.disabled = !selectedFile;
+      }
+    }
+
+    function auditRows(rows) {
+      if (rows.length < 2) {
+        throw new Error("The spreadsheet does not appear to contain any data rows.");
+      }
+
+      const headers = rows[0].map((value) => normalizeHeader(value));
+      const indexes = {
+        date: findHeader(headers, ["date"]),
+        caseNumber: findHeader(headers, ["case #", "case number", "sample_case_id", "case id"]),
+        insuranceInfo: findHeader(headers, ["insurance info"]),
+        panelCodes: findHeader(headers, ["cpt codes - all panels"]),
+        patientClass: findHeader(headers, ["base patient class", "patient class"])
+      };
+
+      const missingHeaders = Object.entries(indexes)
+        .filter(([, index]) => index === -1)
+        .map(([key]) => key);
+
+      if (missingHeaders.length) {
+        throw new Error(`Missing required column(s): ${missingHeaders.join(", ")}.`);
+      }
+
+      const missingRows = [];
+      const inpatientRows = [];
+      const errorMessages = [];
+
+      rows.slice(1).forEach((row, offset) => {
+        const spreadsheetRowNumber = offset + 2;
+        const caseNumber = cell(row, indexes.caseNumber) || `Row ${spreadsheetRowNumber}`;
+        const dateValue = parseDateCell(cell(row, indexes.date));
+        const insuranceInfo = cell(row, indexes.insuranceInfo);
+        const panelInfo = cell(row, indexes.panelCodes);
+        const patientClass = cell(row, indexes.patientClass).toUpperCase();
+        const orderCodes = extractCodes(insuranceInfo);
+        const panelCodes = new Set(extractCodes(panelInfo).codes);
+        const missingCodes = orderCodes.codes.filter((code) => !panelCodes.has(code));
+        const inpatientMatches = orderCodes.codes.filter((code) => inpatientOnlyCodes.has(code));
+
+        if (missingCodes.length) {
+          missingRows.push({
+            date: dateValue.display,
+            sortDate: dateValue.sort,
+            caseNumber,
+            missingCodes,
+            explanation: codeSentence(missingCodes, "on the surgical order but have not been associated with any of the procedure panels")
+          });
+        }
+
+        if (isOutpatient(patientClass) && inpatientMatches.length) {
+          inpatientRows.push({
+            date: dateValue.display,
+            sortDate: dateValue.sort,
+            caseNumber,
+            codes: inpatientMatches,
+            explanation: codeSentence(inpatientMatches, "listed by CMS Addendum E as inpatient-only but appears on an outpatient case")
+          });
+        }
+
+        orderCodes.errors.forEach((badCode) => {
+          errorMessages.push(`Row ${spreadsheetRowNumber}, case ${caseNumber}: CPT-like value "${badCode}" has fewer than 5 characters and was not audited.`);
+        });
+      });
+
+      return {
+        totalRows: rows.length - 1,
+        missingRows: sortAuditRows(missingRows),
+        inpatientRows: sortAuditRows(inpatientRows),
+        errorMessages
+      };
+    }
+
+    function renderResults(result) {
+      totalRowsEl.textContent = String(result.totalRows);
+      missingCountEl.textContent = String(result.missingRows.length);
+      inpatientCountEl.textContent = String(result.inpatientRows.length);
+
+      missingTable.textContent = "";
+      inpatientTable.textContent = "";
+
+      if (result.missingRows.length) {
+        result.missingRows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.append(td(row.date));
+          tr.append(td(row.caseNumber));
+          tr.append(codeListTd(row.missingCodes));
+          tr.append(explanationTd(row.explanation, row.missingCodes));
+          missingTable.append(tr);
+        });
+      } else {
+        missingTable.append(emptyRow(4, "No missing CPT discrepancies found."));
+      }
+
+      result.errorMessages.forEach((message) => {
+        const tr = document.createElement("tr");
+        tr.className = "error-row";
+        const cell = td(`Error check: ${message}`);
+        cell.colSpan = 4;
+        tr.append(cell);
+        missingTable.append(tr);
+      });
+
+      if (result.inpatientRows.length) {
+        result.inpatientRows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.append(td(row.date));
+          tr.append(td(row.caseNumber));
+          tr.append(explanationTd(row.explanation, row.codes));
+          inpatientTable.append(tr);
+        });
+      } else {
+        inpatientTable.append(emptyRow(3, "No CMS inpatient-only CPT codes found on outpatient cases."));
+      }
+
+      resultsPanel.hidden = false;
+    }
+
+    function td(text, className = "") {
+      const cell = document.createElement("td");
+      cell.textContent = text || "";
+      if (className) cell.className = className;
+      return cell;
+    }
+
+    function codeListTd(codes) {
+      const cell = document.createElement("td");
+      cell.className = "code-list";
+      appendCodeText(cell, codes.join(", "), codes);
+      return cell;
+    }
+
+    function explanationTd(text, codes) {
+      const cell = document.createElement("td");
+      appendCodeText(cell, text, codes);
+      return cell;
+    }
+
+    function appendCodeText(container, text, codes) {
+      const uniqueCodes = [...new Set(codes)].sort((a, b) => b.length - a.length);
+      const pattern = uniqueCodes.length ? new RegExp(`\\b(${uniqueCodes.map(escapeRegExp).join("|")})\\b`, "g") : null;
+
+      if (!pattern) {
+        container.textContent = text || "";
+        return;
+      }
+
+      let lastIndex = 0;
+      String(text || "").replace(pattern, (match, code, offset) => {
+        container.append(document.createTextNode(String(text).slice(lastIndex, offset)));
+        const strong = document.createElement("strong");
+        strong.textContent = code;
+        container.append(strong);
+        lastIndex = offset + match.length;
+        return match;
+      });
+      container.append(document.createTextNode(String(text || "").slice(lastIndex)));
+    }
+
+    function escapeRegExp(value) {
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function emptyRow(colSpan, message) {
+      const row = document.createElement("tr");
+      row.className = "empty-row";
+      const cell = td(message);
+      cell.colSpan = colSpan;
+      row.append(cell);
+      return row;
+    }
+
+    function normalizeHeader(value) {
+      return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+    }
+
+    function findHeader(headers, accepted) {
+      return headers.findIndex((header) => accepted.includes(header));
+    }
+
+    function cell(row, index) {
+      return String(row[index] ?? "").trim();
+    }
+
+    function extractCodes(text) {
+      const source = String(text || "").toUpperCase();
+      const codes = [];
+      const errors = [];
+      const seen = new Set();
+      const codePattern = /[A-Z]\d{4}|\d{5}|\d{4}[A-Z]/g;
+      const shortPattern = /\d{3,4}/g;
+      let match;
+
+      while ((match = codePattern.exec(source)) !== null) {
+        const code = match[0];
+        if (isCodeBoundary(source, match.index, match.index + code.length) && !seen.has(code)) {
+          seen.add(code);
+          codes.push(code);
+        }
+      }
+
+      while ((match = shortPattern.exec(source)) !== null) {
+        const shortCode = match[0];
+        if (isCodeBoundary(source, match.index, match.index + shortCode.length, true)) {
+          errors.push(shortCode);
+        }
+      }
+
+      return { codes, errors };
+    }
+
+    function isCodeBoundary(source, start, end, rejectHyphenBefore = false) {
+      const before = source[start - 1] || "";
+      const after = source[end] || "";
+      const beforePattern = rejectHyphenBefore ? /[-A-Z0-9]/ : /[A-Z0-9]/;
+      return !beforePattern.test(before) && !/[A-Z0-9]/.test(after);
+    }
+
+    function codeSentence(codes, ending) {
+      const verb = codes.length === 1 ? "is" : "are";
+      const label = codes.length === 1 ? "CPT code" : "CPT codes";
+      return `${label} ${codes.join(", ")} ${verb} ${ending}.`;
+    }
+
+    function isOutpatient(patientClass) {
+      return ["OP", "OUTPATIENT", "OUT PATIENT"].includes(patientClass);
+    }
+
+    function parseDateCell(value) {
+      const text = String(value || "").trim();
+      const serial = Number(text);
+      if (text && Number.isFinite(serial) && serial > 25000 && serial < 80000) {
+        const date = excelSerialToDate(serial);
+        return {
+          display: `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`,
+          sort: date.getTime()
+        };
+      }
+
+      const parsed = Date.parse(text);
+      return {
+        display: text,
+        sort: Number.isFinite(parsed) ? parsed : Number.MAX_SAFE_INTEGER
+      };
+    }
+
+    function sortAuditRows(rows) {
+      return rows.sort((a, b) => {
+        if (a.sortDate !== b.sortDate) return a.sortDate - b.sortDate;
+        return String(a.caseNumber).localeCompare(String(b.caseNumber), undefined, { numeric: true });
+      });
+    }
+
+    function excelSerialToDate(serial) {
+      const utcDays = Math.floor(serial - 25569);
+      const utcValue = utcDays * 86400;
+      const dateInfo = new Date(utcValue * 1000);
+      return new Date(dateInfo.getUTCFullYear(), dateInfo.getUTCMonth(), dateInfo.getUTCDate());
+    }
+
+    async function readXlsxRows(file) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const entries = await unzipEntries(bytes);
+      const sharedStrings = parseSharedStrings(textEntry(entries, "xl/sharedStrings.xml", true));
+      const sheetPath = pickFirstSheetPath(entries);
+      const sheetXml = textEntry(entries, sheetPath);
+      return parseSheetRows(sheetXml, sharedStrings);
+    }
+
+    function pickFirstSheetPath(entries) {
+      if (entries.has("xl/worksheets/sheet1.xml")) return "xl/worksheets/sheet1.xml";
+      const firstSheet = [...entries.keys()].find((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name));
+      if (!firstSheet) throw new Error("No worksheet was found in this XLSX file.");
+      return firstSheet;
+    }
+
+    function textEntry(entries, name, optional = false) {
+      const bytes = entries.get(name);
+      if (!bytes) {
+        if (optional) return "";
+        throw new Error(`The XLSX file is missing ${name}.`);
+      }
+      return new TextDecoder().decode(bytes);
+    }
+
+    async function unzipEntries(bytes) {
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const eocdOffset = findEndOfCentralDirectory(view);
+      const centralDirectoryOffset = view.getUint32(eocdOffset + 16, true);
+      const entryCount = view.getUint16(eocdOffset + 10, true);
+      const entries = new Map();
+      let offset = centralDirectoryOffset;
+
+      for (let i = 0; i < entryCount; i += 1) {
+        if (view.getUint32(offset, true) !== 0x02014b50) {
+          throw new Error("The XLSX zip directory could not be read.");
+        }
+
+        const method = view.getUint16(offset + 10, true);
+        const compressedSize = view.getUint32(offset + 20, true);
+        const nameLength = view.getUint16(offset + 28, true);
+        const extraLength = view.getUint16(offset + 30, true);
+        const commentLength = view.getUint16(offset + 32, true);
+        const localHeaderOffset = view.getUint32(offset + 42, true);
+        const nameBytes = bytes.slice(offset + 46, offset + 46 + nameLength);
+        const name = new TextDecoder().decode(nameBytes);
+
+        const localNameLength = view.getUint16(localHeaderOffset + 26, true);
+        const localExtraLength = view.getUint16(localHeaderOffset + 28, true);
+        const dataStart = localHeaderOffset + 30 + localNameLength + localExtraLength;
+        const compressed = bytes.slice(dataStart, dataStart + compressedSize);
+
+        if (!name.endsWith("/")) {
+          entries.set(name, await inflateZipData(compressed, method));
+        }
+
+        offset += 46 + nameLength + extraLength + commentLength;
+      }
+
+      return entries;
+    }
+
+    function findEndOfCentralDirectory(view) {
+      for (let offset = view.byteLength - 22; offset >= 0; offset -= 1) {
+        if (view.getUint32(offset, true) === 0x06054b50) return offset;
+      }
+      throw new Error("This does not look like a valid XLSX file.");
+    }
+
+    async function inflateZipData(compressed, method) {
+      if (method === 0) return compressed;
+      if (method !== 8) throw new Error(`Unsupported XLSX compression method: ${method}.`);
+      if (!("DecompressionStream" in window)) {
+        throw new Error("This browser cannot read XLSX files locally. Try current Chrome, Edge, or Safari.");
+      }
+
+      try {
+        const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+        return new Uint8Array(await new Response(stream).arrayBuffer());
+      } catch (error) {
+        const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("deflate"));
+        return new Uint8Array(await new Response(stream).arrayBuffer());
+      }
+    }
+
+    function parseSharedStrings(xmlText) {
+      if (!xmlText) return [];
+      const doc = new DOMParser().parseFromString(xmlText, "application/xml");
+      return [...doc.getElementsByTagName("si")].map((item) => {
+        return [...item.getElementsByTagName("t")].map((node) => node.textContent || "").join("");
+      });
+    }
+
+    function parseSheetRows(xmlText, sharedStrings) {
+      const doc = new DOMParser().parseFromString(xmlText, "application/xml");
+      const rows = [];
+
+      [...doc.getElementsByTagName("row")].forEach((rowNode) => {
+        const row = [];
+        [...rowNode.getElementsByTagName("c")].forEach((cellNode) => {
+          const ref = cellNode.getAttribute("r") || "";
+          const columnIndex = columnRefToIndex(ref.replace(/\d+/g, ""));
+          row[columnIndex] = readCellValue(cellNode, sharedStrings);
+        });
+        rows.push(row);
+      });
+
+      return rows;
+    }
+
+    function readCellValue(cellNode, sharedStrings) {
+      const type = cellNode.getAttribute("t");
+      if (type === "inlineStr") {
+        const textNode = cellNode.getElementsByTagName("t")[0];
+        return textNode ? textNode.textContent || "" : "";
+      }
+
+      const valueNode = cellNode.getElementsByTagName("v")[0];
+      const rawValue = valueNode ? valueNode.textContent || "" : "";
+
+      if (type === "s") return sharedStrings[Number(rawValue)] || "";
+      if (type === "b") return rawValue === "1" ? "TRUE" : "FALSE";
+      return rawValue;
+    }
+
+    function columnRefToIndex(ref) {
+      let index = 0;
+      for (let i = 0; i < ref.length; i += 1) {
+        index = index * 26 + ref.charCodeAt(i) - 64;
+      }
+      return index - 1;
+    }
+  </script>
 </body>
 </html>

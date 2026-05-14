@@ -1,0 +1,1681 @@
+Addendum E.- CPT Codes Which Would Be Paid Only As Inpatient Procedures
+[Calender Year 2004]
+CPT codes and descriptions only are copyright American Medical Association.  All Rights Reserved. Applicable FARS/DFARS Apply.
+Copyright American Dental Association.  All rights reserved.
+CPT/HCPCS
+Status Indicator
+Description
+[bt][nt]0001T[nt]C[nt]Endovas repr abdo ao aneurys
+[bt][nt]0002T[nt]C[nt]Endovas repr abdo ao aneurys
+[bt][nt]0005T[nt]C[nt]Perc cath stent/brain cv art
+[bt][nt]0006T[nt]C[nt]Perc cath stent/brain cv art
+[bt][nt]0007T[nt]C[nt]Perc cath stent/brain cv art
+[bt][nt]00174[nt]C[nt]Anesth, pharyngeal surgery
+[bt][nt]00176[nt]C[nt]Anesth, pharyngeal surgery
+[bt][nt]00192[nt]C[nt]Anesth, facial bone surgery
+[bt][nt]00214[nt]C[nt]Anesth, skull drainage
+[bt][nt]00215[nt]C[nt]Anesth, skull repair/fract
+[bt][nt]0021T[nt]C[nt]Fetal oximetry, trnsvag/cerv
+[bt][nt]0024T[nt]C[nt]Transcath cardiac reduction
+[bt][nt]0033T[nt]C[nt]Endovasc taa repr incl subcl
+[bt][nt]0034T[nt]C[nt]Endovasc taa repr w/o subcl
+[bt][nt]0035T[nt]C[nt]Insert endovasc prosth, taa
+[bt][nt]0036T[nt]C[nt]Endovasc prosth, taa, add-on
+[bt][nt]0037T[nt]C[nt]Artery transpose/endovas taa
+[bt][nt]0038T[nt]C[nt]Rad endovasc taa rpr w/cover
+[bt][nt]0039T[nt]C[nt]Rad s/i, endovasc taa repair
+[bt][nt]00404[nt]C[nt]Anesth, surgery of breast
+[bt][nt]00406[nt]C[nt]Anesth, surgery of breast
+[bt][nt]0040T[nt]C[nt]Rad s/i, endovasc taa prosth
+[bt][nt]00452[nt]C[nt]Anesth, surgery of shoulder
+[bt][nt]00474[nt]C[nt]Anesth, surgery of rib(s)
+[bt][nt]00524[nt]C[nt]Anesth, chest drainage
+[bt][nt]00540[nt]C[nt]Anesth, chest surgery
+[bt][nt]00542[nt]C[nt]Anesth, release of lung
+[bt][nt]00544[nt]C[nt]Anesth, chest lining removal
+[bt][nt]00546[nt]C[nt]Anesth, lung,chest wall surg
+[bt][nt]00560[nt]C[nt]Anesth, open heart surgery
+[bt][nt]00562[nt]C[nt]Anesth, open heart surgery
+[bt][nt]00580[nt]C[nt]Anesth, heart/lung transplnt
+[bt][nt]00604[nt]C[nt]Anesth, sitting procedure
+[bt][nt]00622[nt]C[nt]Anesth, removal of nerves
+[bt][nt]00632[nt]C[nt]Anesth, removal of nerves
+[bt][nt]00634[nt]C[nt]Anesth for chemonucleolysis
+[bt][nt]00670[nt]C[nt]Anesth, spine, cord surgery
+[bt][nt]00792[nt]C[nt]Anesth, hemorr/excise liver
+[bt][nt]00794[nt]C[nt]Anesth, pancreas removal
+[bt][nt]00796[nt]C[nt]Anesth, for liver transplant
+[bt][nt]00802[nt]C[nt]Anesth, fat layer removal
+[bt][nt]00844[nt]C[nt]Anesth, pelvis surgery
+[bt][nt]00846[nt]C[nt]Anesth, hysterectomy
+[bt][nt]00848[nt]C[nt]Anesth, pelvic organ surg
+[bt][nt]00864[nt]C[nt]Anesth, removal of bladder
+[bt][nt]00865[nt]C[nt]Anesth, removal of prostate
+[bt][nt]00866[nt]C[nt]Anesth, removal of adrenal
+[bt][nt]00868[nt]C[nt]Anesth, kidney transplant
+[bt][nt]00882[nt]C[nt]Anesth, major vein ligation
+[bt][nt]00904[nt]C[nt]Anesth, perineal surgery
+[bt][nt]00908[nt]C[nt]Anesth, removal of prostate
+[bt][nt]00928[nt]C[nt]Anesth, removal of testis
+[bt][nt]00932[nt]C[nt]Anesth, amputation of penis
+[bt][nt]00934[nt]C[nt]Anesth, penis, nodes removal
+[bt][nt]00936[nt]C[nt]Anesth, penis, nodes removal
+[bt][nt]00944[nt]C[nt]Anesth, vaginal hysterectomy
+[bt][nt]01140[nt]C[nt]Anesth, amputation at pelvis
+[bt][nt]01150[nt]C[nt]Anesth, pelvic tumor surgery
+[bt][nt]01190[nt]C[nt]Anesth, pelvis nerve removal
+[bt][nt]01212[nt]C[nt]Anesth, hip disarticulation
+[bt][nt]01214[nt]C[nt]Anesth, hip arthroplasty
+[bt][nt]01232[nt]C[nt]Anesth, amputation of femur
+[bt][nt]01234[nt]C[nt]Anesth, radical femur surg
+[bt][nt]01272[nt]C[nt]Anesth, femoral artery surg
+[bt][nt]01274[nt]C[nt]Anesth, femoral embolectomy
+[bt][nt]01402[nt]C[nt]Anesth, knee arthroplasty
+[bt][nt]01404[nt]C[nt]Anesth, amputation at knee
+[bt][nt]01442[nt]C[nt]Anesth, knee artery surg
+[bt][nt]01444[nt]C[nt]Anesth, knee artery repair
+[bt][nt]01486[nt]C[nt]Anesth, ankle replacement
+[bt][nt]01502[nt]C[nt]Anesth, lwr leg embolectomy
+[bt][nt]01632[nt]C[nt]Anesth, surgery of shoulder
+[bt][nt]01634[nt]C[nt]Anesth, shoulder joint amput
+[bt][nt]01636[nt]C[nt]Anesth, forequarter amput
+[bt][nt]31225[nt]C[nt]Removal of upper jaw
+[bt][nt]31230[nt]C[nt]Removal of upper jaw
+[bt][nt]31290[nt]C[nt]Nasal/sinus endoscopy, surg
+[bt][nt]31291[nt]C[nt]Nasal/sinus endoscopy, surg
+[bt][nt]31292[nt]C[nt]Nasal/sinus endoscopy, surg
+[bt][nt]31293[nt]C[nt]Nasal/sinus endoscopy, surg
+[bt][nt]31294[nt]C[nt]Nasal/sinus endoscopy, surg
+[bt][nt]31360[nt]C[nt]Removal of larynx
+[bt][nt]31365[nt]C[nt]Removal of larynx
+[bt][nt]31367[nt]C[nt]Partial removal of larynx
+[bt][nt]31368[nt]C[nt]Partial removal of larynx
+[bt][nt]31370[nt]C[nt]Partial removal of larynx
+[bt][nt]31375[nt]C[nt]Partial removal of larynx
+[bt][nt]31380[nt]C[nt]Partial removal of larynx
+[bt][nt]31382[nt]C[nt]Partial removal of larynx
+[bt][nt]31390[nt]C[nt]Removal of larynx & pharynx
+[bt][nt]31395[nt]C[nt]Reconstruct larynx & pharynx
+[bt][nt]31584[nt]C[nt]Treat larynx fracture
+[bt][nt]31587[nt]C[nt]Revision of larynx
+[bt][nt]31725[nt]C[nt]Clearance of airways
+[bt][nt]31760[nt]C[nt]Repair of windpipe
+[bt][nt]31766[nt]C[nt]Reconstruction of windpipe
+[bt][nt]31770[nt]C[nt]Repair/graft of bronchus
+[bt][nt]31775[nt]C[nt]Reconstruct bronchus
+[bt][nt]31780[nt]C[nt]Reconstruct windpipe
+[bt][nt]31781[nt]C[nt]Reconstruct windpipe
+[bt][nt]31786[nt]C[nt]Remove windpipe lesion
+[bt][nt]31800[nt]C[nt]Repair of windpipe injury
+[bt][nt]31805[nt]C[nt]Repair of windpipe injury
+[bt][nt]32035[nt]C[nt]Exploration of chest
+[bt][nt]32036[nt]C[nt]Exploration of chest
+[bt][nt]32095[nt]C[nt]Biopsy through chest wall
+[bt][nt]32100[nt]C[nt]Exploration/biopsy of chest
+[bt][nt]32110[nt]C[nt]Explore/repair chest
+[bt][nt]32120[nt]C[nt]Re-exploration of chest
+[bt][nt]32124[nt]C[nt]Explore chest free adhesions
+[bt][nt]32140[nt]C[nt]Removal of lung lesion(s)
+[bt][nt]32141[nt]C[nt]Remove/treat lung lesions
+[bt][nt]32150[nt]C[nt]Removal of lung lesion(s)
+[bt][nt]32151[nt]C[nt]Remove lung foreign body
+[bt][nt]32160[nt]C[nt]Open chest heart massage
+[bt][nt]32200[nt]C[nt]Drain, open, lung lesion
+[bt][nt]32215[nt]C[nt]Treat chest lining
+[bt][nt]32220[nt]C[nt]Release of lung
+[bt][nt]32225[nt]C[nt]Partial release of lung
+[bt][nt]32310[nt]C[nt]Removal of chest lining
+[bt][nt]32320[nt]C[nt]Free/remove chest lining
+[bt][nt]32402[nt]C[nt]Open biopsy chest lining
+[bt][nt]32440[nt]C[nt]Removal of lung
+[bt][nt]32442[nt]C[nt]Sleeve pneumonectomy
+[bt][nt]32445[nt]C[nt]Removal of lung
+[bt][nt]32480[nt]C[nt]Partial removal of lung
+[bt][nt]32482[nt]C[nt]Bilobectomy
+[bt][nt]32484[nt]C[nt]Segmentectomy
+[bt][nt]32486[nt]C[nt]Sleeve lobectomy
+[bt][nt]32488[nt]C[nt]Completion pneumonectomy
+[bt][nt]32491[nt]C[nt]Lung volume reduction
+[bt][nt]32500[nt]C[nt]Partial removal of lung
+[bt][nt]32501[nt]C[nt]Repair bronchus add-on
+[bt][nt]32520[nt]C[nt]Remove lung & revise chest
+[bt][nt]32522[nt]C[nt]Remove lung & revise chest
+[bt][nt]32525[nt]C[nt]Remove lung & revise chest
+[bt][nt]32540[nt]C[nt]Removal of lung lesion
+[bt][nt]32650[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32651[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32652[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32653[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32654[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32655[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32656[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32657[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32658[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32659[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32660[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32661[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32662[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32663[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32664[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32665[nt]C[nt]Thoracoscopy, surgical
+[bt][nt]32800[nt]C[nt]Repair lung hernia
+[bt][nt]32810[nt]C[nt]Close chest after drainage
+[bt][nt]01638[nt]C[nt]Anesth, shoulder replacement
+[bt][nt]01652[nt]C[nt]Anesth, shoulder vessel surg
+[bt][nt]01654[nt]C[nt]Anesth, shoulder vessel surg
+[bt][nt]01656[nt]C[nt]Anesth, arm-leg vessel surg
+[bt][nt]01756[nt]C[nt]Anesth, radical humerus surg
+[bt][nt]01990[nt]C[nt]Support for organ donor
+[bt][nt]15756[nt]C[nt]Free muscle flap, microvasc
+[bt][nt]15757[nt]C[nt]Free skin flap, microvasc
+[bt][nt]15758[nt]C[nt]Free fascial flap, microvasc
+[bt][nt]16035[nt]C[nt]Incision of burn scab, initi
+[bt][nt]16036[nt]C[nt]Incise burn scab, addl incis
+[bt][nt]19200[nt]C[nt]Removal of breast
+[bt][nt]19220[nt]C[nt]Removal of breast
+[bt][nt]19271[nt]C[nt]Revision of chest wall
+[bt][nt]19272[nt]C[nt]Extensive chest wall surgery
+[bt][nt]19361[nt]C[nt]Breast reconstruction
+[bt][nt]19364[nt]C[nt]Breast reconstruction
+[bt][nt]19367[nt]C[nt]Breast reconstruction
+[bt][nt]19368[nt]C[nt]Breast reconstruction
+[bt][nt]19369[nt]C[nt]Breast reconstruction
+[bt][nt]20660[nt]C[nt]Apply, rem fixation device
+[bt][nt]20661[nt]C[nt]Application of head brace
+[bt][nt]20662[nt]C[nt]Application of pelvis brace
+[bt][nt]20663[nt]C[nt]Application of thigh brace
+[bt][nt]20664[nt]C[nt]Halo brace application
+[bt][nt]20802[nt]C[nt]Replantation, arm, complete
+[bt][nt]20805[nt]C[nt]Replant forearm, complete
+[bt][nt]20808[nt]C[nt]Replantation hand, complete
+[bt][nt]20816[nt]C[nt]Replantation digit, complete
+[bt][nt]20822[nt]C[nt]Replantation digit, complete
+[bt][nt]20824[nt]C[nt]Replantation thumb, complete
+[bt][nt]20827[nt]C[nt]Replantation thumb, complete
+[bt][nt]20838[nt]C[nt]Replantation foot, complete
+[bt][nt]20930[nt]C[nt]Spinal bone allograft
+[bt][nt]20931[nt]C[nt]Spinal bone allograft
+[bt][nt]20936[nt]C[nt]Spinal bone autograft
+[bt][nt]20937[nt]C[nt]Spinal bone autograft
+[bt][nt]20938[nt]C[nt]Spinal bone autograft
+[bt][nt]20955[nt]C[nt]Fibula bone graft, microvasc
+[bt][nt]20956[nt]C[nt]Iliac bone graft, microvasc
+[bt][nt]20957[nt]C[nt]Mt bone graft, microvasc
+[bt][nt]20962[nt]C[nt]Other bone graft, microvasc
+[bt][nt]20969[nt]C[nt]Bone/skin graft, microvasc
+[bt][nt]20970[nt]C[nt]Bone/skin graft, iliac crest
+[bt][nt]20972[nt]C[nt]Bone/skin graft, metatarsal
+[bt][nt]20973[nt]C[nt]Bone/skin graft, great toe
+[bt][nt]21045[nt]C[nt]Extensive jaw surgery
+[bt][nt]21141[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21142[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21143[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21145[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21146[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21147[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21150[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21151[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21154[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21155[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21159[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21160[nt]C[nt]Reconstruct midface, lefort
+[bt][nt]21172[nt]C[nt]Reconstruct orbit/forehead
+[bt][nt]21175[nt]C[nt]Reconstruct orbit/forehead
+[bt][nt]21179[nt]C[nt]Reconstruct entire forehead
+[bt][nt]21180[nt]C[nt]Reconstruct entire forehead
+[bt][nt]21182[nt]C[nt]Reconstruct cranial bone
+[bt][nt]21183[nt]C[nt]Reconstruct cranial bone
+[bt][nt]21184[nt]C[nt]Reconstruct cranial bone
+[bt][nt]21188[nt]C[nt]Reconstruction of midface
+[bt][nt]21193[nt]C[nt]Reconst lwr jaw w/o graft
+[bt][nt]21194[nt]C[nt]Reconst lwr jaw w/graft
+[bt][nt]21195[nt]C[nt]Reconst lwr jaw w/o fixation
+[bt][nt]21196[nt]C[nt]Reconst lwr jaw w/fixation
+[bt][nt]21247[nt]C[nt]Reconstruct lower jaw bone
+[bt][nt]21255[nt]C[nt]Reconstruct lower jaw bone
+[bt][nt]21256[nt]C[nt]Reconstruction of orbit
+[bt][nt]21268[nt]C[nt]Revise eye sockets
+[bt][nt]21343[nt]C[nt]Treatment of sinus fracture
+[bt][nt]21344[nt]C[nt]Treatment of sinus fracture
+[bt][nt]21346[nt]C[nt]Treat nose/jaw fracture
+[bt][nt]21347[nt]C[nt]Treat nose/jaw fracture
+[bt][nt]21348[nt]C[nt]Treat nose/jaw fracture
+[bt][nt]21356[nt]C[nt]Treat cheek bone fracture
+[bt][nt]21360[nt]C[nt]Treat cheek bone fracture
+[bt][nt]21365[nt]C[nt]Treat cheek bone fracture
+[bt][nt]21366[nt]C[nt]Treat cheek bone fracture
+[bt][nt]21385[nt]C[nt]Treat eye socket fracture
+[bt][nt]21386[nt]C[nt]Treat eye socket fracture
+[bt][nt]21387[nt]C[nt]Treat eye socket fracture
+[bt][nt]21395[nt]C[nt]Treat eye socket fracture
+[bt][nt]21408[nt]C[nt]Treat eye socket fracture
+[bt][nt]21422[nt]C[nt]Treat mouth roof fracture
+[bt][nt]21423[nt]C[nt]Treat mouth roof fracture
+[bt][nt]21431[nt]C[nt]Treat craniofacial fracture
+[bt][nt]21432[nt]C[nt]Treat craniofacial fracture
+[bt][nt]21433[nt]C[nt]Treat craniofacial fracture
+[bt][nt]21435[nt]C[nt]Treat craniofacial fracture
+[bt][nt]21436[nt]C[nt]Treat craniofacial fracture
+[bt][nt]21495[nt]C[nt]Treat hyoid bone fracture
+[bt][nt]21510[nt]C[nt]Drainage of bone lesion
+[bt][nt]21557[nt]C[nt]Remove tumor, neck/chest
+[bt][nt]21615[nt]C[nt]Removal of rib
+[bt][nt]21616[nt]C[nt]Removal of rib and nerves
+[bt][nt]21620[nt]C[nt]Partial removal of sternum
+[bt][nt]21627[nt]C[nt]Sternal debridement
+[bt][nt]21630[nt]C[nt]Extensive sternum surgery
+[bt][nt]21632[nt]C[nt]Extensive sternum surgery
+[bt][nt]21705[nt]C[nt]Revision of neck muscle/rib
+[bt][nt]21740[nt]C[nt]Reconstruction of sternum
+[bt][nt]21750[nt]C[nt]Repair of sternum separation
+[bt][nt]21810[nt]C[nt]Treatment of rib fracture(s)
+[bt][nt]21825[nt]C[nt]Treat sternum fracture
+[bt][nt]22110[nt]C[nt]Remove part of neck vertebra
+[bt][nt]22112[nt]C[nt]Remove part, thorax vertebra
+[bt][nt]22114[nt]C[nt]Remove part, lumbar vertebra
+[bt][nt]22116[nt]C[nt]Remove extra spine segment
+[bt][nt]22210[nt]C[nt]Revision of neck spine
+[bt][nt]22212[nt]C[nt]Revision of thorax spine
+[bt][nt]22214[nt]C[nt]Revision of lumbar spine
+[bt][nt]22216[nt]C[nt]Revise, extra spine segment
+[bt][nt]22220[nt]C[nt]Revision of neck spine
+[bt][nt]22222[nt]C[nt]Revision of thorax spine
+[bt][nt]22224[nt]C[nt]Revision of lumbar spine
+[bt][nt]22226[nt]C[nt]Revise, extra spine segment
+[bt][nt]22318[nt]C[nt]Treat odontoid fx w/o graft
+[bt][nt]22319[nt]C[nt]Treat odontoid fx w/graft
+[bt][nt]22325[nt]C[nt]Treat spine fracture
+[bt][nt]22326[nt]C[nt]Treat neck spine fracture
+[bt][nt]22327[nt]C[nt]Treat thorax spine fracture
+[bt][nt]22328[nt]C[nt]Treat each add spine fx
+[bt][nt]22548[nt]C[nt]Neck spine fusion
+[bt][nt]22554[nt]C[nt]Neck spine fusion
+[bt][nt]22556[nt]C[nt]Thorax spine fusion
+[bt][nt]22558[nt]C[nt]Lumbar spine fusion
+[bt][nt]22585[nt]C[nt]Additional spinal fusion
+[bt][nt]22590[nt]C[nt]Spine & skull spinal fusion
+[bt][nt]22595[nt]C[nt]Neck spinal fusion
+[bt][nt]22600[nt]C[nt]Neck spine fusion
+[bt][nt]22610[nt]C[nt]Thorax spine fusion
+[bt][nt]22630[nt]C[nt]Lumbar spine fusion
+[bt][nt]22632[nt]C[nt]Spine fusion, extra segment
+[bt][nt]22800[nt]C[nt]Fusion of spine
+[bt][nt]22802[nt]C[nt]Fusion of spine
+[bt][nt]22804[nt]C[nt]Fusion of spine
+[bt][nt]22808[nt]C[nt]Fusion of spine
+[bt][nt]22810[nt]C[nt]Fusion of spine
+[bt][nt]22812[nt]C[nt]Fusion of spine
+[bt][nt]22818[nt]C[nt]Kyphectomy, 1-2 segments
+[bt][nt]22819[nt]C[nt]Kyphectomy, 3 or more
+[bt][nt]22830[nt]C[nt]Exploration of spinal fusion
+[bt][nt]22840[nt]C[nt]Insert spine fixation device
+[bt][nt]22841[nt]C[nt]Insert spine fixation device
+[bt][nt]22842[nt]C[nt]Insert spine fixation device
+[bt][nt]22843[nt]C[nt]Insert spine fixation device
+[bt][nt]22844[nt]C[nt]Insert spine fixation device
+[bt][nt]22845[nt]C[nt]Insert spine fixation device
+[bt][nt]22846[nt]C[nt]Insert spine fixation device
+[bt][nt]22847[nt]C[nt]Insert spine fixation device
+[bt][nt]22848[nt]C[nt]Insert pelv fixation device
+[bt][nt]22849[nt]C[nt]Reinsert spinal fixation
+[bt][nt]22850[nt]C[nt]Remove spine fixation device
+[bt][nt]22851[nt]C[nt]Apply spine prosth device
+[bt][nt]22852[nt]C[nt]Remove spine fixation device
+[bt][nt]22855[nt]C[nt]Remove spine fixation device
+[bt][nt]23200[nt]C[nt]Removal of collar bone
+[bt][nt]23210[nt]C[nt]Removal of shoulder blade
+[bt][nt]23220[nt]C[nt]Partial removal of humerus
+[bt][nt]23221[nt]C[nt]Partial removal of humerus
+[bt][nt]23222[nt]C[nt]Partial removal of humerus
+[bt][nt]23332[nt]C[nt]Remove shoulder foreign body
+[bt][nt]23472[nt]C[nt]Reconstruct shoulder joint
+[bt][nt]23900[nt]C[nt]Amputation of arm & girdle
+[bt][nt]23920[nt]C[nt]Amputation at shoulder joint
+[bt][nt]24149[nt]C[nt]Radical resection of elbow
+[bt][nt]24900[nt]C[nt]Amputation of upper arm
+[bt][nt]24920[nt]C[nt]Amputation of upper arm
+[bt][nt]24930[nt]C[nt]Amputation follow-up surgery
+[bt][nt]24931[nt]C[nt]Amputate upper arm & implant
+[bt][nt]24940[nt]C[nt]Revision of upper arm
+[bt][nt]25900[nt]C[nt]Amputation of forearm
+[bt][nt]25905[nt]C[nt]Amputation of forearm
+[bt][nt]25909[nt]C[nt]Amputation follow-up surgery
+[bt][nt]25915[nt]C[nt]Amputation of forearm
+[bt][nt]25920[nt]C[nt]Amputate hand at wrist
+[bt][nt]25924[nt]C[nt]Amputation follow-up surgery
+[bt][nt]25927[nt]C[nt]Amputation of hand
+[bt][nt]25931[nt]C[nt]Amputation follow-up surgery
+[bt][nt]26551[nt]C[nt]Great toe-hand transfer
+[bt][nt]26553[nt]C[nt]Single transfer, toe-hand
+[bt][nt]26554[nt]C[nt]Double transfer, toe-hand
+[bt][nt]26556[nt]C[nt]Toe joint transfer
+[bt][nt]26992[nt]C[nt]Drainage of bone lesion
+[bt][nt]27005[nt]C[nt]Incision of hip tendon
+[bt][nt]27006[nt]C[nt]Incision of hip tendons
+[bt][nt]27025[nt]C[nt]Incision of hip/thigh fascia
+[bt][nt]27030[nt]C[nt]Drainage of hip joint
+[bt][nt]27036[nt]C[nt]Excision of hip joint/muscle
+[bt][nt]27054[nt]C[nt]Removal of hip joint lining
+[bt][nt]27070[nt]C[nt]Partial removal of hip bone
+[bt][nt]27071[nt]C[nt]Partial removal of hip bone
+[bt][nt]27075[nt]C[nt]Extensive hip surgery
+[bt][nt]27076[nt]C[nt]Extensive hip surgery
+[bt][nt]27077[nt]C[nt]Extensive hip surgery
+[bt][nt]27078[nt]C[nt]Extensive hip surgery
+[bt][nt]27079[nt]C[nt]Extensive hip surgery
+[bt][nt]27090[nt]C[nt]Removal of hip prosthesis
+[bt][nt]27091[nt]C[nt]Removal of hip prosthesis
+[bt][nt]27120[nt]C[nt]Reconstruction of hip socket
+[bt][nt]27122[nt]C[nt]Reconstruction of hip socket
+[bt][nt]27125[nt]C[nt]Partial hip replacement
+[bt][nt]27130[nt]C[nt]Total hip arthroplasty
+[bt][nt]27132[nt]C[nt]Total hip arthroplasty
+[bt][nt]27134[nt]C[nt]Revise hip joint replacement
+[bt][nt]27137[nt]C[nt]Revise hip joint replacement
+[bt][nt]27138[nt]C[nt]Revise hip joint replacement
+[bt][nt]27140[nt]C[nt]Transplant femur ridge
+[bt][nt]27146[nt]C[nt]Incision of hip bone
+[bt][nt]27147[nt]C[nt]Revision of hip bone
+[bt][nt]27151[nt]C[nt]Incision of hip bones
+[bt][nt]27156[nt]C[nt]Revision of hip bones
+[bt][nt]27158[nt]C[nt]Revision of pelvis
+[bt][nt]27161[nt]C[nt]Incision of neck of femur
+[bt][nt]27165[nt]C[nt]Incision/fixation of femur
+[bt][nt]27170[nt]C[nt]Repair/graft femur head/neck
+[bt][nt]27175[nt]C[nt]Treat slipped epiphysis
+[bt][nt]27176[nt]C[nt]Treat slipped epiphysis
+[bt][nt]27177[nt]C[nt]Treat slipped epiphysis
+[bt][nt]27178[nt]C[nt]Treat slipped epiphysis
+[bt][nt]27179[nt]C[nt]Revise head/neck of femur
+[bt][nt]27181[nt]C[nt]Treat slipped epiphysis
+[bt][nt]27185[nt]C[nt]Revision of femur epiphysis
+[bt][nt]27187[nt]C[nt]Reinforce hip bones
+[bt][nt]27215[nt]C[nt]Treat pelvic fracture(s)
+[bt][nt]27217[nt]C[nt]Treat pelvic ring fracture
+[bt][nt]27218[nt]C[nt]Treat pelvic ring fracture
+[bt][nt]27222[nt]C[nt]Treat hip socket fracture
+[bt][nt]27226[nt]C[nt]Treat hip wall fracture
+[bt][nt]27227[nt]C[nt]Treat hip fracture(s)
+[bt][nt]27228[nt]C[nt]Treat hip fracture(s)
+[bt][nt]27232[nt]C[nt]Treat thigh fracture
+[bt][nt]27236[nt]C[nt]Treat thigh fracture
+[bt][nt]27240[nt]C[nt]Treat thigh fracture
+[bt][nt]27244[nt]C[nt]Treat thigh fracture
+[bt][nt]27245[nt]C[nt]Treat thigh fracture
+[bt][nt]27248[nt]C[nt]Treat thigh fracture
+[bt][nt]27253[nt]C[nt]Treat hip dislocation
+[bt][nt]27254[nt]C[nt]Treat hip dislocation
+[bt][nt]27258[nt]C[nt]Treat hip dislocation
+[bt][nt]27259[nt]C[nt]Treat hip dislocation
+[bt][nt]27280[nt]C[nt]Fusion of sacroiliac joint
+[bt][nt]27282[nt]C[nt]Fusion of pubic bones
+[bt][nt]27284[nt]C[nt]Fusion of hip joint
+[bt][nt]27286[nt]C[nt]Fusion of hip joint
+[bt][nt]27290[nt]C[nt]Amputation of leg at hip
+[bt][nt]27295[nt]C[nt]Amputation of leg at hip
+[bt][nt]27303[nt]C[nt]Drainage of bone lesion
+[bt][nt]27365[nt]C[nt]Extensive leg surgery
+[bt][nt]27445[nt]C[nt]Revision of knee joint
+[bt][nt]27447[nt]C[nt]Total knee arthroplasty
+[bt][nt]27448[nt]C[nt]Incision of thigh
+[bt][nt]27450[nt]C[nt]Incision of thigh
+[bt][nt]27454[nt]C[nt]Realignment of thigh bone
+[bt][nt]27455[nt]C[nt]Realignment of knee
+[bt][nt]27457[nt]C[nt]Realignment of knee
+[bt][nt]27465[nt]C[nt]Shortening of thigh bone
+[bt][nt]27466[nt]C[nt]Lengthening of thigh bone
+[bt][nt]27468[nt]C[nt]Shorten/lengthen thighs
+[bt][nt]27470[nt]C[nt]Repair of thigh
+[bt][nt]27472[nt]C[nt]Repair/graft of thigh
+[bt][nt]27475[nt]C[nt]Surgery to stop leg growth
+[bt][nt]27477[nt]C[nt]Surgery to stop leg growth
+[bt][nt]27479[nt]C[nt]Surgery to stop leg growth
+[bt][nt]27485[nt]C[nt]Surgery to stop leg growth
+[bt][nt]27486[nt]C[nt]Revise/replace knee joint
+[bt][nt]27487[nt]C[nt]Revise/replace knee joint
+[bt][nt]27488[nt]C[nt]Removal of knee prosthesis
+[bt][nt]27495[nt]C[nt]Reinforce thigh
+[bt][nt]27506[nt]C[nt]Treatment of thigh fracture
+[bt][nt]27507[nt]C[nt]Treatment of thigh fracture
+[bt][nt]27511[nt]C[nt]Treatment of thigh fracture
+[bt][nt]27513[nt]C[nt]Treatment of thigh fracture
+[bt][nt]27514[nt]C[nt]Treatment of thigh fracture
+[bt][nt]27519[nt]C[nt]Treat thigh fx growth plate
+[bt][nt]27535[nt]C[nt]Treat knee fracture
+[bt][nt]27536[nt]C[nt]Treat knee fracture
+[bt][nt]27540[nt]C[nt]Treat knee fracture
+[bt][nt]27556[nt]C[nt]Treat knee dislocation
+[bt][nt]27557[nt]C[nt]Treat knee dislocation
+[bt][nt]27558[nt]C[nt]Treat knee dislocation
+[bt][nt]27580[nt]C[nt]Fusion of knee
+[bt][nt]27590[nt]C[nt]Amputate leg at thigh
+[bt][nt]27591[nt]C[nt]Amputate leg at thigh
+[bt][nt]27592[nt]C[nt]Amputate leg at thigh
+[bt][nt]27596[nt]C[nt]Amputation follow-up surgery
+[bt][nt]27598[nt]C[nt]Amputate lower leg at knee
+[bt][nt]27645[nt]C[nt]Extensive lower leg surgery
+[bt][nt]27646[nt]C[nt]Extensive lower leg surgery
+[bt][nt]27702[nt]C[nt]Reconstruct ankle joint
+[bt][nt]27703[nt]C[nt]Reconstruction, ankle joint
+[bt][nt]27712[nt]C[nt]Realignment of lower leg
+[bt][nt]27715[nt]C[nt]Revision of lower leg
+[bt][nt]27720[nt]C[nt]Repair of tibia
+[bt][nt]27722[nt]C[nt]Repair/graft of tibia
+[bt][nt]27724[nt]C[nt]Repair/graft of tibia
+[bt][nt]27725[nt]C[nt]Repair of lower leg
+[bt][nt]27727[nt]C[nt]Repair of lower leg
+[bt][nt]27880[nt]C[nt]Amputation of lower leg
+[bt][nt]27881[nt]C[nt]Amputation of lower leg
+[bt][nt]27882[nt]C[nt]Amputation of lower leg
+[bt][nt]27886[nt]C[nt]Amputation follow-up surgery
+[bt][nt]27888[nt]C[nt]Amputation of foot at ankle
+[bt][nt]28800[nt]C[nt]Amputation of midfoot
+[bt][nt]28805[nt]C[nt]Amputation thru metatarsal
+[bt][nt]32815[nt]C[nt]Close bronchial fistula
+[bt][nt]32820[nt]C[nt]Reconstruct injured chest
+[bt][nt]32850[nt]C[nt]Donor pneumonectomy
+[bt][nt]32851[nt]C[nt]Lung transplant, single
+[bt][nt]32852[nt]C[nt]Lung transplant with bypass
+[bt][nt]32853[nt]C[nt]Lung transplant, double
+[bt][nt]32854[nt]C[nt]Lung transplant with bypass
+[bt][nt]32900[nt]C[nt]Removal of rib(s)
+[bt][nt]32905[nt]C[nt]Revise & repair chest wall
+[bt][nt]32906[nt]C[nt]Revise & repair chest wall
+[bt][nt]32940[nt]C[nt]Revision of lung
+[bt][nt]32997[nt]C[nt]Total lung lavage
+[bt][nt]33015[nt]C[nt]Incision of heart sac
+[bt][nt]33020[nt]C[nt]Incision of heart sac
+[bt][nt]33025[nt]C[nt]Incision of heart sac
+[bt][nt]33030[nt]C[nt]Partial removal of heart sac
+[bt][nt]33031[nt]C[nt]Partial removal of heart sac
+[bt][nt]33050[nt]C[nt]Removal of heart sac lesion
+[bt][nt]33120[nt]C[nt]Removal of heart lesion
+[bt][nt]33130[nt]C[nt]Removal of heart lesion
+[bt][nt]33140[nt]C[nt]Heart revascularize (tmr)
+[bt][nt]33141[nt]C[nt]Heart tmr w/other procedure
+[bt][nt]33200[nt]C[nt]Insertion of heart pacemaker
+[bt][nt]33201[nt]C[nt]Insertion of heart pacemaker
+[bt][nt]33236[nt]C[nt]Remove electrode/thoracotomy
+[bt][nt]33237[nt]C[nt]Remove electrode/thoracotomy
+[bt][nt]33238[nt]C[nt]Remove electrode/thoracotomy
+[bt][nt]33243[nt]C[nt]Remove eltrd/thoracotomy
+[bt][nt]33245[nt]C[nt]Insert epic eltrd pace-defib
+[bt][nt]33246[nt]C[nt]Insert epic eltrd/generator
+[bt][nt]33250[nt]C[nt]Ablate heart dysrhythm focus
+[bt][nt]33251[nt]C[nt]Ablate heart dysrhythm focus
+[bt][nt]33253[nt]C[nt]Reconstruct atria
+[bt][nt]33261[nt]C[nt]Ablate heart dysrhythm focus
+[bt][nt]33300[nt]C[nt]Repair of heart wound
+[bt][nt]33305[nt]C[nt]Repair of heart wound
+[bt][nt]33310[nt]C[nt]Exploratory heart surgery
+[bt][nt]33315[nt]C[nt]Exploratory heart surgery
+[bt][nt]33320[nt]C[nt]Repair major blood vessel(s)
+[bt][nt]33321[nt]C[nt]Repair major vessel
+[bt][nt]33322[nt]C[nt]Repair major blood vessel(s)
+[bt][nt]33330[nt]C[nt]Insert major vessel graft
+[bt][nt]33332[nt]C[nt]Insert major vessel graft
+[bt][nt]33335[nt]C[nt]Insert major vessel graft
+[bt][nt]33400[nt]C[nt]Repair of aortic valve
+[bt][nt]33401[nt]C[nt]Valvuloplasty, open
+[bt][nt]33403[nt]C[nt]Valvuloplasty, w/cp bypass
+[bt][nt]33404[nt]C[nt]Prepare heart-aorta conduit
+[bt][nt]33405[nt]C[nt]Replacement of aortic valve
+[bt][nt]33406[nt]C[nt]Replacement of aortic valve
+[bt][nt]33410[nt]C[nt]Replacement of aortic valve
+[bt][nt]33411[nt]C[nt]Replacement of aortic valve
+[bt][nt]33412[nt]C[nt]Replacement of aortic valve
+[bt][nt]33413[nt]C[nt]Replacement of aortic valve
+[bt][nt]33414[nt]C[nt]Repair of aortic valve
+[bt][nt]33415[nt]C[nt]Revision, subvalvular tissue
+[bt][nt]33416[nt]C[nt]Revise ventricle muscle
+[bt][nt]33417[nt]C[nt]Repair of aortic valve
+[bt][nt]33420[nt]C[nt]Revision of mitral valve
+[bt][nt]33422[nt]C[nt]Revision of mitral valve
+[bt][nt]33425[nt]C[nt]Repair of mitral valve
+[bt][nt]33426[nt]C[nt]Repair of mitral valve
+[bt][nt]33427[nt]C[nt]Repair of mitral valve
+[bt][nt]33430[nt]C[nt]Replacement of mitral valve
+[bt][nt]33460[nt]C[nt]Revision of tricuspid valve
+[bt][nt]33463[nt]C[nt]Valvuloplasty, tricuspid
+[bt][nt]33464[nt]C[nt]Valvuloplasty, tricuspid
+[bt][nt]33465[nt]C[nt]Replace tricuspid valve
+[bt][nt]33468[nt]C[nt]Revision of tricuspid valve
+[bt][nt]33470[nt]C[nt]Revision of pulmonary valve
+[bt][nt]33471[nt]C[nt]Valvotomy, pulmonary valve
+[bt][nt]33472[nt]C[nt]Revision of pulmonary valve
+[bt][nt]33474[nt]C[nt]Revision of pulmonary valve
+[bt][nt]33475[nt]C[nt]Replacement, pulmonary valve
+[bt][nt]33476[nt]C[nt]Revision of heart chamber
+[bt][nt]33478[nt]C[nt]Revision of heart chamber
+[bt][nt]33496[nt]C[nt]Repair, prosth valve clot
+[bt][nt]33500[nt]C[nt]Repair heart vessel fistula
+[bt][nt]33501[nt]C[nt]Repair heart vessel fistula
+[bt][nt]33502[nt]C[nt]Coronary artery correction
+[bt][nt]33503[nt]C[nt]Coronary artery graft
+[bt][nt]33504[nt]C[nt]Coronary artery graft
+[bt][nt]33505[nt]C[nt]Repair artery w/tunnel
+[bt][nt]33506[nt]C[nt]Repair artery, translocation
+[bt][nt]33510[nt]C[nt]CABG, vein, single
+[bt][nt]33511[nt]C[nt]CABG, vein, two
+[bt][nt]33512[nt]C[nt]CABG, vein, three
+[bt][nt]33513[nt]C[nt]CABG, vein, four
+[bt][nt]33514[nt]C[nt]CABG, vein, five
+[bt][nt]33516[nt]C[nt]Cabg, vein, six or more
+[bt][nt]33517[nt]C[nt]CABG, artery-vein, single
+[bt][nt]33518[nt]C[nt]CABG, artery-vein, two
+[bt][nt]33519[nt]C[nt]CABG, artery-vein, three
+[bt][nt]33521[nt]C[nt]CABG, artery-vein, four
+[bt][nt]33522[nt]C[nt]CABG, artery-vein, five
+[bt][nt]33523[nt]C[nt]Cabg, art-vein, six or more
+[bt][nt]33530[nt]C[nt]Coronary artery, bypass/reop
+[bt][nt]33533[nt]C[nt]CABG, arterial, single
+[bt][nt]33534[nt]C[nt]CABG, arterial, two
+[bt][nt]33535[nt]C[nt]CABG, arterial, three
+[bt][nt]33536[nt]C[nt]Cabg, arterial, four or more
+[bt][nt]33542[nt]C[nt]Removal of heart lesion
+[bt][nt]33545[nt]C[nt]Repair of heart damage
+[bt][nt]33572[nt]C[nt]Open coronary endarterectomy
+[bt][nt]33600[nt]C[nt]Closure of valve
+[bt][nt]33602[nt]C[nt]Closure of valve
+[bt][nt]33606[nt]C[nt]Anastomosis/artery-aorta
+[bt][nt]33608[nt]C[nt]Repair anomaly w/conduit
+[bt][nt]33610[nt]C[nt]Repair by enlargement
+[bt][nt]33611[nt]C[nt]Repair double ventricle
+[bt][nt]33612[nt]C[nt]Repair double ventricle
+[bt][nt]33615[nt]C[nt]Repair, modified fontan
+[bt][nt]33617[nt]C[nt]Repair single ventricle
+[bt][nt]33619[nt]C[nt]Repair single ventricle
+[bt][nt]33641[nt]C[nt]Repair heart septum defect
+[bt][nt]33645[nt]C[nt]Revision of heart veins
+[bt][nt]33647[nt]C[nt]Repair heart septum defects
+[bt][nt]33660[nt]C[nt]Repair of heart defects
+[bt][nt]33665[nt]C[nt]Repair of heart defects
+[bt][nt]33670[nt]C[nt]Repair of heart chambers
+[bt][nt]33681[nt]C[nt]Repair heart septum defect
+[bt][nt]33684[nt]C[nt]Repair heart septum defect
+[bt][nt]33688[nt]C[nt]Repair heart septum defect
+[bt][nt]33690[nt]C[nt]Reinforce pulmonary artery
+[bt][nt]33692[nt]C[nt]Repair of heart defects
+[bt][nt]33694[nt]C[nt]Repair of heart defects
+[bt][nt]33697[nt]C[nt]Repair of heart defects
+[bt][nt]33702[nt]C[nt]Repair of heart defects
+[bt][nt]33710[nt]C[nt]Repair of heart defects
+[bt][nt]33720[nt]C[nt]Repair of heart defect
+[bt][nt]33722[nt]C[nt]Repair of heart defect
+[bt][nt]33730[nt]C[nt]Repair heart-vein defect(s)
+[bt][nt]33732[nt]C[nt]Repair heart-vein defect
+[bt][nt]33735[nt]C[nt]Revision of heart chamber
+[bt][nt]33736[nt]C[nt]Revision of heart chamber
+[bt][nt]33737[nt]C[nt]Revision of heart chamber
+[bt][nt]33750[nt]C[nt]Major vessel shunt
+[bt][nt]33755[nt]C[nt]Major vessel shunt
+[bt][nt]33762[nt]C[nt]Major vessel shunt
+[bt][nt]33764[nt]C[nt]Major vessel shunt & graft
+[bt][nt]33766[nt]C[nt]Major vessel shunt
+[bt][nt]33767[nt]C[nt]Major vessel shunt
+[bt][nt]33770[nt]C[nt]Repair great vessels defect
+[bt][nt]33771[nt]C[nt]Repair great vessels defect
+[bt][nt]33774[nt]C[nt]Repair great vessels defect
+[bt][nt]33775[nt]C[nt]Repair great vessels defect
+[bt][nt]33776[nt]C[nt]Repair great vessels defect
+[bt][nt]33777[nt]C[nt]Repair great vessels defect
+[bt][nt]33778[nt]C[nt]Repair great vessels defect
+[bt][nt]33779[nt]C[nt]Repair great vessels defect
+[bt][nt]33780[nt]C[nt]Repair great vessels defect
+[bt][nt]33781[nt]C[nt]Repair great vessels defect
+[bt][nt]33786[nt]C[nt]Repair arterial trunk
+[bt][nt]33788[nt]C[nt]Revision of pulmonary artery
+[bt][nt]33800[nt]C[nt]Aortic suspension
+[bt][nt]33802[nt]C[nt]Repair vessel defect
+[bt][nt]33803[nt]C[nt]Repair vessel defect
+[bt][nt]33813[nt]C[nt]Repair septal defect
+[bt][nt]33814[nt]C[nt]Repair septal defect
+[bt][nt]33820[nt]C[nt]Revise major vessel
+[bt][nt]33822[nt]C[nt]Revise major vessel
+[bt][nt]33824[nt]C[nt]Revise major vessel
+[bt][nt]33840[nt]C[nt]Remove aorta constriction
+[bt][nt]33845[nt]C[nt]Remove aorta constriction
+[bt][nt]33851[nt]C[nt]Remove aorta constriction
+[bt][nt]33852[nt]C[nt]Repair septal defect
+[bt][nt]33853[nt]C[nt]Repair septal defect
+[bt][nt]33860[nt]C[nt]Ascending aortic graft
+[bt][nt]33861[nt]C[nt]Ascending aortic graft
+[bt][nt]33863[nt]C[nt]Ascending aortic graft
+[bt][nt]33870[nt]C[nt]Transverse aortic arch graft
+[bt][nt]33875[nt]C[nt]Thoracic aortic graft
+[bt][nt]33877[nt]C[nt]Thoracoabdominal graft
+[bt][nt]33910[nt]C[nt]Remove lung artery emboli
+[bt][nt]33915[nt]C[nt]Remove lung artery emboli
+[bt][nt]33916[nt]C[nt]Surgery of great vessel
+[bt][nt]33917[nt]C[nt]Repair pulmonary artery
+[bt][nt]33918[nt]C[nt]Repair pulmonary atresia
+[bt][nt]33919[nt]C[nt]Repair pulmonary atresia
+[bt][nt]33920[nt]C[nt]Repair pulmonary atresia
+[bt][nt]33922[nt]C[nt]Transect pulmonary artery
+[bt][nt]33924[nt]C[nt]Remove pulmonary shunt
+[bt][nt]33930[nt]C[nt]Removal of donor heart/lung
+[bt][nt]33935[nt]C[nt]Transplantation, heart/lung
+[bt][nt]33940[nt]C[nt]Removal of donor heart
+[bt][nt]33945[nt]C[nt]Transplantation of heart
+[bt][nt]33960[nt]C[nt]External circulation assist
+[bt][nt]33961[nt]C[nt]External circulation assist
+[bt][nt]33967[nt]C[nt]Insert ia percut device
+[bt][nt]33968[nt]C[nt]Remove aortic assist device
+[bt][nt]33970[nt]C[nt]Aortic circulation assist
+[bt][nt]33971[nt]C[nt]Aortic circulation assist
+[bt][nt]33973[nt]C[nt]Insert balloon device
+[bt][nt]33974[nt]C[nt]Remove intra-aortic balloon
+[bt][nt]33975[nt]C[nt]Implant ventricular device
+[bt][nt]33976[nt]C[nt]Implant ventricular device
+[bt][nt]33977[nt]C[nt]Remove ventricular device
+[bt][nt]33978[nt]C[nt]Remove ventricular device
+[bt][nt]33979[nt]C[nt]Insert intracorporeal device
+[bt][nt]33980[nt]C[nt]Remove intracorporeal device
+[bt][nt]34001[nt]C[nt]Removal of artery clot
+[bt][nt]34051[nt]C[nt]Removal of artery clot
+[bt][nt]34151[nt]C[nt]Removal of artery clot
+[bt][nt]34401[nt]C[nt]Removal of vein clot
+[bt][nt]34451[nt]C[nt]Removal of vein clot
+[bt][nt]34502[nt]C[nt]Reconstruct vena cava
+[bt][nt]34800[nt]C[nt]Endovasc abdo repair w/tube
+[bt][nt]34802[nt]C[nt]Endovasc abdo repr w/device
+[bt][nt]34804[nt]C[nt]Endovasc abdo repr w/device
+[bt][nt]34808[nt]C[nt]Endovasc abdo occlud device
+[bt][nt]34812[nt]C[nt]Xpose for endoprosth, aortic
+[bt][nt]34813[nt]C[nt]Femoral endovas graft add-on
+[bt][nt]34820[nt]C[nt]Xpose for endoprosth, iliac
+[bt][nt]34825[nt]C[nt]Endovasc extend prosth, init
+[bt][nt]34826[nt]C[nt]Endovasc exten prosth, addl
+[bt][nt]34830[nt]C[nt]Open aortic tube prosth repr
+[bt][nt]34831[nt]C[nt]Open aortoiliac prosth repr
+[bt][nt]34832[nt]C[nt]Open aortofemor prosth repr
+[bt][nt]34833[nt]C[nt]Xpose for endoprosth, iliac
+[bt][nt]34834[nt]C[nt]Xpose, endoprosth, brachial
+[bt][nt]34900[nt]C[nt]Endovasc iliac repr w/graft
+[bt][nt]35001[nt]C[nt]Repair defect of artery
+[bt][nt]35002[nt]C[nt]Repair artery rupture, neck
+[bt][nt]35005[nt]C[nt]Repair defect of artery
+[bt][nt]35013[nt]C[nt]Repair artery rupture, arm
+[bt][nt]35021[nt]C[nt]Repair defect of artery
+[bt][nt]35022[nt]C[nt]Repair artery rupture, chest
+[bt][nt]35045[nt]C[nt]Repair defect of arm artery
+[bt][nt]35081[nt]C[nt]Repair defect of artery
+[bt][nt]35082[nt]C[nt]Repair artery rupture, aorta
+[bt][nt]35091[nt]C[nt]Repair defect of artery
+[bt][nt]35092[nt]C[nt]Repair artery rupture, aorta
+[bt][nt]35102[nt]C[nt]Repair defect of artery
+[bt][nt]35103[nt]C[nt]Repair artery rupture, groin
+[bt][nt]35111[nt]C[nt]Repair defect of artery
+[bt][nt]35112[nt]C[nt]Repair artery rupture,spleen
+[bt][nt]35121[nt]C[nt]Repair defect of artery
+[bt][nt]35122[nt]C[nt]Repair artery rupture, belly
+[bt][nt]35131[nt]C[nt]Repair defect of artery
+[bt][nt]35132[nt]C[nt]Repair artery rupture, groin
+[bt][nt]35141[nt]C[nt]Repair defect of artery
+[bt][nt]35142[nt]C[nt]Repair artery rupture, thigh
+[bt][nt]35151[nt]C[nt]Repair defect of artery
+[bt][nt]35152[nt]C[nt]Repair artery rupture, knee
+[bt][nt]35161[nt]C[nt]Repair defect of artery
+[bt][nt]35162[nt]C[nt]Repair artery rupture
+[bt][nt]35182[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35189[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35211[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35216[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35221[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35241[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35246[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35251[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35271[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35276[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35281[nt]C[nt]Repair blood vessel lesion
+[bt][nt]35301[nt]C[nt]Rechanneling of artery
+[bt][nt]35311[nt]C[nt]Rechanneling of artery
+[bt][nt]35331[nt]C[nt]Rechanneling of artery
+[bt][nt]35341[nt]C[nt]Rechanneling of artery
+[bt][nt]35351[nt]C[nt]Rechanneling of artery
+[bt][nt]35355[nt]C[nt]Rechanneling of artery
+[bt][nt]35361[nt]C[nt]Rechanneling of artery
+[bt][nt]35363[nt]C[nt]Rechanneling of artery
+[bt][nt]35371[nt]C[nt]Rechanneling of artery
+[bt][nt]35372[nt]C[nt]Rechanneling of artery
+[bt][nt]35381[nt]C[nt]Rechanneling of artery
+[bt][nt]35390[nt]C[nt]Reoperation, carotid add-on
+[bt][nt]35400[nt]C[nt]Angioscopy
+[bt][nt]35450[nt]C[nt]Repair arterial blockage
+[bt][nt]35452[nt]C[nt]Repair arterial blockage
+[bt][nt]35454[nt]C[nt]Repair arterial blockage
+[bt][nt]35456[nt]C[nt]Repair arterial blockage
+[bt][nt]35480[nt]C[nt]Atherectomy, open
+[bt][nt]35481[nt]C[nt]Atherectomy, open
+[bt][nt]35482[nt]C[nt]Atherectomy, open
+[bt][nt]35483[nt]C[nt]Atherectomy, open
+[bt][nt]35501[nt]C[nt]Artery bypass graft
+[bt][nt]35506[nt]C[nt]Artery bypass graft
+[bt][nt]35507[nt]C[nt]Artery bypass graft
+[bt][nt]35508[nt]C[nt]Artery bypass graft
+[bt][nt]35509[nt]C[nt]Artery bypass graft
+[bt][nt]35511[nt]C[nt]Artery bypass graft
+[bt][nt]35515[nt]C[nt]Artery bypass graft
+[bt][nt]35516[nt]C[nt]Artery bypass graft
+[bt][nt]35518[nt]C[nt]Artery bypass graft
+[bt][nt]35521[nt]C[nt]Artery bypass graft
+[bt][nt]35526[nt]C[nt]Artery bypass graft
+[bt][nt]35531[nt]C[nt]Artery bypass graft
+[bt][nt]35533[nt]C[nt]Artery bypass graft
+[bt][nt]35536[nt]C[nt]Artery bypass graft
+[bt][nt]35541[nt]C[nt]Artery bypass graft
+[bt][nt]35546[nt]C[nt]Artery bypass graft
+[bt][nt]35548[nt]C[nt]Artery bypass graft
+[bt][nt]35549[nt]C[nt]Artery bypass graft
+[bt][nt]35551[nt]C[nt]Artery bypass graft
+[bt][nt]35556[nt]C[nt]Artery bypass graft
+[bt][nt]35558[nt]C[nt]Artery bypass graft
+[bt][nt]35560[nt]C[nt]Artery bypass graft
+[bt][nt]35563[nt]C[nt]Artery bypass graft
+[bt][nt]35565[nt]C[nt]Artery bypass graft
+[bt][nt]35566[nt]C[nt]Artery bypass graft
+[bt][nt]35571[nt]C[nt]Artery bypass graft
+[bt][nt]35582[nt]C[nt]Vein bypass graft
+[bt][nt]35583[nt]C[nt]Vein bypass graft
+[bt][nt]35585[nt]C[nt]Vein bypass graft
+[bt][nt]35587[nt]C[nt]Vein bypass graft
+[bt][nt]35600[nt]C[nt]Harvest artery for cabg
+[bt][nt]35601[nt]C[nt]Artery bypass graft
+[bt][nt]35606[nt]C[nt]Artery bypass graft
+[bt][nt]35612[nt]C[nt]Artery bypass graft
+[bt][nt]35616[nt]C[nt]Artery bypass graft
+[bt][nt]35621[nt]C[nt]Artery bypass graft
+[bt][nt]35623[nt]C[nt]Bypass graft, not vein
+[bt][nt]35626[nt]C[nt]Artery bypass graft
+[bt][nt]35631[nt]C[nt]Artery bypass graft
+[bt][nt]35636[nt]C[nt]Artery bypass graft
+[bt][nt]35641[nt]C[nt]Artery bypass graft
+[bt][nt]35642[nt]C[nt]Artery bypass graft
+[bt][nt]35645[nt]C[nt]Artery bypass graft
+[bt][nt]35646[nt]C[nt]Artery bypass graft
+[bt][nt]35647[nt]C[nt]Artery bypass graft
+[bt][nt]35650[nt]C[nt]Artery bypass graft
+[bt][nt]35651[nt]C[nt]Artery bypass graft
+[bt][nt]35654[nt]C[nt]Artery bypass graft
+[bt][nt]35656[nt]C[nt]Artery bypass graft
+[bt][nt]35661[nt]C[nt]Artery bypass graft
+[bt][nt]35663[nt]C[nt]Artery bypass graft
+[bt][nt]35665[nt]C[nt]Artery bypass graft
+[bt][nt]35666[nt]C[nt]Artery bypass graft
+[bt][nt]35671[nt]C[nt]Artery bypass graft
+[bt][nt]35681[nt]C[nt]Composite bypass graft
+[bt][nt]35682[nt]C[nt]Composite bypass graft
+[bt][nt]35683[nt]C[nt]Composite bypass graft
+[bt][nt]35691[nt]C[nt]Arterial transposition
+[bt][nt]35693[nt]C[nt]Arterial transposition
+[bt][nt]35694[nt]C[nt]Arterial transposition
+[bt][nt]35695[nt]C[nt]Arterial transposition
+[bt][nt]35700[nt]C[nt]Reoperation, bypass graft
+[bt][nt]35701[nt]C[nt]Exploration, carotid artery
+[bt][nt]35721[nt]C[nt]Exploration, femoral artery
+[bt][nt]35741[nt]C[nt]Exploration popliteal artery
+[bt][nt]35800[nt]C[nt]Explore neck vessels
+[bt][nt]35820[nt]C[nt]Explore chest vessels
+[bt][nt]35840[nt]C[nt]Explore abdominal vessels
+[bt][nt]35870[nt]C[nt]Repair vessel graft defect
+[bt][nt]35901[nt]C[nt]Excision, graft, neck
+[bt][nt]35905[nt]C[nt]Excision, graft, thorax
+[bt][nt]35907[nt]C[nt]Excision, graft, abdomen
+[bt][nt]36510[nt]C[nt]Insertion of catheter, vein
+[bt][nt]36660[nt]C[nt]Insertion catheter, artery
+[bt][nt]36822[nt]C[nt]Insertion of cannula(s)
+[bt][nt]36823[nt]C[nt]Insertion of cannula(s)
+[bt][nt]37140[nt]C[nt]Revision of circulation
+[bt][nt]37145[nt]C[nt]Revision of circulation
+[bt][nt]37160[nt]C[nt]Revision of circulation
+[bt][nt]37180[nt]C[nt]Revision of circulation
+[bt][nt]37181[nt]C[nt]Splice spleen/kidney veins
+[bt][nt]37182[nt]C[nt]Insert hepatic shunt (tips)
+[bt][nt]37183[nt]C[nt]Remove hepatic shunt (tips)
+[bt][nt]37195[nt]C[nt]Thrombolytic therapy, stroke
+[bt][nt]37616[nt]C[nt]Ligation of chest artery
+[bt][nt]37617[nt]C[nt]Ligation of abdomen artery
+[bt][nt]37618[nt]C[nt]Ligation of extremity artery
+[bt][nt]37660[nt]C[nt]Revision of major vein
+[bt][nt]37788[nt]C[nt]Revascularization, penis
+[bt][nt]38100[nt]C[nt]Removal of spleen, total
+[bt][nt]38101[nt]C[nt]Removal of spleen, partial
+[bt][nt]38102[nt]C[nt]Removal of spleen, total
+[bt][nt]38115[nt]C[nt]Repair of ruptured spleen
+[bt][nt]38380[nt]C[nt]Thoracic duct procedure
+[bt][nt]38381[nt]C[nt]Thoracic duct procedure
+[bt][nt]38382[nt]C[nt]Thoracic duct procedure
+[bt][nt]38562[nt]C[nt]Removal, pelvic lymph nodes
+[bt][nt]38564[nt]C[nt]Removal, abdomen lymph nodes
+[bt][nt]38724[nt]C[nt]Removal of lymph nodes, neck
+[bt][nt]38746[nt]C[nt]Remove thoracic lymph nodes
+[bt][nt]38747[nt]C[nt]Remove abdominal lymph nodes
+[bt][nt]38765[nt]C[nt]Remove groin lymph nodes
+[bt][nt]38770[nt]C[nt]Remove pelvis lymph nodes
+[bt][nt]38780[nt]C[nt]Remove abdomen lymph nodes
+[bt][nt]39000[nt]C[nt]Exploration of chest
+[bt][nt]39010[nt]C[nt]Exploration of chest
+[bt][nt]39200[nt]C[nt]Removal chest lesion
+[bt][nt]39220[nt]C[nt]Removal chest lesion
+[bt][nt]39499[nt]C[nt]Chest procedure
+[bt][nt]39501[nt]C[nt]Repair diaphragm laceration
+[bt][nt]39502[nt]C[nt]Repair paraesophageal hernia
+[bt][nt]39503[nt]C[nt]Repair of diaphragm hernia
+[bt][nt]39520[nt]C[nt]Repair of diaphragm hernia
+[bt][nt]39530[nt]C[nt]Repair of diaphragm hernia
+[bt][nt]39531[nt]C[nt]Repair of diaphragm hernia
+[bt][nt]39540[nt]C[nt]Repair of diaphragm hernia
+[bt][nt]39541[nt]C[nt]Repair of diaphragm hernia
+[bt][nt]39545[nt]C[nt]Revision of diaphragm
+[bt][nt]39560[nt]C[nt]Resect diaphragm, simple
+[bt][nt]39561[nt]C[nt]Resect diaphragm, complex
+[bt][nt]39599[nt]C[nt]Diaphragm surgery procedure
+[bt][nt]41130[nt]C[nt]Partial removal of tongue
+[bt][nt]41135[nt]C[nt]Tongue and neck surgery
+[bt][nt]41140[nt]C[nt]Removal of tongue
+[bt][nt]41145[nt]C[nt]Tongue removal, neck surgery
+[bt][nt]41150[nt]C[nt]Tongue, mouth, jaw surgery
+[bt][nt]41153[nt]C[nt]Tongue, mouth, neck surgery
+[bt][nt]41155[nt]C[nt]Tongue, jaw, & neck surgery
+[bt][nt]42426[nt]C[nt]Excise parotid gland/lesion
+[bt][nt]42845[nt]C[nt]Extensive surgery of throat
+[bt][nt]42894[nt]C[nt]Revision of pharyngeal walls
+[bt][nt]42953[nt]C[nt]Repair throat, esophagus
+[bt][nt]42961[nt]C[nt]Control throat bleeding
+[bt][nt]42971[nt]C[nt]Control nose/throat bleeding
+[bt][nt]43045[nt]C[nt]Incision of esophagus
+[bt][nt]43100[nt]C[nt]Excision of esophagus lesion
+[bt][nt]43101[nt]C[nt]Excision of esophagus lesion
+[bt][nt]43107[nt]C[nt]Removal of esophagus
+[bt][nt]43108[nt]C[nt]Removal of esophagus
+[bt][nt]43112[nt]C[nt]Removal of esophagus
+[bt][nt]43113[nt]C[nt]Removal of esophagus
+[bt][nt]43116[nt]C[nt]Partial removal of esophagus
+[bt][nt]43117[nt]C[nt]Partial removal of esophagus
+[bt][nt]43118[nt]C[nt]Partial removal of esophagus
+[bt][nt]43121[nt]C[nt]Partial removal of esophagus
+[bt][nt]43122[nt]C[nt]Partial removal of esophagus
+[bt][nt]43123[nt]C[nt]Partial removal of esophagus
+[bt][nt]43124[nt]C[nt]Removal of esophagus
+[bt][nt]43135[nt]C[nt]Removal of esophagus pouch
+[bt][nt]43300[nt]C[nt]Repair of esophagus
+[bt][nt]43305[nt]C[nt]Repair esophagus and fistula
+[bt][nt]43310[nt]C[nt]Repair of esophagus
+[bt][nt]43312[nt]C[nt]Repair esophagus and fistula
+[bt][nt]43313[nt]C[nt]Esophagoplasty congenital
+[bt][nt]43314[nt]C[nt]Tracheo-esophagoplasty cong
+[bt][nt]43320[nt]C[nt]Fuse esophagus & stomach
+[bt][nt]43324[nt]C[nt]Revise esophagus & stomach
+[bt][nt]43325[nt]C[nt]Revise esophagus & stomach
+[bt][nt]43326[nt]C[nt]Revise esophagus & stomach
+[bt][nt]43330[nt]C[nt]Repair of esophagus
+[bt][nt]43331[nt]C[nt]Repair of esophagus
+[bt][nt]43340[nt]C[nt]Fuse esophagus & intestine
+[bt][nt]43341[nt]C[nt]Fuse esophagus & intestine
+[bt][nt]43350[nt]C[nt]Surgical opening, esophagus
+[bt][nt]43351[nt]C[nt]Surgical opening, esophagus
+[bt][nt]43352[nt]C[nt]Surgical opening, esophagus
+[bt][nt]43360[nt]C[nt]Gastrointestinal repair
+[bt][nt]43361[nt]C[nt]Gastrointestinal repair
+[bt][nt]43400[nt]C[nt]Ligate esophagus veins
+[bt][nt]43401[nt]C[nt]Esophagus surgery for veins
+[bt][nt]43405[nt]C[nt]Ligate/staple esophagus
+[bt][nt]43410[nt]C[nt]Repair esophagus wound
+[bt][nt]43415[nt]C[nt]Repair esophagus wound
+[bt][nt]43420[nt]C[nt]Repair esophagus opening
+[bt][nt]43425[nt]C[nt]Repair esophagus opening
+[bt][nt]43460[nt]C[nt]Pressure treatment esophagus
+[bt][nt]43496[nt]C[nt]Free jejunum flap, microvasc
+[bt][nt]43500[nt]C[nt]Surgical opening of stomach
+[bt][nt]43501[nt]C[nt]Surgical repair of stomach
+[bt][nt]43502[nt]C[nt]Surgical repair of stomach
+[bt][nt]43510[nt]C[nt]Surgical opening of stomach
+[bt][nt]43520[nt]C[nt]Incision of pyloric muscle
+[bt][nt]43605[nt]C[nt]Biopsy of stomach
+[bt][nt]43610[nt]C[nt]Excision of stomach lesion
+[bt][nt]43611[nt]C[nt]Excision of stomach lesion
+[bt][nt]43620[nt]C[nt]Removal of stomach
+[bt][nt]43621[nt]C[nt]Removal of stomach
+[bt][nt]43622[nt]C[nt]Removal of stomach
+[bt][nt]43631[nt]C[nt]Removal of stomach, partial
+[bt][nt]43632[nt]C[nt]Removal of stomach, partial
+[bt][nt]43633[nt]C[nt]Removal of stomach, partial
+[bt][nt]43634[nt]C[nt]Removal of stomach, partial
+[bt][nt]43635[nt]C[nt]Removal of stomach, partial
+[bt][nt]43638[nt]C[nt]Removal of stomach, partial
+[bt][nt]43639[nt]C[nt]Removal of stomach, partial
+[bt][nt]43640[nt]C[nt]Vagotomy & pylorus repair
+[bt][nt]43641[nt]C[nt]Vagotomy & pylorus repair
+[bt][nt]43800[nt]C[nt]Reconstruction of pylorus
+[bt][nt]43810[nt]C[nt]Fusion of stomach and bowel
+[bt][nt]43820[nt]C[nt]Fusion of stomach and bowel
+[bt][nt]43825[nt]C[nt]Fusion of stomach and bowel
+[bt][nt]43832[nt]C[nt]Place gastrostomy tube
+[bt][nt]43840[nt]C[nt]Repair of stomach lesion
+[bt][nt]43842[nt]C[nt]Gastroplasty for obesity
+[bt][nt]43843[nt]C[nt]Gastroplasty for obesity
+[bt][nt]43846[nt]C[nt]Gastric bypass for obesity
+[bt][nt]43847[nt]C[nt]Gastric bypass for obesity
+[bt][nt]43848[nt]C[nt]Revision gastroplasty
+[bt][nt]43850[nt]C[nt]Revise stomach-bowel fusion
+[bt][nt]43855[nt]C[nt]Revise stomach-bowel fusion
+[bt][nt]43860[nt]C[nt]Revise stomach-bowel fusion
+[bt][nt]43865[nt]C[nt]Revise stomach-bowel fusion
+[bt][nt]43880[nt]C[nt]Repair stomach-bowel fistula
+[bt][nt]44005[nt]C[nt]Freeing of bowel adhesion
+[bt][nt]44010[nt]C[nt]Incision of small bowel
+[bt][nt]44015[nt]C[nt]Insert needle cath bowel
+[bt][nt]44020[nt]C[nt]Explore small intestine
+[bt][nt]44021[nt]C[nt]Decompress small bowel
+[bt][nt]44025[nt]C[nt]Incision of large bowel
+[bt][nt]44050[nt]C[nt]Reduce bowel obstruction
+[bt][nt]44055[nt]C[nt]Correct malrotation of bowel
+[bt][nt]44110[nt]C[nt]Excise intestine lesion(s)
+[bt][nt]44111[nt]C[nt]Excision of bowel lesion(s)
+[bt][nt]44120[nt]C[nt]Removal of small intestine
+[bt][nt]44121[nt]C[nt]Removal of small intestine
+[bt][nt]44125[nt]C[nt]Removal of small intestine
+[bt][nt]44126[nt]C[nt]Enterectomy w/o taper, cong
+[bt][nt]44127[nt]C[nt]Enterectomy w/taper, cong
+[bt][nt]44128[nt]C[nt]Enterectomy cong, add-on
+[bt][nt]44130[nt]C[nt]Bowel to bowel fusion
+[bt][nt]44132[nt]C[nt]Enterectomy, cadaver donor
+[bt][nt]44133[nt]C[nt]Enterectomy, live donor
+[bt][nt]44135[nt]C[nt]Intestine transplnt, cadaver
+[bt][nt]44136[nt]C[nt]Intestine transplant, live
+[bt][nt]44139[nt]C[nt]Mobilization of colon
+[bt][nt]44140[nt]C[nt]Partial removal of colon
+[bt][nt]44141[nt]C[nt]Partial removal of colon
+[bt][nt]44143[nt]C[nt]Partial removal of colon
+[bt][nt]44144[nt]C[nt]Partial removal of colon
+[bt][nt]44145[nt]C[nt]Partial removal of colon
+[bt][nt]44146[nt]C[nt]Partial removal of colon
+[bt][nt]44147[nt]C[nt]Partial removal of colon
+[bt][nt]44150[nt]C[nt]Removal of colon
+[bt][nt]44151[nt]C[nt]Removal of colon/ileostomy
+[bt][nt]44152[nt]C[nt]Removal of colon/ileostomy
+[bt][nt]44153[nt]C[nt]Removal of colon/ileostomy
+[bt][nt]44155[nt]C[nt]Removal of colon/ileostomy
+[bt][nt]44156[nt]C[nt]Removal of colon/ileostomy
+[bt][nt]44160[nt]C[nt]Removal of colon
+[bt][nt]44202[nt]C[nt]Lap resect s/intestine singl
+[bt][nt]44203[nt]C[nt]Lap resect s/intestine, addl
+[bt][nt]44204[nt]C[nt]Laparo partial colectomy
+[bt][nt]44205[nt]C[nt]Lap colectomy part w/ileum
+[bt][nt]44210[nt]C[nt]Laparo total proctocolectomy
+[bt][nt]44211[nt]C[nt]Laparo total proctocolectomy
+[bt][nt]44212[nt]C[nt]Laparo total proctocolectomy
+[bt][nt]44300[nt]C[nt]Open bowel to skin
+[bt][nt]44310[nt]C[nt]Ileostomy/jejunostomy
+[bt][nt]44314[nt]C[nt]Revision of ileostomy
+[bt][nt]44316[nt]C[nt]Devise bowel pouch
+[bt][nt]44320[nt]C[nt]Colostomy
+[bt][nt]44322[nt]C[nt]Colostomy with biopsies
+[bt][nt]44345[nt]C[nt]Revision of colostomy
+[bt][nt]44346[nt]C[nt]Revision of colostomy
+[bt][nt]44602[nt]C[nt]Suture, small intestine
+[bt][nt]44603[nt]C[nt]Suture, small intestine
+[bt][nt]44604[nt]C[nt]Suture, large intestine
+[bt][nt]44605[nt]C[nt]Repair of bowel lesion
+[bt][nt]44615[nt]C[nt]Intestinal stricturoplasty
+[bt][nt]44620[nt]C[nt]Repair bowel opening
+[bt][nt]44625[nt]C[nt]Repair bowel opening
+[bt][nt]44626[nt]C[nt]Repair bowel opening
+[bt][nt]44640[nt]C[nt]Repair bowel-skin fistula
+[bt][nt]44650[nt]C[nt]Repair bowel fistula
+[bt][nt]44660[nt]C[nt]Repair bowel-bladder fistula
+[bt][nt]44661[nt]C[nt]Repair bowel-bladder fistula
+[bt][nt]44680[nt]C[nt]Surgical revision, intestine
+[bt][nt]44700[nt]C[nt]Suspend bowel w/prosthesis
+[bt][nt]44800[nt]C[nt]Excision of bowel pouch
+[bt][nt]44820[nt]C[nt]Excision of mesentery lesion
+[bt][nt]44850[nt]C[nt]Repair of mesentery
+[bt][nt]44899[nt]C[nt]Bowel surgery procedure
+[bt][nt]44900[nt]C[nt]Drain app abscess, open
+[bt][nt]44901[nt]C[nt]Drain app abscess, percut
+[bt][nt]44950[nt]C[nt]Appendectomy
+[bt][nt]44955[nt]C[nt]Appendectomy add-on
+[bt][nt]44960[nt]C[nt]Appendectomy
+[bt][nt]45110[nt]C[nt]Removal of rectum
+[bt][nt]45111[nt]C[nt]Partial removal of rectum
+[bt][nt]45112[nt]C[nt]Removal of rectum
+[bt][nt]45113[nt]C[nt]Partial proctectomy
+[bt][nt]45114[nt]C[nt]Partial removal of rectum
+[bt][nt]45116[nt]C[nt]Partial removal of rectum
+[bt][nt]45119[nt]C[nt]Remove rectum w/reservoir
+[bt][nt]45120[nt]C[nt]Removal of rectum
+[bt][nt]45121[nt]C[nt]Removal of rectum and colon
+[bt][nt]45123[nt]C[nt]Partial proctectomy
+[bt][nt]45126[nt]C[nt]Pelvic exenteration
+[bt][nt]45130[nt]C[nt]Excision of rectal prolapse
+[bt][nt]45135[nt]C[nt]Excision of rectal prolapse
+[bt][nt]45136[nt]C[nt]Excise ileoanal reservior
+[bt][nt]45540[nt]C[nt]Correct rectal prolapse
+[bt][nt]45541[nt]C[nt]Correct rectal prolapse
+[bt][nt]45550[nt]C[nt]Repair rectum/remove sigmoid
+[bt][nt]45562[nt]C[nt]Exploration/repair of rectum
+[bt][nt]45563[nt]C[nt]Exploration/repair of rectum
+[bt][nt]45800[nt]C[nt]Repair rect/bladder fistula
+[bt][nt]45805[nt]C[nt]Repair fistula w/colostomy
+[bt][nt]45820[nt]C[nt]Repair rectourethral fistula
+[bt][nt]45825[nt]C[nt]Repair fistula w/colostomy
+[bt][nt]46705[nt]C[nt]Repair of anal stricture
+[bt][nt]46715[nt]C[nt]Repair of anovaginal fistula
+[bt][nt]46716[nt]C[nt]Repair of anovaginal fistula
+[bt][nt]46730[nt]C[nt]Construction of absent anus
+[bt][nt]46735[nt]C[nt]Construction of absent anus
+[bt][nt]46740[nt]C[nt]Construction of absent anus
+[bt][nt]46742[nt]C[nt]Repair of imperforated anus
+[bt][nt]46744[nt]C[nt]Repair of cloacal anomaly
+[bt][nt]46746[nt]C[nt]Repair of cloacal anomaly
+[bt][nt]46748[nt]C[nt]Repair of cloacal anomaly
+[bt][nt]46751[nt]C[nt]Repair of anal sphincter
+[bt][nt]47010[nt]C[nt]Open drainage, liver lesion
+[bt][nt]47015[nt]C[nt]Inject/aspirate liver cyst
+[bt][nt]47100[nt]C[nt]Wedge biopsy of liver
+[bt][nt]47120[nt]C[nt]Partial removal of liver
+[bt][nt]47122[nt]C[nt]Extensive removal of liver
+[bt][nt]47125[nt]C[nt]Partial removal of liver
+[bt][nt]47130[nt]C[nt]Partial removal of liver
+[bt][nt]47133[nt]C[nt]Removal of donor liver
+[bt][nt]47134[nt]C[nt]Partial removal, donor liver
+[bt][nt]47135[nt]C[nt]Transplantation of liver
+[bt][nt]47136[nt]C[nt]Transplantation of liver
+[bt][nt]47300[nt]C[nt]Surgery for liver lesion
+[bt][nt]47350[nt]C[nt]Repair liver wound
+[bt][nt]47360[nt]C[nt]Repair liver wound
+[bt][nt]47361[nt]C[nt]Repair liver wound
+[bt][nt]47362[nt]C[nt]Repair liver wound
+[bt][nt]47380[nt]C[nt]Open ablate liver tumor rf
+[bt][nt]47381[nt]C[nt]Open ablate liver tumor cryo
+[bt][nt]47400[nt]C[nt]Incision of liver duct
+[bt][nt]47420[nt]C[nt]Incision of bile duct
+[bt][nt]47425[nt]C[nt]Incision of bile duct
+[bt][nt]47460[nt]C[nt]Incise bile duct sphincter
+[bt][nt]47480[nt]C[nt]Incision of gallbladder
+[bt][nt]47550[nt]C[nt]Bile duct endoscopy add-on
+[bt][nt]47570[nt]C[nt]Laparo cholecystoenterostomy
+[bt][nt]47600[nt]C[nt]Removal of gallbladder
+[bt][nt]47605[nt]C[nt]Removal of gallbladder
+[bt][nt]47610[nt]C[nt]Removal of gallbladder
+[bt][nt]47612[nt]C[nt]Removal of gallbladder
+[bt][nt]47620[nt]C[nt]Removal of gallbladder
+[bt][nt]47700[nt]C[nt]Exploration of bile ducts
+[bt][nt]47701[nt]C[nt]Bile duct revision
+[bt][nt]47711[nt]C[nt]Excision of bile duct tumor
+[bt][nt]47712[nt]C[nt]Excision of bile duct tumor
+[bt][nt]47715[nt]C[nt]Excision of bile duct cyst
+[bt][nt]47716[nt]C[nt]Fusion of bile duct cyst
+[bt][nt]47720[nt]C[nt]Fuse gallbladder & bowel
+[bt][nt]47721[nt]C[nt]Fuse upper gi structures
+[bt][nt]47740[nt]C[nt]Fuse gallbladder & bowel
+[bt][nt]47741[nt]C[nt]Fuse gallbladder & bowel
+[bt][nt]47760[nt]C[nt]Fuse bile ducts and bowel
+[bt][nt]47765[nt]C[nt]Fuse liver ducts & bowel
+[bt][nt]47780[nt]C[nt]Fuse bile ducts and bowel
+[bt][nt]47785[nt]C[nt]Fuse bile ducts and bowel
+[bt][nt]47800[nt]C[nt]Reconstruction of bile ducts
+[bt][nt]47801[nt]C[nt]Placement, bile duct support
+[bt][nt]47802[nt]C[nt]Fuse liver duct & intestine
+[bt][nt]47900[nt]C[nt]Suture bile duct injury
+[bt][nt]48000[nt]C[nt]Drainage of abdomen
+[bt][nt]48001[nt]C[nt]Placement of drain, pancreas
+[bt][nt]48005[nt]C[nt]Resect/debride pancreas
+[bt][nt]48020[nt]C[nt]Removal of pancreatic stone
+[bt][nt]48100[nt]C[nt]Biopsy of pancreas, open
+[bt][nt]48120[nt]C[nt]Removal of pancreas lesion
+[bt][nt]48140[nt]C[nt]Partial removal of pancreas
+[bt][nt]48145[nt]C[nt]Partial removal of pancreas
+[bt][nt]48146[nt]C[nt]Pancreatectomy
+[bt][nt]48148[nt]C[nt]Removal of pancreatic duct
+[bt][nt]48150[nt]C[nt]Partial removal of pancreas
+[bt][nt]48152[nt]C[nt]Pancreatectomy
+[bt][nt]48153[nt]C[nt]Pancreatectomy
+[bt][nt]48154[nt]C[nt]Pancreatectomy
+[bt][nt]48155[nt]C[nt]Removal of pancreas
+[bt][nt]48180[nt]C[nt]Fuse pancreas and bowel
+[bt][nt]48400[nt]C[nt]Injection, intraop add-on
+[bt][nt]48500[nt]C[nt]Surgery of pancreatic cyst
+[bt][nt]48510[nt]C[nt]Drain pancreatic pseudocyst
+[bt][nt]48520[nt]C[nt]Fuse pancreas cyst and bowel
+[bt][nt]48540[nt]C[nt]Fuse pancreas cyst and bowel
+[bt][nt]48545[nt]C[nt]Pancreatorrhaphy
+[bt][nt]48547[nt]C[nt]Duodenal exclusion
+[bt][nt]48556[nt]C[nt]Removal, allograft pancreas
+[bt][nt]49000[nt]C[nt]Exploration of abdomen
+[bt][nt]49002[nt]C[nt]Reopening of abdomen
+[bt][nt]49010[nt]C[nt]Exploration behind abdomen
+[bt][nt]49020[nt]C[nt]Drain abdominal abscess
+[bt][nt]49021[nt]C[nt]Drain abdominal abscess
+[bt][nt]49040[nt]C[nt]Drain, open, abdom abscess
+[bt][nt]49041[nt]C[nt]Drain, percut, abdom abscess
+[bt][nt]49060[nt]C[nt]Drain, open, retrop abscess
+[bt][nt]49061[nt]C[nt]Drain, percut, retroper absc
+[bt][nt]49062[nt]C[nt]Drain to peritoneal cavity
+[bt][nt]49201[nt]C[nt]Remove abdom lesion, complex
+[bt][nt]49215[nt]C[nt]Excise sacral spine tumor
+[bt][nt]49220[nt]C[nt]Multiple surgery, abdomen
+[bt][nt]49255[nt]C[nt]Removal of omentum
+[bt][nt]49425[nt]C[nt]Insert abdomen-venous drain
+[bt][nt]49428[nt]C[nt]Ligation of shunt
+[bt][nt]49605[nt]C[nt]Repair umbilical lesion
+[bt][nt]49606[nt]C[nt]Repair umbilical lesion
+[bt][nt]49610[nt]C[nt]Repair umbilical lesion
+[bt][nt]49611[nt]C[nt]Repair umbilical lesion
+[bt][nt]49900[nt]C[nt]Repair of abdominal wall
+[bt][nt]49904[nt]C[nt]Omental flap, extra-abdom
+[bt][nt]49905[nt]C[nt]Omental flap
+[bt][nt]49906[nt]C[nt]Free omental flap, microvasc
+[bt][nt]50010[nt]C[nt]Exploration of kidney
+[bt][nt]50020[nt]C[nt]Renal abscess, open drain
+[bt][nt]50040[nt]C[nt]Drainage of kidney
+[bt][nt]50045[nt]C[nt]Exploration of kidney
+[bt][nt]50060[nt]C[nt]Removal of kidney stone
+[bt][nt]50065[nt]C[nt]Incision of kidney
+[bt][nt]50070[nt]C[nt]Incision of kidney
+[bt][nt]50075[nt]C[nt]Removal of kidney stone
+[bt][nt]50100[nt]C[nt]Revise kidney blood vessels
+[bt][nt]50120[nt]C[nt]Exploration of kidney
+[bt][nt]50125[nt]C[nt]Explore and drain kidney
+[bt][nt]50130[nt]C[nt]Removal of kidney stone
+[bt][nt]50135[nt]C[nt]Exploration of kidney
+[bt][nt]50205[nt]C[nt]Biopsy of kidney
+[bt][nt]50220[nt]C[nt]Remove kidney, open
+[bt][nt]50225[nt]C[nt]Removal kidney open, complex
+[bt][nt]50230[nt]C[nt]Removal kidney open, radical
+[bt][nt]50234[nt]C[nt]Removal of kidney & ureter
+[bt][nt]50236[nt]C[nt]Removal of kidney & ureter
+[bt][nt]50240[nt]C[nt]Partial removal of kidney
+[bt][nt]50280[nt]C[nt]Removal of kidney lesion
+[bt][nt]50290[nt]C[nt]Removal of kidney lesion
+[bt][nt]50300[nt]C[nt]Removal of donor kidney
+[bt][nt]50320[nt]C[nt]Removal of donor kidney
+[bt][nt]50340[nt]C[nt]Removal of kidney
+[bt][nt]50360[nt]C[nt]Transplantation of kidney
+[bt][nt]50365[nt]C[nt]Transplantation of kidney
+[bt][nt]50370[nt]C[nt]Remove transplanted kidney
+[bt][nt]50380[nt]C[nt]Reimplantation of kidney
+[bt][nt]50400[nt]C[nt]Revision of kidney/ureter
+[bt][nt]50405[nt]C[nt]Revision of kidney/ureter
+[bt][nt]50500[nt]C[nt]Repair of kidney wound
+[bt][nt]50520[nt]C[nt]Close kidney-skin fistula
+[bt][nt]50525[nt]C[nt]Repair renal-abdomen fistula
+[bt][nt]50526[nt]C[nt]Repair renal-abdomen fistula
+[bt][nt]50540[nt]C[nt]Revision of horseshoe kidney
+[bt][nt]50545[nt]C[nt]Laparo radical nephrectomy
+[bt][nt]50546[nt]C[nt]Laparoscopic nephrectomy
+[bt][nt]50547[nt]C[nt]Laparo removal donor kidney
+[bt][nt]50548[nt]C[nt]Laparo remove k/ureter
+[bt][nt]50570[nt]C[nt]Kidney endoscopy
+[bt][nt]50572[nt]C[nt]Kidney endoscopy
+[bt][nt]50574[nt]C[nt]Kidney endoscopy & biopsy
+[bt][nt]50575[nt]C[nt]Kidney endoscopy
+[bt][nt]50576[nt]C[nt]Kidney endoscopy & treatment
+[bt][nt]50578[nt]C[nt]Renal endoscopy/radiotracer
+[bt][nt]50580[nt]C[nt]Kidney endoscopy & treatment
+[bt][nt]50600[nt]C[nt]Exploration of ureter
+[bt][nt]50605[nt]C[nt]Insert ureteral support
+[bt][nt]50610[nt]C[nt]Removal of ureter stone
+[bt][nt]50620[nt]C[nt]Removal of ureter stone
+[bt][nt]50630[nt]C[nt]Removal of ureter stone
+[bt][nt]50650[nt]C[nt]Removal of ureter
+[bt][nt]50660[nt]C[nt]Removal of ureter
+[bt][nt]50700[nt]C[nt]Revision of ureter
+[bt][nt]50715[nt]C[nt]Release of ureter
+[bt][nt]50722[nt]C[nt]Release of ureter
+[bt][nt]50725[nt]C[nt]Release/revise ureter
+[bt][nt]50727[nt]C[nt]Revise ureter
+[bt][nt]50728[nt]C[nt]Revise ureter
+[bt][nt]50740[nt]C[nt]Fusion of ureter & kidney
+[bt][nt]50750[nt]C[nt]Fusion of ureter & kidney
+[bt][nt]50760[nt]C[nt]Fusion of ureters
+[bt][nt]50770[nt]C[nt]Splicing of ureters
+[bt][nt]50780[nt]C[nt]Reimplant ureter in bladder
+[bt][nt]50782[nt]C[nt]Reimplant ureter in bladder
+[bt][nt]50783[nt]C[nt]Reimplant ureter in bladder
+[bt][nt]50785[nt]C[nt]Reimplant ureter in bladder
+[bt][nt]50800[nt]C[nt]Implant ureter in bowel
+[bt][nt]50810[nt]C[nt]Fusion of ureter & bowel
+[bt][nt]50815[nt]C[nt]Urine shunt to intestine
+[bt][nt]50820[nt]C[nt]Construct bowel bladder
+[bt][nt]50825[nt]C[nt]Construct bowel bladder
+[bt][nt]50830[nt]C[nt]Revise urine flow
+[bt][nt]50840[nt]C[nt]Replace ureter by bowel
+[bt][nt]50845[nt]C[nt]Appendico-vesicostomy
+[bt][nt]50860[nt]C[nt]Transplant ureter to skin
+[bt][nt]50900[nt]C[nt]Repair of ureter
+[bt][nt]50920[nt]C[nt]Closure ureter/skin fistula
+[bt][nt]50930[nt]C[nt]Closure ureter/bowel fistula
+[bt][nt]50940[nt]C[nt]Release of ureter
+[bt][nt]51060[nt]C[nt]Removal of ureter stone
+[bt][nt]51525[nt]C[nt]Removal of bladder lesion
+[bt][nt]51530[nt]C[nt]Removal of bladder lesion
+[bt][nt]51535[nt]C[nt]Repair of ureter lesion
+[bt][nt]51550[nt]C[nt]Partial removal of bladder
+[bt][nt]51555[nt]C[nt]Partial removal of bladder
+[bt][nt]51565[nt]C[nt]Revise bladder & ureter(s)
+[bt][nt]51570[nt]C[nt]Removal of bladder
+[bt][nt]51575[nt]C[nt]Removal of bladder & nodes
+[bt][nt]51580[nt]C[nt]Remove bladder/revise tract
+[bt][nt]51585[nt]C[nt]Removal of bladder & nodes
+[bt][nt]51590[nt]C[nt]Remove bladder/revise tract
+[bt][nt]51595[nt]C[nt]Remove bladder/revise tract
+[bt][nt]51596[nt]C[nt]Remove bladder/create pouch
+[bt][nt]51597[nt]C[nt]Removal of pelvic structures
+[bt][nt]51800[nt]C[nt]Revision of bladder/urethra
+[bt][nt]51820[nt]C[nt]Revision of urinary tract
+[bt][nt]51840[nt]C[nt]Attach bladder/urethra
+[bt][nt]51841[nt]C[nt]Attach bladder/urethra
+[bt][nt]51845[nt]C[nt]Repair bladder neck
+[bt][nt]51860[nt]C[nt]Repair of bladder wound
+[bt][nt]51865[nt]C[nt]Repair of bladder wound
+[bt][nt]51900[nt]C[nt]Repair bladder/vagina lesion
+[bt][nt]51920[nt]C[nt]Close bladder-uterus fistula
+[bt][nt]51925[nt]C[nt]Hysterectomy/bladder repair
+[bt][nt]51940[nt]C[nt]Correction of bladder defect
+[bt][nt]51960[nt]C[nt]Revision of bladder & bowel
+[bt][nt]51980[nt]C[nt]Construct bladder opening
+[bt][nt]53085[nt]C[nt]Drainage of urinary leakage
+[bt][nt]53415[nt]C[nt]Reconstruction of urethra
+[bt][nt]53448[nt]C[nt]Remov/replc ur sphinctr comp
+[bt][nt]54125[nt]C[nt]Removal of penis
+[bt][nt]54130[nt]C[nt]Remove penis & nodes
+[bt][nt]54135[nt]C[nt]Remove penis & nodes
+[bt][nt]54332[nt]C[nt]Revise penis/urethra
+[bt][nt]54336[nt]C[nt]Revise penis/urethra
+[bt][nt]54390[nt]C[nt]Repair penis and bladder
+[bt][nt]54411[nt]C[nt]Remov/replc penis pros, comp
+[bt][nt]54417[nt]C[nt]Remv/replc penis pros, compl
+[bt][nt]54430[nt]C[nt]Revision of penis
+[bt][nt]54535[nt]C[nt]Extensive testis surgery
+[bt][nt]54560[nt]C[nt]Exploration for testis
+[bt][nt]54650[nt]C[nt]Orchiopexy (Fowler-Stephens)
+[bt][nt]55600[nt]C[nt]Incise sperm duct pouch
+[bt][nt]55605[nt]C[nt]Incise sperm duct pouch
+[bt][nt]55650[nt]C[nt]Remove sperm duct pouch
+[bt][nt]55801[nt]C[nt]Removal of prostate
+[bt][nt]55810[nt]C[nt]Extensive prostate surgery
+[bt][nt]55812[nt]C[nt]Extensive prostate surgery
+[bt][nt]55815[nt]C[nt]Extensive prostate surgery
+[bt][nt]55821[nt]C[nt]Removal of prostate
+[bt][nt]55831[nt]C[nt]Removal of prostate
+[bt][nt]55840[nt]C[nt]Extensive prostate surgery
+[bt][nt]55842[nt]C[nt]Extensive prostate surgery
+[bt][nt]55845[nt]C[nt]Extensive prostate surgery
+[bt][nt]55862[nt]C[nt]Extensive prostate surgery
+[bt][nt]55865[nt]C[nt]Extensive prostate surgery
+[bt][nt]55866[nt]C[nt]Laparo radical prostatectomy
+[bt][nt]56630[nt]C[nt]Extensive vulva surgery
+[bt][nt]56631[nt]C[nt]Extensive vulva surgery
+[bt][nt]56632[nt]C[nt]Extensive vulva surgery
+[bt][nt]56633[nt]C[nt]Extensive vulva surgery
+[bt][nt]56634[nt]C[nt]Extensive vulva surgery
+[bt][nt]56637[nt]C[nt]Extensive vulva surgery
+[bt][nt]56640[nt]C[nt]Extensive vulva surgery
+[bt][nt]57110[nt]C[nt]Remove vagina wall, complete
+[bt][nt]57111[nt]C[nt]Remove vagina tissue, compl
+[bt][nt]57112[nt]C[nt]Vaginectomy w/nodes, compl
+[bt][nt]57270[nt]C[nt]Repair of bowel pouch
+[bt][nt]57280[nt]C[nt]Suspension of vagina
+[bt][nt]57282[nt]C[nt]Repair of vaginal prolapse
+[bt][nt]57292[nt]C[nt]Construct vagina with graft
+[bt][nt]57305[nt]C[nt]Repair rectum-vagina fistula
+[bt][nt]57307[nt]C[nt]Fistula repair & colostomy
+[bt][nt]57308[nt]C[nt]Fistula repair, transperine
+[bt][nt]57311[nt]C[nt]Repair urethrovaginal lesion
+[bt][nt]57335[nt]C[nt]Repair vagina
+[bt][nt]57531[nt]C[nt]Removal of cervix, radical
+[bt][nt]57540[nt]C[nt]Removal of residual cervix
+[bt][nt]57545[nt]C[nt]Remove cervix/repair pelvis
+[bt][nt]58140[nt]C[nt]Removal of uterus lesion
+[bt][nt]58146[nt]C[nt]Myomectomy abdom complex
+[bt][nt]58150[nt]C[nt]Total hysterectomy
+[bt][nt]58152[nt]C[nt]Total hysterectomy
+[bt][nt]58180[nt]C[nt]Partial hysterectomy
+[bt][nt]58200[nt]C[nt]Extensive hysterectomy
+[bt][nt]58210[nt]C[nt]Extensive hysterectomy
+[bt][nt]58240[nt]C[nt]Removal of pelvis contents
+[bt][nt]58260[nt]C[nt]Vaginal hysterectomy
+[bt][nt]58262[nt]C[nt]Vag hyst including t/o
+[bt][nt]58263[nt]C[nt]Vag hyst w/t/o & vag repair
+[bt][nt]58267[nt]C[nt]Vag hyst w/urinary repair
+[bt][nt]58270[nt]C[nt]Vag hyst w/enterocele repair
+[bt][nt]58275[nt]C[nt]Hysterectomy/revise vagina
+[bt][nt]58280[nt]C[nt]Hysterectomy/revise vagina
+[bt][nt]58285[nt]C[nt]Extensive hysterectomy
+[bt][nt]58290[nt]C[nt]Vag hyst complex
+[bt][nt]58291[nt]C[nt]Vag hyst incl t/o, complex
+[bt][nt]58292[nt]C[nt]Vag hyst t/o & repair, compl
+[bt][nt]58293[nt]C[nt]Vag hyst w/uro repair, compl
+[bt][nt]58294[nt]C[nt]Vag hyst w/enterocele, compl
+[bt][nt]58400[nt]C[nt]Suspension of uterus
+[bt][nt]58410[nt]C[nt]Suspension of uterus
+[bt][nt]58520[nt]C[nt]Repair of ruptured uterus
+[bt][nt]58540[nt]C[nt]Revision of uterus
+[bt][nt]58605[nt]C[nt]Division of fallopian tube
+[bt][nt]58611[nt]C[nt]Ligate oviduct(s) add-on
+[bt][nt]58700[nt]C[nt]Removal of fallopian tube
+[bt][nt]58720[nt]C[nt]Removal of ovary/tube(s)
+[bt][nt]58740[nt]C[nt]Revise fallopian tube(s)
+[bt][nt]58750[nt]C[nt]Repair oviduct
+[bt][nt]58752[nt]C[nt]Revise ovarian tube(s)
+[bt][nt]58760[nt]C[nt]Remove tubal obstruction
+[bt][nt]58770[nt]C[nt]Create new tubal opening
+[bt][nt]58805[nt]C[nt]Drainage of ovarian cyst(s)
+[bt][nt]58822[nt]C[nt]Drain ovary abscess, percut
+[bt][nt]58825[nt]C[nt]Transposition, ovary(s)
+[bt][nt]58940[nt]C[nt]Removal of ovary(s)
+[bt][nt]58943[nt]C[nt]Removal of ovary(s)
+[bt][nt]58950[nt]C[nt]Resect ovarian malignancy
+[bt][nt]58951[nt]C[nt]Resect ovarian malignancy
+[bt][nt]58952[nt]C[nt]Resect ovarian malignancy
+[bt][nt]58953[nt]C[nt]Tah, rad dissect for debulk
+[bt][nt]58954[nt]C[nt]Tah rad debulk/lymph remove
+[bt][nt]58960[nt]C[nt]Exploration of abdomen
+[bt][nt]59100[nt]C[nt]Remove uterus lesion
+[bt][nt]59120[nt]C[nt]Treat ectopic pregnancy
+[bt][nt]59121[nt]C[nt]Treat ectopic pregnancy
+[bt][nt]59130[nt]C[nt]Treat ectopic pregnancy
+[bt][nt]59135[nt]C[nt]Treat ectopic pregnancy
+[bt][nt]59136[nt]C[nt]Treat ectopic pregnancy
+[bt][nt]59140[nt]C[nt]Treat ectopic pregnancy
+[bt][nt]59325[nt]C[nt]Revision of cervix
+[bt][nt]59350[nt]C[nt]Repair of uterus
+[bt][nt]59514[nt]C[nt]Cesarean delivery only
+[bt][nt]59525[nt]C[nt]Remove uterus after cesarean
+[bt][nt]59620[nt]C[nt]Attempted vbac delivery only
+[bt][nt]59830[nt]C[nt]Treat uterus infection
+[bt][nt]59850[nt]C[nt]Abortion
+[bt][nt]59851[nt]C[nt]Abortion
+[bt][nt]59852[nt]C[nt]Abortion
+[bt][nt]59855[nt]C[nt]Abortion
+[bt][nt]59856[nt]C[nt]Abortion
+[bt][nt]59857[nt]C[nt]Abortion
+[bt][nt]60254[nt]C[nt]Extensive thyroid surgery
+[bt][nt]60270[nt]C[nt]Removal of thyroid
+[bt][nt]60271[nt]C[nt]Removal of thyroid
+[bt][nt]60502[nt]C[nt]Re-explore parathyroids
+[bt][nt]60505[nt]C[nt]Explore parathyroid glands
+[bt][nt]60520[nt]C[nt]Removal of thymus gland
+[bt][nt]60521[nt]C[nt]Removal of thymus gland
+[bt][nt]60522[nt]C[nt]Removal of thymus gland
+[bt][nt]60540[nt]C[nt]Explore adrenal gland
+[bt][nt]60545[nt]C[nt]Explore adrenal gland
+[bt][nt]60600[nt]C[nt]Remove carotid body lesion
+[bt][nt]60605[nt]C[nt]Remove carotid body lesion
+[bt][nt]60650[nt]C[nt]Laparoscopy adrenalectomy
+[bt][nt]61105[nt]C[nt]Twist drill hole
+[bt][nt]61107[nt]C[nt]Drill skull for implantation
+[bt][nt]61108[nt]C[nt]Drill skull for drainage
+[bt][nt]61120[nt]C[nt]Burr hole for puncture
+[bt][nt]61140[nt]C[nt]Pierce skull for biopsy
+[bt][nt]61150[nt]C[nt]Pierce skull for drainage
+[bt][nt]61151[nt]C[nt]Pierce skull for drainage
+[bt][nt]61154[nt]C[nt]Pierce skull & remove clot
+[bt][nt]61156[nt]C[nt]Pierce skull for drainage
+[bt][nt]61210[nt]C[nt]Pierce skull, implant device
+[bt][nt]61250[nt]C[nt]Pierce skull & explore
+[bt][nt]61253[nt]C[nt]Pierce skull & explore
+[bt][nt]61304[nt]C[nt]Open skull for exploration
+[bt][nt]61305[nt]C[nt]Open skull for exploration
+[bt][nt]61312[nt]C[nt]Open skull for drainage
+[bt][nt]61313[nt]C[nt]Open skull for drainage
+[bt][nt]61314[nt]C[nt]Open skull for drainage
+[bt][nt]61315[nt]C[nt]Open skull for drainage
+[bt][nt]61320[nt]C[nt]Open skull for drainage
+[bt][nt]61321[nt]C[nt]Open skull for drainage
+[bt][nt]61322[nt]C[nt]Decompressive craniotomy
+[bt][nt]61323[nt]C[nt]Decompressive lobectomy
+[bt][nt]61332[nt]C[nt]Explore/biopsy eye socket
+[bt][nt]61333[nt]C[nt]Explore orbit/remove lesion
+[bt][nt]61334[nt]C[nt]Explore orbit/remove object
+[bt][nt]61340[nt]C[nt]Relieve cranial pressure
+[bt][nt]61343[nt]C[nt]Incise skull (press relief)
+[bt][nt]61345[nt]C[nt]Relieve cranial pressure
+[bt][nt]61440[nt]C[nt]Incise skull for surgery
+[bt][nt]61450[nt]C[nt]Incise skull for surgery
+[bt][nt]61458[nt]C[nt]Incise skull for brain wound
+[bt][nt]61460[nt]C[nt]Incise skull for surgery
+[bt][nt]61470[nt]C[nt]Incise skull for surgery
+[bt][nt]61480[nt]C[nt]Incise skull for surgery
+[bt][nt]61490[nt]C[nt]Incise skull for surgery
+[bt][nt]61500[nt]C[nt]Removal of skull lesion
+[bt][nt]61501[nt]C[nt]Remove infected skull bone
+[bt][nt]61510[nt]C[nt]Removal of brain lesion
+[bt][nt]61512[nt]C[nt]Remove brain lining lesion
+[bt][nt]61514[nt]C[nt]Removal of brain abscess
+[bt][nt]61516[nt]C[nt]Removal of brain lesion
+[bt][nt]61518[nt]C[nt]Removal of brain lesion
+[bt][nt]61519[nt]C[nt]Remove brain lining lesion
+[bt][nt]61520[nt]C[nt]Removal of brain lesion
+[bt][nt]61521[nt]C[nt]Removal of brain lesion
+[bt][nt]61522[nt]C[nt]Removal of brain abscess
+[bt][nt]61524[nt]C[nt]Removal of brain lesion
+[bt][nt]61526[nt]C[nt]Removal of brain lesion
+[bt][nt]61530[nt]C[nt]Removal of brain lesion
+[bt][nt]61531[nt]C[nt]Implant brain electrodes
+[bt][nt]61533[nt]C[nt]Implant brain electrodes
+[bt][nt]61534[nt]C[nt]Removal of brain lesion
+[bt][nt]61535[nt]C[nt]Remove brain electrodes
+[bt][nt]61536[nt]C[nt]Removal of brain lesion
+[bt][nt]61538[nt]C[nt]Removal of brain tissue
+[bt][nt]61539[nt]C[nt]Removal of brain tissue
+[bt][nt]61541[nt]C[nt]Incision of brain tissue
+[bt][nt]61542[nt]C[nt]Removal of brain tissue
+[bt][nt]61543[nt]C[nt]Removal of brain tissue
+[bt][nt]61544[nt]C[nt]Remove & treat brain lesion
+[bt][nt]61545[nt]C[nt]Excision of brain tumor
+[bt][nt]61546[nt]C[nt]Removal of pituitary gland
+[bt][nt]61548[nt]C[nt]Removal of pituitary gland
+[bt][nt]61550[nt]C[nt]Release of skull seams
+[bt][nt]61552[nt]C[nt]Release of skull seams
+[bt][nt]61556[nt]C[nt]Incise skull/sutures
+[bt][nt]61557[nt]C[nt]Incise skull/sutures
+[bt][nt]61558[nt]C[nt]Excision of skull/sutures
+[bt][nt]61559[nt]C[nt]Excision of skull/sutures
+[bt][nt]61563[nt]C[nt]Excision of skull tumor
+[bt][nt]61564[nt]C[nt]Excision of skull tumor
+[bt][nt]61570[nt]C[nt]Remove foreign body, brain
+[bt][nt]61571[nt]C[nt]Incise skull for brain wound
+[bt][nt]61575[nt]C[nt]Skull base/brainstem surgery
+[bt][nt]61576[nt]C[nt]Skull base/brainstem surgery
+[bt][nt]61580[nt]C[nt]Craniofacial approach, skull
+[bt][nt]61581[nt]C[nt]Craniofacial approach, skull
+[bt][nt]61582[nt]C[nt]Craniofacial approach, skull
+[bt][nt]61583[nt]C[nt]Craniofacial approach, skull
+[bt][nt]61584[nt]C[nt]Orbitocranial approach/skull
+[bt][nt]61585[nt]C[nt]Orbitocranial approach/skull
+[bt][nt]61586[nt]C[nt]Resect nasopharynx, skull
+[bt][nt]61590[nt]C[nt]Infratemporal approach/skull
+[bt][nt]61591[nt]C[nt]Infratemporal approach/skull
+[bt][nt]61592[nt]C[nt]Orbitocranial approach/skull
+[bt][nt]61595[nt]C[nt]Transtemporal approach/skull
+[bt][nt]61596[nt]C[nt]Transcochlear approach/skull
+[bt][nt]61597[nt]C[nt]Transcondylar approach/skull
+[bt][nt]61598[nt]C[nt]Transpetrosal approach/skull
+[bt][nt]61600[nt]C[nt]Resect/excise cranial lesion
+[bt][nt]61601[nt]C[nt]Resect/excise cranial lesion
+[bt][nt]61605[nt]C[nt]Resect/excise cranial lesion
+[bt][nt]61606[nt]C[nt]Resect/excise cranial lesion
+[bt][nt]61607[nt]C[nt]Resect/excise cranial lesion
+[bt][nt]61608[nt]C[nt]Resect/excise cranial lesion
+[bt][nt]61609[nt]C[nt]Transect artery, sinus
+[bt][nt]61610[nt]C[nt]Transect artery, sinus
+[bt][nt]61611[nt]C[nt]Transect artery, sinus
+[bt][nt]61612[nt]C[nt]Transect artery, sinus
+[bt][nt]61613[nt]C[nt]Remove aneurysm, sinus
+[bt][nt]61615[nt]C[nt]Resect/excise lesion, skull
+[bt][nt]61616[nt]C[nt]Resect/excise lesion, skull
+[bt][nt]61618[nt]C[nt]Repair dura
+[bt][nt]61619[nt]C[nt]Repair dura
+[bt][nt]61624[nt]C[nt]Occlusion/embolization cath
+[bt][nt]61680[nt]C[nt]Intracranial vessel surgery
+[bt][nt]61682[nt]C[nt]Intracranial vessel surgery
+[bt][nt]61684[nt]C[nt]Intracranial vessel surgery
+[bt][nt]61686[nt]C[nt]Intracranial vessel surgery
+[bt][nt]61690[nt]C[nt]Intracranial vessel surgery
+[bt][nt]61692[nt]C[nt]Intracranial vessel surgery
+[bt][nt]61697[nt]C[nt]Brain aneurysm repr, complx
+[bt][nt]61698[nt]C[nt]Brain aneurysm repr, complx
+[bt][nt]61700[nt]C[nt]Brain aneurysm repr, simple
+[bt][nt]61702[nt]C[nt]Inner skull vessel surgery
+[bt][nt]61703[nt]C[nt]Clamp neck artery
+[bt][nt]61705[nt]C[nt]Revise circulation to head
+[bt][nt]61708[nt]C[nt]Revise circulation to head
+[bt][nt]61710[nt]C[nt]Revise circulation to head
+[bt][nt]61711[nt]C[nt]Fusion of skull arteries
+[bt][nt]61720[nt]C[nt]Incise skull/brain surgery
+[bt][nt]61735[nt]C[nt]Incise skull/brain surgery
+[bt][nt]61750[nt]C[nt]Incise skull/brain biopsy
+[bt][nt]61751[nt]C[nt]Brain biopsy w/ ct/mr guide
+[bt][nt]61760[nt]C[nt]Implant brain electrodes
+[bt][nt]61770[nt]C[nt]Incise skull for treatment
+[bt][nt]61850[nt]C[nt]Implant neuroelectrodes
+[bt][nt]61860[nt]C[nt]Implant neuroelectrodes
+[bt][nt]61862[nt]C[nt]Implant neurostimul, subcort
+[bt][nt]61870[nt]C[nt]Implant neuroelectrodes
+[bt][nt]61875[nt]C[nt]Implant neuroelectrodes
+[bt][nt]62000[nt]C[nt]Treat skull fracture
+[bt][nt]62005[nt]C[nt]Treat skull fracture
+[bt][nt]62010[nt]C[nt]Treatment of head injury
+[bt][nt]62100[nt]C[nt]Repair brain fluid leakage
+[bt][nt]62115[nt]C[nt]Reduction of skull defect
+[bt][nt]62116[nt]C[nt]Reduction of skull defect
+[bt][nt]62117[nt]C[nt]Reduction of skull defect
+[bt][nt]62120[nt]C[nt]Repair skull cavity lesion
+[bt][nt]62121[nt]C[nt]Incise skull repair
+[bt][nt]62140[nt]C[nt]Repair of skull defect
+[bt][nt]62141[nt]C[nt]Repair of skull defect
+[bt][nt]62142[nt]C[nt]Remove skull plate/flap
+[bt][nt]62143[nt]C[nt]Replace skull plate/flap
+[bt][nt]62145[nt]C[nt]Repair of skull & brain
+[bt][nt]62146[nt]C[nt]Repair of skull with graft
+[bt][nt]62147[nt]C[nt]Repair of skull with graft
+[bt][nt]62161[nt]C[nt]Dissect brain w/scope
+[bt][nt]62162[nt]C[nt]Remove colloid cyst w/scope
+[bt][nt]62163[nt]C[nt]Neuroendoscopy w/fb removal
+[bt][nt]62164[nt]C[nt]Remove brain tumor w/scope
+[bt][nt]62165[nt]C[nt]Remove pituit tumor w/scope
+[bt][nt]62180[nt]C[nt]Establish brain cavity shunt
+[bt][nt]62190[nt]C[nt]Establish brain cavity shunt
+[bt][nt]62192[nt]C[nt]Establish brain cavity shunt
+[bt][nt]62200[nt]C[nt]Establish brain cavity shunt
+[bt][nt]62201[nt]C[nt]Establish brain cavity shunt
+[bt][nt]62220[nt]C[nt]Establish brain cavity shunt
+[bt][nt]62223[nt]C[nt]Establish brain cavity shunt
+[bt][nt]62256[nt]C[nt]Remove brain cavity shunt
+[bt][nt]62258[nt]C[nt]Replace brain cavity shunt
+[bt][nt]63043[nt]C[nt]Laminotomy, addl cervical
+[bt][nt]63044[nt]C[nt]Laminotomy, addl lumbar
+[bt][nt]63075[nt]C[nt]Neck spine disk surgery
+[bt][nt]63076[nt]C[nt]Neck spine disk surgery
+[bt][nt]63077[nt]C[nt]Spine disk surgery, thorax
+[bt][nt]63078[nt]C[nt]Spine disk surgery, thorax
+[bt][nt]63081[nt]C[nt]Removal of vertebral body
+[bt][nt]63082[nt]C[nt]Remove vertebral body add-on
+[bt][nt]63085[nt]C[nt]Removal of vertebral body
+[bt][nt]63086[nt]C[nt]Remove vertebral body add-on
+[bt][nt]63087[nt]C[nt]Removal of vertebral body
+[bt][nt]63088[nt]C[nt]Remove vertebral body add-on
+[bt][nt]63090[nt]C[nt]Removal of vertebral body
+[bt][nt]63091[nt]C[nt]Remove vertebral body add-on
+[bt][nt]63170[nt]C[nt]Incise spinal cord tract(s)
+[bt][nt]63172[nt]C[nt]Drainage of spinal cyst
+[bt][nt]63173[nt]C[nt]Drainage of spinal cyst
+[bt][nt]63180[nt]C[nt]Revise spinal cord ligaments
+[bt][nt]63182[nt]C[nt]Revise spinal cord ligaments
+[bt][nt]63185[nt]C[nt]Incise spinal column/nerves
+[bt][nt]63190[nt]C[nt]Incise spinal column/nerves
+[bt][nt]63191[nt]C[nt]Incise spinal column/nerves
+[bt][nt]63194[nt]C[nt]Incise spinal column & cord
+[bt][nt]63195[nt]C[nt]Incise spinal column & cord
+[bt][nt]63196[nt]C[nt]Incise spinal column & cord
+[bt][nt]63197[nt]C[nt]Incise spinal column & cord
+[bt][nt]63198[nt]C[nt]Incise spinal column & cord
+[bt][nt]63199[nt]C[nt]Incise spinal column & cord
+[bt][nt]63200[nt]C[nt]Release of spinal cord
+[bt][nt]63250[nt]C[nt]Revise spinal cord vessels
+[bt][nt]63251[nt]C[nt]Revise spinal cord vessels
+[bt][nt]63252[nt]C[nt]Revise spinal cord vessels
+[bt][nt]63265[nt]C[nt]Excise intraspinal lesion
+[bt][nt]63266[nt]C[nt]Excise intraspinal lesion
+[bt][nt]63267[nt]C[nt]Excise intraspinal lesion
+[bt][nt]63268[nt]C[nt]Excise intraspinal lesion
+[bt][nt]63270[nt]C[nt]Excise intraspinal lesion
+[bt][nt]63271[nt]C[nt]Excise intraspinal lesion
+[bt][nt]63272[nt]C[nt]Excise intraspinal lesion
+[bt][nt]63273[nt]C[nt]Excise intraspinal lesion
+[bt][nt]63275[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63276[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63277[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63278[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63280[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63281[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63282[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63283[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63285[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63286[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63287[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63290[nt]C[nt]Biopsy/excise spinal tumor
+[bt][nt]63300[nt]C[nt]Removal of vertebral body
+[bt][nt]63301[nt]C[nt]Removal of vertebral body
+[bt][nt]63302[nt]C[nt]Removal of vertebral body
+[bt][nt]63303[nt]C[nt]Removal of vertebral body
+[bt][nt]63304[nt]C[nt]Removal of vertebral body
+[bt][nt]63305[nt]C[nt]Removal of vertebral body
+[bt][nt]63306[nt]C[nt]Removal of vertebral body
+[bt][nt]63307[nt]C[nt]Removal of vertebral body
+[bt][nt]63308[nt]C[nt]Remove vertebral body add-on
+[bt][nt]63700[nt]C[nt]Repair of spinal herniation
+[bt][nt]63702[nt]C[nt]Repair of spinal herniation
+[bt][nt]63704[nt]C[nt]Repair of spinal herniation
+[bt][nt]63706[nt]C[nt]Repair of spinal herniation
+[bt][nt]63707[nt]C[nt]Repair spinal fluid leakage
+[bt][nt]63709[nt]C[nt]Repair spinal fluid leakage
+[bt][nt]63710[nt]C[nt]Graft repair of spine defect
+[bt][nt]63740[nt]C[nt]Install spinal shunt
+[bt][nt]64752[nt]C[nt]Incision of vagus nerve
+[bt][nt]64755[nt]C[nt]Incision of stomach nerves
+[bt][nt]64760[nt]C[nt]Incision of vagus nerve
+[bt][nt]64763[nt]C[nt]Incise hip/thigh nerve
+[bt][nt]64766[nt]C[nt]Incise hip/thigh nerve
+[bt][nt]64804[nt]C[nt]Remove sympathetic nerves
+[bt][nt]64809[nt]C[nt]Remove sympathetic nerves
+[bt][nt]64818[nt]C[nt]Remove sympathetic nerves
+[bt][nt]64866[nt]C[nt]Fusion of facial/other nerve
+[bt][nt]64868[nt]C[nt]Fusion of facial/other nerve
+[bt][nt]65273[nt]C[nt]Repair of eye wound
+[bt][nt]69155[nt]C[nt]Extensive ear/neck surgery
+[bt][nt]69535[nt]C[nt]Remove part of temporal bone
+[bt][nt]69554[nt]C[nt]Remove ear lesion
+[bt][nt]69950[nt]C[nt]Incise inner ear nerve
+[bt][nt]69970[nt]C[nt]Remove inner ear lesion
+[bt][nt]75900[nt]C[nt]Arterial catheter exchange
+[bt][nt]75952[nt]C[nt]Endovasc repair abdom aorta
+[bt][nt]75953[nt]C[nt]Abdom aneurysm endovas rpr
+[bt][nt]75954[nt]C[nt]Iliac aneurysm endovas rpr
+[bt][nt]92970[nt]C[nt]Cardioassist, internal
+[bt][nt]92971[nt]C[nt]Cardioassist, external
+[bt][nt]92975[nt]C[nt]Dissolve clot, heart vessel
+[bt][nt]92992[nt]C[nt]Revision of heart chamber
+[bt][nt]92993[nt]C[nt]Revision of heart chamber
+[bt][nt]99190[nt]C[nt]Special pump services
+[bt][nt]99191[nt]C[nt]Special pump services
+[bt][nt]99192[nt]C[nt]Special pump services
+[bt][nt]99251[nt]C[nt]Initial inpatient consult
+[bt][nt]99252[nt]C[nt]Initial inpatient consult
+[bt][nt]99253[nt]C[nt]Initial inpatient consult
+[bt][nt]99254[nt]C[nt]Initial inpatient consult
+[bt][nt]99255[nt]C[nt]Initial inpatient consult
+[bt][nt]99261[nt]C[nt]Follow-up inpatient consult
+[bt][nt]99262[nt]C[nt]Follow-up inpatient consult
+[bt][nt]99263[nt]C[nt]Follow-up inpatient consult
+[bt][nt]99293[nt]C[nt]Ped critical care, initial
+[bt][nt]99294[nt]C[nt]Ped critical care, subseq
+[bt][nt]99295[nt]C[nt]Neonatal critical care
+[bt][nt]99296[nt]C[nt]Neonatal critical care
+[bt][nt]99298[nt]C[nt]Neonatal critical care
+[bt][nt]99299[nt]C[nt]Ic, lbw infant 1500-2500 gm
+[bt][nt]99356[nt]C[nt]Prolonged service, inpatient
+[bt][nt]99357[nt]C[nt]Prolonged service, inpatient
+[bt][nt]99433[nt]C[nt]Normal newborn care/hospital
