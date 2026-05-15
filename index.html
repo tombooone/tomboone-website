@@ -334,6 +334,25 @@
       font-weight: 620;
     }
 
+    .keyword-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .keyword-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #f4f9fb;
+      color: #315066;
+      padding: 5px 9px;
+      font-size: 0.84rem;
+      font-weight: 680;
+    }
+
     .upload-box {
       display: grid;
       gap: 14px;
@@ -507,7 +526,7 @@
       <section id="homeView" class="view active" aria-labelledby="homeTitle">
         <div class="page-heading">
           <h1 id="homeTitle">Work Tools</h1>
-          <p class="lede">Open files only in tools you trust. This site is built to process data locally in your browser and avoid storing PHI.</p>
+          <p class="lede">Open files only in tools you trust. This site is built to process data locally in your browser to avoid storing PHI.</p>
         </div>
 
         <div class="tool-grid">
@@ -520,6 +539,17 @@
             </span>
             <span class="tool-title">CPT Audit Tool</span>
             <span class="tool-copy">Compare Epic report CPTs against panel CPTs and CMS inpatient-only codes.</span>
+          </button>
+
+          <button class="tool-tile" type="button" id="openEquipmentTool">
+            <span class="tool-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M4 7h16M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M10 12h4M10 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="tool-title">Equipment Request Audit</span>
+            <span class="tool-copy">Find cases where surgeon-requested Special Needs terms are missing from Equipment.</span>
           </button>
         </div>
       </section>
@@ -640,14 +670,108 @@
           </div>
         </section>
       </section>
+      <section id="equipmentView" class="view" aria-labelledby="equipmentTitle">
+        <div class="back-row">
+          <button class="ghost-button" type="button" id="equipmentBackHome">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Back to tools</span>
+          </button>
+        </div>
+
+        <div class="page-heading">
+          <h1 id="equipmentTitle">Equipment Request Audit</h1>
+          <p class="lede">Select an Epic Excel export to find rows where a requested Special Needs term is not present in Equipment. The audit runs in this browser tab without sending, uploading, or saving the file.</p>
+        </div>
+
+        <div class="workspace">
+          <aside class="panel instructions">
+            <h2>Instructions</h2>
+            <ol>
+              <li>Export the relevant Epic report as an .xlsx file.</li>
+              <li>Select the report file here and select Run audit.</li>
+              <li>The tool checks only Case #, Special Needs, and Equipment.</li>
+            </ol>
+            <h3>Terms audited</h3>
+            <div class="keyword-list" aria-label="Equipment audit terms">
+              <span class="keyword-pill">C-arm</span>
+              <span class="keyword-pill">Airo</span>
+              <span class="keyword-pill">Myosure fluid management</span>
+              <span class="keyword-pill">Fluid Management system</span>
+              <span class="keyword-pill">Fluent</span>
+              <span class="keyword-pill">Myosure</span>
+              <span class="keyword-pill">NIM nerve</span>
+              <span class="keyword-pill">microscope</span>
+              <span class="keyword-pill">gamma</span>
+              <span class="keyword-pill">neoprobe</span>
+              <span class="keyword-pill">geiger</span>
+              <span class="keyword-pill">trunode</span>
+            </div>
+            <div class="local-note">Matching is deterministic: case-insensitive plain-text substring matching only. No synonyms, inference, abbreviation expansion, or clinical interpretation are used.</div>
+          </aside>
+
+          <section class="panel">
+            <div class="upload-box">
+              <label class="file-input">
+                <span>
+                  <strong>Select Epic Excel report</strong><br>
+                  <input id="equipmentFileInput" type="file" accept=".xlsx,.xls,.xml,.html,.htm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/html,text/xml">
+                </span>
+              </label>
+              <div class="actions">
+                <button class="primary-button" type="button" id="runEquipmentAudit" disabled>Run audit</button>
+                <button class="secondary-button" type="button" id="clearEquipmentAudit" disabled>Clear</button>
+              </div>
+              <p id="equipmentStatus" class="status">Waiting for a spreadsheet.</p>
+            </div>
+          </section>
+        </div>
+
+        <section id="equipmentResultsPanel" class="panel" style="margin-top: 18px;" hidden>
+          <div class="summary-grid" aria-label="Equipment audit summary">
+            <div class="metric">
+              <span class="metric-value" id="equipmentTotalRows">0</span>
+              <span class="metric-label">Rows reviewed</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value" id="equipmentMissingCount">0</span>
+              <span class="metric-label">Rows included</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value" id="equipmentKeywordCount">12</span>
+              <span class="metric-label">Terms checked</span>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <h2>Equipment terms listed in Special Needs but missing from Equipment</h2>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Case #</th>
+                    <th>Special Needs</th>
+                    <th>Explanation</th>
+                  </tr>
+                </thead>
+                <tbody id="equipmentMissingTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </section>
     </main>
   </div>
 
   <script>
     const homeView = document.getElementById("homeView");
     const auditView = document.getElementById("auditView");
+    const equipmentView = document.getElementById("equipmentView");
     const openAuditTool = document.getElementById("openAuditTool");
+    const openEquipmentTool = document.getElementById("openEquipmentTool");
     const backHome = document.getElementById("backHome");
+    const equipmentBackHome = document.getElementById("equipmentBackHome");
     const fileInput = document.getElementById("fileInput");
     const runAudit = document.getElementById("runAudit");
     const clearAudit = document.getElementById("clearAudit");
@@ -658,12 +782,24 @@
     const totalRowsEl = document.getElementById("totalRows");
     const missingCountEl = document.getElementById("missingCount");
     const inpatientCountEl = document.getElementById("inpatientCount");
+    const equipmentFileInput = document.getElementById("equipmentFileInput");
+    const runEquipmentAudit = document.getElementById("runEquipmentAudit");
+    const clearEquipmentAudit = document.getElementById("clearEquipmentAudit");
+    const equipmentStatusEl = document.getElementById("equipmentStatus");
+    const equipmentResultsPanel = document.getElementById("equipmentResultsPanel");
+    const equipmentMissingTable = document.getElementById("equipmentMissingTable");
+    const equipmentTotalRowsEl = document.getElementById("equipmentTotalRows");
+    const equipmentMissingCountEl = document.getElementById("equipmentMissingCount");
+    const equipmentKeywordCountEl = document.getElementById("equipmentKeywordCount");
 
     let selectedFile = null;
+    let selectedEquipmentFile = null;
     let inpatientOnlyCodes = new Set();
 
     openAuditTool.addEventListener("click", () => showView("audit"));
+    openEquipmentTool.addEventListener("click", () => showView("equipment"));
     backHome.addEventListener("click", () => showView("home"));
+    equipmentBackHome.addEventListener("click", () => showView("home"));
     fileInput.addEventListener("change", () => {
       selectedFile = fileInput.files[0] || null;
       runAudit.disabled = !selectedFile;
@@ -671,19 +807,34 @@
       resultsPanel.hidden = true;
       setStatus(selectedFile ? `Ready: ${selectedFile.name}` : "Waiting for a spreadsheet.");
     });
+    equipmentFileInput.addEventListener("change", () => {
+      selectedEquipmentFile = equipmentFileInput.files[0] || null;
+      runEquipmentAudit.disabled = !selectedEquipmentFile;
+      clearEquipmentAudit.disabled = !selectedEquipmentFile;
+      equipmentResultsPanel.hidden = true;
+      setEquipmentStatus(selectedEquipmentFile ? `Ready: ${selectedEquipmentFile.name}` : "Waiting for a spreadsheet.");
+    });
     runAudit.addEventListener("click", auditSelectedFile);
     clearAudit.addEventListener("click", clearAuditState);
+    runEquipmentAudit.addEventListener("click", auditSelectedEquipmentFile);
+    clearEquipmentAudit.addEventListener("click", clearEquipmentAuditState);
 
     loadInpatientOnlyCodes();
 
     function showView(viewName) {
       homeView.classList.toggle("active", viewName === "home");
       auditView.classList.toggle("active", viewName === "audit");
+      equipmentView.classList.toggle("active", viewName === "equipment");
     }
 
     function setStatus(message, isError = false) {
       statusEl.textContent = message;
       statusEl.classList.toggle("error", isError);
+    }
+
+    function setEquipmentStatus(message, isError = false) {
+      equipmentStatusEl.textContent = message;
+      equipmentStatusEl.classList.toggle("error", isError);
     }
 
     function clearAuditState() {
@@ -695,6 +846,16 @@
       missingTable.textContent = "";
       inpatientTable.textContent = "";
       setStatus("Cleared. No spreadsheet data is retained in this page.");
+    }
+
+    function clearEquipmentAuditState() {
+      selectedEquipmentFile = null;
+      equipmentFileInput.value = "";
+      runEquipmentAudit.disabled = true;
+      clearEquipmentAudit.disabled = true;
+      equipmentResultsPanel.hidden = true;
+      equipmentMissingTable.textContent = "";
+      setEquipmentStatus("Cleared. No spreadsheet data is retained in this page.");
     }
 
     async function loadInpatientOnlyCodes() {
@@ -731,6 +892,24 @@
       }
     }
 
+    async function auditSelectedEquipmentFile() {
+      if (!selectedEquipmentFile) return;
+      runEquipmentAudit.disabled = true;
+      setEquipmentStatus("Reading spreadsheet locally...");
+
+      try {
+        const workbookRows = await readXlsxRows(selectedEquipmentFile);
+        const result = auditEquipmentRows(workbookRows);
+        renderEquipmentResults(result);
+        setEquipmentStatus(`Audit complete. Reviewed ${result.totalRows} data row${result.totalRows === 1 ? "" : "s"}.`);
+      } catch (error) {
+        console.error(error);
+        setEquipmentStatus(error.message || "Unable to process this spreadsheet.", true);
+      } finally {
+        runEquipmentAudit.disabled = !selectedEquipmentFile;
+      }
+    }
+
     const requiredColumns = [
       {
         key: "date",
@@ -756,6 +935,39 @@
         key: "patientClass",
         label: "Base Patient Class",
         accepted: ["base patient class", "patient class"]
+      }
+    ];
+
+    const equipmentKeywords = [
+      "C-arm",
+      "Airo",
+      "Myosure fluid management",
+      "Fluid Management system",
+      "Fluent",
+      "Myosure",
+      "NIM nerve",
+      "microscope",
+      "gamma",
+      "neoprobe",
+      "geiger",
+      "trunode"
+    ];
+
+    const equipmentRequiredColumns = [
+      {
+        key: "caseNumber",
+        label: "Case #",
+        accepted: ["case #", "case number", "sample_case_id", "case id"]
+      },
+      {
+        key: "specialNeeds",
+        label: "Special Needs",
+        accepted: ["special needs", "special need"]
+      },
+      {
+        key: "equipment",
+        label: "Equipment",
+        accepted: ["equipment"]
       }
     ];
 
@@ -824,6 +1036,104 @@
         inpatientRows: sortAuditRows(inpatientRows),
         errorMessages
       };
+    }
+
+    function auditEquipmentRows(rows) {
+      const populatedRows = rows.filter(hasData);
+
+      if (populatedRows.length < 2) {
+        throw new Error("The spreadsheet was readable, but no worksheet with data rows was found.");
+      }
+
+      const headerInfo = findHeaderInfoForColumns(populatedRows, equipmentRequiredColumns);
+      if (!headerInfo) throw new Error("Could not find the required equipment audit columns: Case #, Special Needs, and Equipment.");
+      const { indexes, headerRowIndex } = headerInfo;
+      const dataRows = populatedRows.slice(headerRowIndex + 1);
+      const includedRows = [];
+      const today = currentDateStamp();
+
+      dataRows.forEach((row) => {
+        const caseNumber = cell(row, indexes.caseNumber);
+        const specialNeeds = cell(row, indexes.specialNeeds);
+        const equipment = cell(row, indexes.equipment);
+        const foundTerms = findEquipmentTermsInText(specialNeeds);
+
+        if (!foundTerms.length) return;
+
+        const missingTerm = foundTerms.find((term) => !containsPlainText(equipment, term));
+        if (!missingTerm) return;
+
+        includedRows.push({
+          caseNumber,
+          specialNeeds,
+          explanation: `${missingTerm.matchedText} was listed in Special Needs but not added to Equipment TB ${today}`
+        });
+      });
+
+      return {
+        totalRows: dataRows.length,
+        includedRows
+      };
+    }
+
+    function renderEquipmentResults(result) {
+      equipmentTotalRowsEl.textContent = String(result.totalRows);
+      equipmentMissingCountEl.textContent = String(result.includedRows.length);
+      equipmentKeywordCountEl.textContent = String(equipmentKeywords.length);
+      equipmentMissingTable.textContent = "";
+
+      if (result.includedRows.length) {
+        result.includedRows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.append(td(row.caseNumber));
+          tr.append(td(row.specialNeeds));
+          tr.append(td(row.explanation));
+          equipmentMissingTable.append(tr);
+        });
+      } else {
+        equipmentMissingTable.append(emptyRow(3, "No matching equipment request discrepancies found."));
+      }
+
+      equipmentResultsPanel.hidden = false;
+    }
+
+    function findEquipmentTermsInText(text) {
+      const source = String(text || "");
+      const lowered = source.toLowerCase();
+      const matches = [];
+
+      equipmentKeywords.forEach((keyword, keywordIndex) => {
+        const search = keyword.toLowerCase();
+        let startIndex = 0;
+        let foundIndex = lowered.indexOf(search, startIndex);
+
+        while (foundIndex !== -1) {
+          matches.push({
+            keyword,
+            keywordIndex,
+            startIndex: foundIndex,
+            matchedText: source.slice(foundIndex, foundIndex + keyword.length)
+          });
+          startIndex = foundIndex + 1;
+          foundIndex = lowered.indexOf(search, startIndex);
+        }
+      });
+
+      return matches.sort((a, b) => {
+        if (a.startIndex !== b.startIndex) return a.startIndex - b.startIndex;
+        return a.keywordIndex - b.keywordIndex;
+      });
+    }
+
+    function containsPlainText(text, termMatch) {
+      return String(text || "").toLowerCase().includes(termMatch.keyword.toLowerCase());
+    }
+
+    function currentDateStamp() {
+      const now = new Date();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${month}/${day}/${now.getFullYear()}`;
     }
 
     function renderResults(result) {
@@ -928,14 +1238,18 @@
     }
 
     function findHeaderInfo(rows) {
+      return findHeaderInfoForColumns(rows, requiredColumns);
+    }
+
+    function findHeaderInfoForColumns(rows, columns) {
       const scanLimit = Math.min(rows.length, 40);
 
       for (let rowIndex = 0; rowIndex < scanLimit; rowIndex += 1) {
         const headers = rows[rowIndex].map((value) => normalizeHeader(value));
         const indexes = Object.fromEntries(
-          requiredColumns.map((column) => [column.key, findHeader(headers, column.accepted)])
+          columns.map((column) => [column.key, findHeader(headers, column.accepted)])
         );
-        const missingHeaders = requiredColumns.filter((column) => indexes[column.key] === -1);
+        const missingHeaders = columns.filter((column) => indexes[column.key] === -1);
 
         if (!missingHeaders.length) {
           return { indexes, headerRowIndex: rowIndex };
