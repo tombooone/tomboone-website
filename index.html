@@ -693,22 +693,22 @@
               <li>Select the report file here and select Run audit.</li>
               <li>The tool checks only Case #, Special Needs, and Equipment.</li>
             </ol>
-            <h3>Terms audited</h3>
+            <h3>Current audit terms:</h3>
             <div class="keyword-list" aria-label="Equipment audit terms">
               <span class="keyword-pill">C-arm</span>
               <span class="keyword-pill">Airo</span>
               <span class="keyword-pill">Myosure fluid management</span>
-              <span class="keyword-pill">Fluid Management system</span>
+              <span class="keyword-pill">Fluid management system</span>
               <span class="keyword-pill">Fluent</span>
               <span class="keyword-pill">Myosure</span>
               <span class="keyword-pill">NIM nerve</span>
-              <span class="keyword-pill">microscope</span>
-              <span class="keyword-pill">gamma</span>
-              <span class="keyword-pill">neoprobe</span>
-              <span class="keyword-pill">geiger</span>
-              <span class="keyword-pill">trunode</span>
+              <span class="keyword-pill">Microscope</span>
+              <span class="keyword-pill">Gamma</span>
+              <span class="keyword-pill">Neoprobe</span>
+              <span class="keyword-pill">Geiger</span>
+              <span class="keyword-pill">Trunode</span>
             </div>
-            <div class="local-note">Matching is deterministic: case-insensitive plain-text substring matching only. No synonyms, inference, abbreviation expansion, or clinical interpretation are used.</div>
+            <div class="local-note">Matching is deterministic: exact matching first, then fixed-threshold fuzzy matching for typos. No synonyms, inference, abbreviation expansion, or clinical interpretation are used.</div>
           </aside>
 
           <section class="panel">
@@ -942,7 +942,7 @@
       "C-arm",
       "Airo",
       "Myosure fluid management",
-      "Fluid Management system",
+      "Fluid management system",
       "Fluent",
       "Myosure",
       "NIM nerve",
@@ -1066,7 +1066,7 @@
         includedRows.push({
           caseNumber,
           specialNeeds,
-          explanation: `${missingTerm.matchedText} was listed in Special Needs but not added to Equipment TB ${today}`
+          explanation: `${displayEquipmentTerm(missingTerm.keyword)} was listed in Special Needs but not added to Equipment TB ${today}`
         });
       });
 
@@ -1238,6 +1238,24 @@
       }
 
       return previous[target.length];
+    }
+
+    function displayEquipmentTerm(keyword) {
+      const displayTerms = {
+        "C-arm": "C-arm",
+        "Airo": "Airo",
+        "Myosure fluid management": "Myosure fluid management",
+        "Fluid management system": "Fluid management system",
+        "Fluent": "Fluent",
+        "Myosure": "Myosure",
+        "NIM nerve": "NIM nerve",
+        "microscope": "Microscope",
+        "gamma": "Gamma",
+        "neoprobe": "Neoprobe",
+        "geiger": "Geiger",
+        "trunode": "Trunode"
+      };
+      return displayTerms[keyword] || String(keyword || "");
     }
 
     function currentDateStamp() {
