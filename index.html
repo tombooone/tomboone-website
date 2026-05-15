@@ -1060,7 +1060,7 @@
 
         if (!foundTerms.length) return;
 
-        const missingTerm = foundTerms.find((term) => !containsPlainText(equipment, term));
+        const missingTerm = foundTerms.find((term) => !containsEquipmentTerm(equipment, term));
         if (!missingTerm) return;
 
         includedRows.push({
@@ -1112,10 +1112,25 @@
             keyword,
             keywordIndex,
             startIndex: foundIndex,
-            matchedText: source.slice(foundIndex, foundIndex + keyword.length)
+            matchedText: source.slice(foundIndex, foundIndex + keyword.length),
+            matchType: "exact"
           });
           startIndex = foundIndex + 1;
           foundIndex = lowered.indexOf(search, startIndex);
+        }
+
+        if (!matches.some((match) => match.keywordIndex === keywordIndex)) {
+          const fuzzyMatch = findBestFuzzyEquipmentMatch(source, keyword);
+          if (fuzzyMatch) {
+            matches.push({
+              keyword,
+              keywordIndex,
+              startIndex: fuzzyMatch.startIndex,
+              matchedText: fuzzyMatch.matchedText,
+              matchType: "fuzzy",
+              score: fuzzyMatch.score
+            });
+          }
         }
       });
 
@@ -1125,8 +1140,104 @@
       });
     }
 
-    function containsPlainText(text, termMatch) {
-      return String(text || "").toLowerCase().includes(termMatch.keyword.toLowerCase());
+    function containsEquipmentTerm(text, termMatch) {
+      const source = String(text || "");
+      if (source.toLowerCase().includes(termMatch.keyword.toLowerCase())) return true;
+      return Boolean(findBestFuzzyEquipmentMatch(source, termMatch.keyword));
+    }
+
+    function findBestFuzzyEquipmentMatch(text, keyword) {
+      const source = String(text || "");
+      const keywordTokens = normalizedTokens(keyword);
+      const sourceTokens = tokenSpans(source);
+
+      if (!keywordTokens.length || !sourceTokens.length) return null;
+
+      const target = keywordTokens.join(" ");
+      const windowSize = keywordTokens.length;
+      const maxWindowSize = Math.min(sourceTokens.length, windowSize + 1);
+      const minWindowSize = Math.max(1, windowSize - 1);
+      let best = null;
+
+      for (let size = minWindowSize; size <= maxWindowSize; size += 1) {
+        for (let start = 0; start <= sourceTokens.length - size; start += 1) {
+          const windowTokens = sourceTokens.slice(start, start + size);
+          const candidate = windowTokens.map((token) => token.normalized).join(" ");
+          const score = similarityScore(candidate, target);
+          const threshold = fuzzyThreshold(target);
+
+          if (score >= threshold && (!best || score > best.score || (score === best.score && windowTokens[0].startIndex < best.startIndex))) {
+            best = {
+              score,
+              startIndex: windowTokens[0].startIndex,
+              matchedText: source.slice(windowTokens[0].startIndex, windowTokens[windowTokens.length - 1].endIndex)
+            };
+          }
+        }
+      }
+
+      return best;
+    }
+
+    function normalizedTokens(text) {
+      return String(text || "")
+        .normalize("NFKC")
+        .toLowerCase()
+        .replace(/[\u2010-\u2015]/g, "-")
+        .match(/[a-z0-9]+/g) || [];
+    }
+
+    function tokenSpans(text) {
+      const source = String(text || "");
+      const tokens = [];
+      const pattern = /[A-Za-z0-9]+/g;
+      let match;
+
+      while ((match = pattern.exec(source)) !== null) {
+        tokens.push({
+          normalized: match[0].toLowerCase(),
+          startIndex: match.index,
+          endIndex: match.index + match[0].length
+        });
+      }
+
+      return tokens;
+    }
+
+    function similarityScore(candidate, target) {
+      if (!candidate && !target) return 1;
+      if (!candidate || !target) return 0;
+      const distance = levenshteinDistance(candidate, target);
+      return 1 - distance / Math.max(candidate.length, target.length);
+    }
+
+    function fuzzyThreshold(target) {
+      const compactLength = String(target || "").replace(/\s+/g, "").length;
+      if (compactLength <= 4) return 0.9;
+      if (compactLength <= 8) return 0.84;
+      return 0.78;
+    }
+
+    function levenshteinDistance(a, b) {
+      const source = String(a || "");
+      const target = String(b || "");
+      const previous = Array.from({ length: target.length + 1 }, (_, index) => index);
+      const current = Array(target.length + 1).fill(0);
+
+      for (let i = 1; i <= source.length; i += 1) {
+        current[0] = i;
+        for (let j = 1; j <= target.length; j += 1) {
+          const cost = source[i - 1] === target[j - 1] ? 0 : 1;
+          current[j] = Math.min(
+            current[j - 1] + 1,
+            previous[j] + 1,
+            previous[j - 1] + cost
+          );
+        }
+        previous.splice(0, previous.length, ...current);
+      }
+
+      return previous[target.length];
     }
 
     function currentDateStamp() {
