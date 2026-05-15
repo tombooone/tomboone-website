@@ -704,34 +704,50 @@
       }
     }
 
+    const requiredColumns = [
+      {
+        key: "date",
+        label: "Date",
+        accepted: ["date", "surgery date", "procedure date"]
+      },
+      {
+        key: "caseNumber",
+        label: "Case #",
+        accepted: ["case #", "case number", "sample_case_id", "case id"]
+      },
+      {
+        key: "insuranceInfo",
+        label: "Insurance Info",
+        accepted: ["insurance info"]
+      },
+      {
+        key: "panelCodes",
+        label: "CPT Codes - All Panels",
+        accepted: ["cpt codes - all panels", "cpt codes all panels"]
+      },
+      {
+        key: "patientClass",
+        label: "Base Patient Class",
+        accepted: ["base patient class", "patient class"]
+      }
+    ];
+
     function auditRows(rows) {
       if (rows.length < 2) {
         throw new Error("The spreadsheet does not appear to contain any data rows.");
       }
 
-      const headers = rows[0].map((value) => normalizeHeader(value));
-      const indexes = {
-        date: findHeader(headers, ["date"]),
-        caseNumber: findHeader(headers, ["case #", "case number", "sample_case_id", "case id"]),
-        insuranceInfo: findHeader(headers, ["insurance info"]),
-        panelCodes: findHeader(headers, ["cpt codes - all panels"]),
-        patientClass: findHeader(headers, ["base patient class", "patient class"])
-      };
-
-      const missingHeaders = Object.entries(indexes)
-        .filter(([, index]) => index === -1)
-        .map(([key]) => key);
-
-      if (missingHeaders.length) {
-        throw new Error(`Missing required column(s): ${missingHeaders.join(", ")}.`);
-      }
+      const headerInfo = findHeaderInfo(rows);
+      if (!headerInfo) throw new Error("Could not find the required audit columns in this spreadsheet.");
+      const { indexes, headerRowIndex } = headerInfo;
 
       const missingRows = [];
       const inpatientRows = [];
       const errorMessages = [];
+      const dataRows = rows.slice(headerRowIndex + 1);
 
-      rows.slice(1).forEach((row, offset) => {
-        const spreadsheetRowNumber = offset + 2;
+      dataRows.forEach((row, offset) => {
+        const spreadsheetRowNumber = offset + headerRowIndex + 2;
         const caseNumber = cell(row, indexes.caseNumber) || `Row ${spreadsheetRowNumber}`;
         const dateValue = parseDateCell(cell(row, indexes.date));
         const insuranceInfo = cell(row, indexes.insuranceInfo);
@@ -768,7 +784,7 @@
       });
 
       return {
-        totalRows: rows.length - 1,
+        totalRows: dataRows.length,
         missingRows: sortAuditRows(missingRows),
         inpatientRows: sortAuditRows(inpatientRows),
         errorMessages
@@ -874,12 +890,44 @@
       return row;
     }
 
+    function findHeaderInfo(rows) {
+      const scanLimit = Math.min(rows.length, 40);
+
+      for (let rowIndex = 0; rowIndex < scanLimit; rowIndex += 1) {
+        const headers = rows[rowIndex].map((value) => normalizeHeader(value));
+        const indexes = Object.fromEntries(
+          requiredColumns.map((column) => [column.key, findHeader(headers, column.accepted)])
+        );
+        const missingHeaders = requiredColumns.filter((column) => indexes[column.key] === -1);
+
+        if (!missingHeaders.length) {
+          return { indexes, headerRowIndex: rowIndex };
+        }
+      }
+
+      return null;
+    }
+
     function normalizeHeader(value) {
-      return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+      return String(value || "")
+        .normalize("NFKC")
+        .trim()
+        .replace(/[\u2010-\u2015]/g, "-")
+        .replace(/[_/]+/g, " ")
+        .replace(/\s+/g, " ")
+        .toLowerCase();
     }
 
     function findHeader(headers, accepted) {
-      return headers.findIndex((header) => accepted.includes(header));
+      const normalizedAccepted = accepted.map((value) => normalizeHeader(value));
+      const exactIndex = headers.findIndex((header) => normalizedAccepted.includes(header));
+      if (exactIndex !== -1) return exactIndex;
+
+      return headers.findIndex((header) => {
+        return normalizedAccepted.some((acceptedHeader) => {
+          return acceptedHeader.length > 3 && header.includes(acceptedHeader);
+        });
+      });
     }
 
     function cell(row, index) {
@@ -966,16 +1014,23 @@
       const bytes = new Uint8Array(await file.arrayBuffer());
       const entries = await unzipEntries(bytes);
       const sharedStrings = parseSharedStrings(textEntry(entries, "xl/sharedStrings.xml", true));
-      const sheetPath = pickFirstSheetPath(entries);
-      const sheetXml = textEntry(entries, sheetPath);
-      return parseSheetRows(sheetXml, sharedStrings);
+      const worksheetPaths = [...entries.keys()]
+        .filter((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))
+        .sort((a, b) => sheetNumber(a) - sheetNumber(b));
+
+      if (!worksheetPaths.length) throw new Error("No worksheet was found in this XLSX file.");
+
+      const parsedSheets = worksheetPaths.map((sheetPath) => {
+        return parseSheetRows(textEntry(entries, sheetPath), sharedStrings);
+      });
+      const matchingSheet = parsedSheets.find((rows) => findHeaderInfo(rows));
+
+      return matchingSheet || parsedSheets[0];
     }
 
-    function pickFirstSheetPath(entries) {
-      if (entries.has("xl/worksheets/sheet1.xml")) return "xl/worksheets/sheet1.xml";
-      const firstSheet = [...entries.keys()].find((name) => /^xl\/worksheets\/sheet\d+\.xml$/.test(name));
-      if (!firstSheet) throw new Error("No worksheet was found in this XLSX file.");
-      return firstSheet;
+    function sheetNumber(sheetPath) {
+      const match = sheetPath.match(/sheet(\d+)\.xml$/);
+      return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
     }
 
     function textEntry(entries, name, optional = false) {
