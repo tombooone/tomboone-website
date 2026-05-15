@@ -1245,7 +1245,8 @@
       const scanLimit = Math.min(rows.length, 40);
 
       for (let rowIndex = 0; rowIndex < scanLimit; rowIndex += 1) {
-        const headers = rows[rowIndex].map((value) => normalizeHeader(value));
+        const row = rows[rowIndex] || [];
+        const headers = Array.from({ length: row.length }, (_, index) => normalizeHeader(row[index]));
         const indexes = Object.fromEntries(
           columns.map((column) => [column.key, findHeader(headers, column.accepted)])
         );
@@ -1275,10 +1276,11 @@
 
     function findHeader(headers, accepted) {
       const normalizedAccepted = accepted.map((value) => normalizeHeader(value));
-      const exactIndex = headers.findIndex((header) => normalizedAccepted.includes(header));
+      const safeHeaders = Array.from(headers || [], (header) => normalizeHeader(header));
+      const exactIndex = safeHeaders.findIndex((header) => normalizedAccepted.includes(header));
       if (exactIndex !== -1) return exactIndex;
 
-      return headers.findIndex((header) => {
+      return safeHeaders.findIndex((header) => {
         return normalizedAccepted.some((acceptedHeader) => {
           return acceptedHeader.length > 3 && header.includes(acceptedHeader);
         });
