@@ -29,7 +29,9 @@
     body {
       margin: 0;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f6fbfd;
+      background:
+        linear-gradient(180deg, #eef8fb 0, rgba(246, 251, 253, 0) 344px),
+        #f6fbfd;
       color: var(--ink);
       line-height: 1.5;
     }
@@ -126,9 +128,6 @@
     main {
       flex: 1;
       padding: 34px 0 56px;
-      background:
-        linear-gradient(180deg, #eef8fb 0, rgba(246, 251, 253, 0) 280px),
-        #f6fbfd;
     }
 
     .view {
@@ -492,7 +491,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 15, 2026">v1.1.2 · 2026-05-15</span>
+          <span class="version-badge" title="Site version deployed May 15, 2026">v1.1.3 · 2026-05-15</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -537,14 +536,14 @@
 
         <div class="page-heading">
           <h1 id="auditTitle">CPT Audit Tool</h1>
-          <p class="lede">Run the Epic report CPMC CPT Audit [51177697], export it as an .xlsx file, and upload it here. The audit runs in this browser tab without sending or saving the file.</p>
+          <p class="lede">Run the Epic report "CPMC CPT Audit [51177697]", export it as an .xlsx file, and upload it here. The audit runs in this browser tab without sending or saving the file.</p>
         </div>
 
         <div class="workspace">
           <aside class="panel instructions">
             <h2>Instructions</h2>
             <ol>
-              <li>Run the Epic report CPMC CPT Audit [51177697] and export it as an .xlsx file.</li>
+              <li>Run the Epic report "CPMC CPT Audit [51177697]" and export it as an .xlsx file.</li>
               <li>Upload the report here and select Run audit.</li>
             </ol>
             <div class="trust-badges" aria-label="Privacy safeguards">
@@ -613,7 +612,9 @@
                   <tr>
                     <th>Date</th>
                     <th>Case #</th>
-                    <th>Missing CPT Codes</th>
+                    <th>CPT Codes on Order</th>
+                    <th>CPT Codes on Case</th>
+                    <th>Missing Codes</th>
                     <th>Explanation</th>
                   </tr>
                 </thead>
@@ -782,7 +783,8 @@
         const panelInfo = cell(row, indexes.panelCodes);
         const patientClass = cell(row, indexes.patientClass).toUpperCase();
         const orderCodes = extractCodes(insuranceInfo);
-        const panelCodes = new Set(extractCodes(panelInfo).codes);
+        const panelCodesList = extractCodes(panelInfo).codes;
+        const panelCodes = new Set(panelCodesList);
         const missingCodes = orderCodes.codes.filter((code) => !panelCodes.has(code));
         const inpatientMatches = orderCodes.codes.filter((code) => inpatientOnlyCodes.has(code));
 
@@ -791,6 +793,8 @@
             date: dateValue.display,
             sortDate: dateValue.sort,
             caseNumber,
+            orderCodes: orderCodes.codes,
+            caseCodes: panelCodesList,
             missingCodes,
             explanation: codeSentence(missingCodes, "on the surgical order but have not been associated with any of the procedure panels")
           });
@@ -832,19 +836,21 @@
           const tr = document.createElement("tr");
           tr.append(td(row.date));
           tr.append(td(row.caseNumber));
+          tr.append(codeListTd(row.orderCodes));
+          tr.append(codeListTd(row.caseCodes));
           tr.append(codeListTd(row.missingCodes));
           tr.append(explanationTd(row.explanation, row.missingCodes));
           missingTable.append(tr);
         });
       } else {
-        missingTable.append(emptyRow(4, "No missing CPT discrepancies found."));
+        missingTable.append(emptyRow(6, "No missing CPT discrepancies found."));
       }
 
       result.errorMessages.forEach((message) => {
         const tr = document.createElement("tr");
         tr.className = "error-row";
         const cell = td(`Error check: ${message}`);
-        cell.colSpan = 4;
+        cell.colSpan = 6;
         tr.append(cell);
         missingTable.append(tr);
       });
