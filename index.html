@@ -796,7 +796,10 @@
             orderCodes: orderCodes.codes,
             caseCodes: panelCodesList,
             missingCodes,
-            explanation: codeSentence(missingCodes, "on the surgical order but have not been associated with any of the procedure panels")
+            explanation: codeSentence(missingCodes, {
+              singular: "on the surgical order but has not been associated with any of the procedure panels",
+              plural: "on the surgical order but have not been associated with any of the procedure panels"
+            })
           });
         }
 
@@ -1009,7 +1012,10 @@
     function codeSentence(codes, ending) {
       const verb = codes.length === 1 ? "is" : "are";
       const label = codes.length === 1 ? "CPT code" : "CPT codes";
-      return `${label} ${codes.join(", ")} ${verb} ${ending}.`;
+      const sentenceEnding = typeof ending === "string"
+        ? ending
+        : ending[codes.length === 1 ? "singular" : "plural"];
+      return `${label} ${codes.join(", ")} ${verb} ${sentenceEnding}.`;
     }
 
     function isOutpatient(patientClass) {
