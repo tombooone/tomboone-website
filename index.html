@@ -492,7 +492,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 15, 2026">v1.1.0 · 2026-05-15</span>
+          <span class="version-badge" title="Site version deployed May 15, 2026">v1.1.1 · 2026-05-15</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -759,18 +759,20 @@
     ];
 
     function auditRows(rows) {
-      if (rows.length < 2) {
-        throw new Error("The spreadsheet does not appear to contain any data rows.");
+      const populatedRows = rows.filter(hasData);
+
+      if (populatedRows.length < 2) {
+        throw new Error("The spreadsheet was readable, but no worksheet with data rows was found.");
       }
 
-      const headerInfo = findHeaderInfo(rows);
+      const headerInfo = findHeaderInfo(populatedRows);
       if (!headerInfo) throw new Error("Could not find the required audit columns in this spreadsheet.");
       const { indexes, headerRowIndex } = headerInfo;
 
       const missingRows = [];
       const inpatientRows = [];
       const errorMessages = [];
-      const dataRows = rows.slice(headerRowIndex + 1);
+      const dataRows = populatedRows.slice(headerRowIndex + 1);
 
       dataRows.forEach((row, offset) => {
         const spreadsheetRowNumber = offset + headerRowIndex + 2;
@@ -934,6 +936,10 @@
       return null;
     }
 
+    function hasData(row) {
+      return row.some((value) => String(value ?? "").trim() !== "");
+    }
+
     function normalizeHeader(value) {
       return String(value || "")
         .normalize("NFKC")
@@ -1047,11 +1053,27 @@
       if (!worksheetPaths.length) throw new Error("No worksheet was found in this XLSX file.");
 
       const parsedSheets = worksheetPaths.map((sheetPath) => {
-        return parseSheetRows(textEntry(entries, sheetPath), sharedStrings);
+        const rows = parseSheetRows(textEntry(entries, sheetPath), sharedStrings);
+        return {
+          path: sheetPath,
+          rows,
+          populatedRowCount: rows.filter(hasData).length
+        };
       });
-      const matchingSheet = parsedSheets.find((rows) => findHeaderInfo(rows));
+      const matchingSheet = parsedSheets.find((sheet) => findHeaderInfo(sheet.rows.filter(hasData)));
 
-      return matchingSheet || parsedSheets[0];
+      if (matchingSheet) return matchingSheet.rows;
+
+      const sheetWithMostRows = parsedSheets
+        .filter((sheet) => sheet.populatedRowCount > 0)
+        .sort((a, b) => b.populatedRowCount - a.populatedRowCount)[0];
+
+      if (sheetWithMostRows) return sheetWithMostRows.rows;
+
+      const sheetSummary = parsedSheets
+        .map((sheet) => `${sheet.path.replace("xl/worksheets/", "")}: ${sheet.populatedRowCount} rows`)
+        .join(", ");
+      throw new Error(`No worksheet data rows were found. Sheets checked: ${sheetSummary}.`);
     }
 
     function sheetNumber(sheetPath) {
