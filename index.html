@@ -90,6 +90,25 @@
       font-weight: 800;
     }
 
+    .topbar-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .version-badge {
+      color: #4c6579;
+      background: #f4f9fb;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
     .privacy-pill {
       display: flex;
       align-items: center;
@@ -446,6 +465,10 @@
         padding: 12px 0;
       }
 
+      .topbar-meta {
+        justify-content: flex-start;
+      }
+
       .privacy-pill {
         white-space: normal;
       }
@@ -468,12 +491,15 @@
           <span class="brand-mark">TB</span>
           <span>PHI-Safe Work Tools</span>
         </div>
-        <div class="privacy-pill" title="Files are processed locally in this browser session.">
-          <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
-            <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          <span>Local browser processing only</span>
+        <div class="topbar-meta">
+          <span class="version-badge" title="Site version deployed May 15, 2026">v1.1.0 · 2026-05-15</span>
+          <div class="privacy-pill" title="Files are processed locally in this browser session.">
+            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span>Local browser processing only</span>
+          </div>
         </div>
       </div>
     </header>
