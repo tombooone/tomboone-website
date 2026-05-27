@@ -78,7 +78,6 @@
       gap: 10px;
       color: var(--brand-dark);
       font-weight: 800;
-      letter-spacing: 0;
     }
 
     .brand-mark {
@@ -146,20 +145,17 @@
       margin: 0 0 8px;
       font-size: clamp(2rem, 4vw, 3.4rem);
       line-height: 1.05;
-      letter-spacing: 0;
-      color: #17324d;
+      color: var(--ink);
     }
 
     h2 {
       margin: 0 0 12px;
       font-size: 1.2rem;
-      letter-spacing: 0;
     }
 
     h3 {
       margin: 0 0 10px;
       font-size: 1rem;
-      letter-spacing: 0;
     }
 
     p {
@@ -274,6 +270,10 @@
       border-radius: 8px;
       padding: 20px;
       box-shadow: var(--shadow);
+    }
+
+    .result-panel {
+      margin-top: 18px;
     }
 
     .instructions {
@@ -448,7 +448,7 @@
     th {
       background: #eaf5f8;
       font-size: 0.84rem;
-      color: #17324d;
+      color: var(--ink);
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -613,12 +613,12 @@
                 <button class="primary-button" type="button" id="runAudit" disabled>Run audit</button>
                 <button class="secondary-button" type="button" id="clearAudit" disabled>Clear</button>
               </div>
-              <p id="status" class="status">Waiting for a spreadsheet.</p>
+              <p id="status" class="status" role="status">Waiting for a spreadsheet.</p>
             </div>
           </section>
         </div>
 
-        <section id="resultsPanel" class="panel" style="margin-top: 18px;" hidden>
+        <section id="resultsPanel" class="panel result-panel" hidden>
           <div class="summary-grid" aria-label="Audit summary">
             <div class="metric">
               <span class="metric-value" id="totalRows">0</span>
@@ -723,12 +723,12 @@
                 <button class="primary-button" type="button" id="runEquipmentAudit" disabled>Run audit</button>
                 <button class="secondary-button" type="button" id="clearEquipmentAudit" disabled>Clear</button>
               </div>
-              <p id="equipmentStatus" class="status">Waiting for a spreadsheet.</p>
+              <p id="equipmentStatus" class="status" role="status">Waiting for a spreadsheet.</p>
             </div>
           </section>
         </div>
 
-        <section id="equipmentResultsPanel" class="panel" style="margin-top: 18px;" hidden>
+        <section id="equipmentResultsPanel" class="panel result-panel" hidden>
           <div class="summary-grid" aria-label="Equipment audit summary">
             <div class="metric">
               <span class="metric-value" id="equipmentTotalRows">0</span>
@@ -739,7 +739,7 @@
               <span class="metric-label">Rows included</span>
             </div>
             <div class="metric">
-              <span class="metric-value" id="equipmentKeywordCount">12</span>
+              <span class="metric-value" id="equipmentKeywordCount">0</span>
               <span class="metric-label">Terms checked</span>
             </div>
           </div>
@@ -765,151 +765,6 @@
   </div>
 
   <script>
-    const homeView = document.getElementById("homeView");
-    const auditView = document.getElementById("auditView");
-    const equipmentView = document.getElementById("equipmentView");
-    const openAuditTool = document.getElementById("openAuditTool");
-    const openEquipmentTool = document.getElementById("openEquipmentTool");
-    const backHome = document.getElementById("backHome");
-    const equipmentBackHome = document.getElementById("equipmentBackHome");
-    const fileInput = document.getElementById("fileInput");
-    const runAudit = document.getElementById("runAudit");
-    const clearAudit = document.getElementById("clearAudit");
-    const statusEl = document.getElementById("status");
-    const resultsPanel = document.getElementById("resultsPanel");
-    const missingTable = document.getElementById("missingTable");
-    const inpatientTable = document.getElementById("inpatientTable");
-    const totalRowsEl = document.getElementById("totalRows");
-    const missingCountEl = document.getElementById("missingCount");
-    const inpatientCountEl = document.getElementById("inpatientCount");
-    const equipmentFileInput = document.getElementById("equipmentFileInput");
-    const runEquipmentAudit = document.getElementById("runEquipmentAudit");
-    const clearEquipmentAudit = document.getElementById("clearEquipmentAudit");
-    const equipmentStatusEl = document.getElementById("equipmentStatus");
-    const equipmentResultsPanel = document.getElementById("equipmentResultsPanel");
-    const equipmentMissingTable = document.getElementById("equipmentMissingTable");
-    const equipmentTotalRowsEl = document.getElementById("equipmentTotalRows");
-    const equipmentMissingCountEl = document.getElementById("equipmentMissingCount");
-    const equipmentKeywordCountEl = document.getElementById("equipmentKeywordCount");
-
-    let selectedFile = null;
-    let selectedEquipmentFile = null;
-    let inpatientOnlyCodes = new Set();
-
-    openAuditTool.addEventListener("click", () => showView("audit"));
-    openEquipmentTool.addEventListener("click", () => showView("equipment"));
-    backHome.addEventListener("click", () => showView("home"));
-    equipmentBackHome.addEventListener("click", () => showView("home"));
-    fileInput.addEventListener("change", () => {
-      selectedFile = fileInput.files[0] || null;
-      runAudit.disabled = !selectedFile;
-      clearAudit.disabled = !selectedFile;
-      resultsPanel.hidden = true;
-      setStatus(selectedFile ? `Ready: ${selectedFile.name}` : "Waiting for a spreadsheet.");
-    });
-    equipmentFileInput.addEventListener("change", () => {
-      selectedEquipmentFile = equipmentFileInput.files[0] || null;
-      runEquipmentAudit.disabled = !selectedEquipmentFile;
-      clearEquipmentAudit.disabled = !selectedEquipmentFile;
-      equipmentResultsPanel.hidden = true;
-      setEquipmentStatus(selectedEquipmentFile ? `Ready: ${selectedEquipmentFile.name}` : "Waiting for a spreadsheet.");
-    });
-    runAudit.addEventListener("click", auditSelectedFile);
-    clearAudit.addEventListener("click", clearAuditState);
-    runEquipmentAudit.addEventListener("click", auditSelectedEquipmentFile);
-    clearEquipmentAudit.addEventListener("click", clearEquipmentAuditState);
-
-    loadInpatientOnlyCodes();
-
-    function showView(viewName) {
-      homeView.classList.toggle("active", viewName === "home");
-      auditView.classList.toggle("active", viewName === "audit");
-      equipmentView.classList.toggle("active", viewName === "equipment");
-    }
-
-    function setStatus(message, isError = false) {
-      statusEl.textContent = message;
-      statusEl.classList.toggle("error", isError);
-    }
-
-    function setEquipmentStatus(message, isError = false) {
-      equipmentStatusEl.textContent = message;
-      equipmentStatusEl.classList.toggle("error", isError);
-    }
-
-    function clearAuditState() {
-      selectedFile = null;
-      fileInput.value = "";
-      runAudit.disabled = true;
-      clearAudit.disabled = true;
-      resultsPanel.hidden = true;
-      missingTable.textContent = "";
-      inpatientTable.textContent = "";
-      setStatus("Cleared. No spreadsheet data is retained in this page.");
-    }
-
-    function clearEquipmentAuditState() {
-      selectedEquipmentFile = null;
-      equipmentFileInput.value = "";
-      runEquipmentAudit.disabled = true;
-      clearEquipmentAudit.disabled = true;
-      equipmentResultsPanel.hidden = true;
-      equipmentMissingTable.textContent = "";
-      setEquipmentStatus("Cleared. No spreadsheet data is retained in this page.");
-    }
-
-    async function loadInpatientOnlyCodes() {
-      try {
-        const response = await fetch("AddendumE2004.txt", { cache: "no-store" });
-        if (!response.ok) throw new Error("CMS addendum file was not found.");
-        const text = await response.text();
-        const codes = text.match(/\[nt\]([A-Z]?\d{4}[A-Z]?|\d{5})\[nt\]/g) || [];
-        inpatientOnlyCodes = new Set(codes.map((item) => item.replace(/\[nt\]/g, "").toUpperCase()));
-      } catch (error) {
-        setStatus("CMS Addendum E could not be loaded. Start a local web server before running the audit.", true);
-      }
-    }
-
-    async function auditSelectedFile() {
-      if (!selectedFile) return;
-      runAudit.disabled = true;
-      setStatus("Reading spreadsheet locally...");
-
-      try {
-        if (!inpatientOnlyCodes.size) {
-          await loadInpatientOnlyCodes();
-        }
-
-        const workbookRows = await readXlsxRows(selectedFile);
-        const result = auditRows(workbookRows);
-        renderResults(result);
-        setStatus(`Audit complete. Reviewed ${result.totalRows} data row${result.totalRows === 1 ? "" : "s"}.`);
-      } catch (error) {
-        console.error(error);
-        setStatus(error.message || "Unable to process this spreadsheet.", true);
-      } finally {
-        runAudit.disabled = !selectedFile;
-      }
-    }
-
-    async function auditSelectedEquipmentFile() {
-      if (!selectedEquipmentFile) return;
-      runEquipmentAudit.disabled = true;
-      setEquipmentStatus("Reading spreadsheet locally...");
-
-      try {
-        const workbookRows = await readXlsxRows(selectedEquipmentFile);
-        const result = auditEquipmentRows(workbookRows);
-        renderEquipmentResults(result);
-        setEquipmentStatus(`Audit complete. Reviewed ${result.totalRows} data row${result.totalRows === 1 ? "" : "s"}.`);
-      } catch (error) {
-        console.error(error);
-        setEquipmentStatus(error.message || "Unable to process this spreadsheet.", true);
-      } finally {
-        runEquipmentAudit.disabled = !selectedEquipmentFile;
-      }
-    }
-
     const requiredColumns = [
       {
         key: "date",
@@ -946,11 +801,11 @@
       "Fluent",
       "Myosure",
       "NIM nerve",
-      "microscope",
-      "gamma",
-      "neoprobe",
-      "geiger",
-      "trunode"
+      "Microscope",
+      "Gamma",
+      "Neoprobe",
+      "Geiger",
+      "Trunode"
     ];
 
     const equipmentRequiredColumns = [
@@ -971,6 +826,136 @@
       }
     ];
 
+    // DOM refs for navigation
+    const homeView = document.getElementById("homeView");
+    const auditView = document.getElementById("auditView");
+    const equipmentView = document.getElementById("equipmentView");
+
+    // DOM refs for CPT audit results (used by renderResults)
+    const missingTable = document.getElementById("missingTable");
+    const inpatientTable = document.getElementById("inpatientTable");
+    const totalRowsEl = document.getElementById("totalRows");
+    const missingCountEl = document.getElementById("missingCount");
+    const inpatientCountEl = document.getElementById("inpatientCount");
+
+    // DOM refs for equipment audit results (used by renderEquipmentResults)
+    const equipmentMissingTable = document.getElementById("equipmentMissingTable");
+    const equipmentTotalRowsEl = document.getElementById("equipmentTotalRows");
+    const equipmentMissingCountEl = document.getElementById("equipmentMissingCount");
+    const equipmentKeywordCountEl = document.getElementById("equipmentKeywordCount");
+
+    let inpatientOnlyCodes = new Set();
+
+    equipmentKeywordCountEl.textContent = String(equipmentKeywords.length);
+
+    document.getElementById("openAuditTool").addEventListener("click", () => showView("audit"));
+    document.getElementById("openEquipmentTool").addEventListener("click", () => showView("equipment"));
+    document.getElementById("backHome").addEventListener("click", () => showView("home"));
+    document.getElementById("equipmentBackHome").addEventListener("click", () => showView("home"));
+
+    wireAuditTool({
+      fileInput: document.getElementById("fileInput"),
+      runButton: document.getElementById("runAudit"),
+      clearButton: document.getElementById("clearAudit"),
+      statusEl: document.getElementById("status"),
+      resultsPanel: document.getElementById("resultsPanel"),
+      tables: [missingTable, inpatientTable],
+      onRun: async (file, setStatus) => {
+        if (!inpatientOnlyCodes.size) {
+          await loadInpatientOnlyCodes();
+          if (!inpatientOnlyCodes.size) {
+            throw new Error("CMS Addendum E could not be loaded. Start a local web server before running the audit.");
+          }
+        }
+        const rows = await readXlsxRows(file, requiredColumns);
+        const result = auditRows(rows);
+        renderResults(result);
+        setStatus(`Audit complete. Reviewed ${result.totalRows} data row${result.totalRows === 1 ? "" : "s"}.`);
+      }
+    });
+
+    wireAuditTool({
+      fileInput: document.getElementById("equipmentFileInput"),
+      runButton: document.getElementById("runEquipmentAudit"),
+      clearButton: document.getElementById("clearEquipmentAudit"),
+      statusEl: document.getElementById("equipmentStatus"),
+      resultsPanel: document.getElementById("equipmentResultsPanel"),
+      tables: [equipmentMissingTable],
+      onRun: async (file, setStatus) => {
+        const rows = await readXlsxRows(file, equipmentRequiredColumns);
+        const result = auditEquipmentRows(rows);
+        renderEquipmentResults(result);
+        setStatus(`Audit complete. Reviewed ${result.totalRows} data row${result.totalRows === 1 ? "" : "s"}.`);
+      }
+    });
+
+    loadInpatientOnlyCodes();
+
+    function showView(viewName) {
+      homeView.classList.toggle("active", viewName === "home");
+      auditView.classList.toggle("active", viewName === "audit");
+      equipmentView.classList.toggle("active", viewName === "equipment");
+    }
+
+    function wireAuditTool({ fileInput, runButton, clearButton, statusEl, resultsPanel, tables, onRun }) {
+      let selectedFile = null;
+
+      function setStatus(message, isError = false) {
+        statusEl.textContent = message;
+        statusEl.classList.toggle("error", isError);
+      }
+
+      fileInput.addEventListener("change", () => {
+        selectedFile = fileInput.files[0] || null;
+        runButton.disabled = !selectedFile;
+        clearButton.disabled = !selectedFile;
+        resultsPanel.hidden = true;
+        setStatus(selectedFile ? `Ready: ${selectedFile.name}` : "Waiting for a spreadsheet.");
+      });
+
+      runButton.addEventListener("click", async () => {
+        if (!selectedFile) return;
+        runButton.disabled = true;
+        setStatus("Reading spreadsheet locally...");
+        try {
+          await onRun(selectedFile, setStatus);
+          resultsPanel.hidden = false;
+          const firstHeading = resultsPanel.querySelector("h2");
+          if (firstHeading) {
+            firstHeading.tabIndex = -1;
+            firstHeading.focus();
+          }
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || "Unable to process this spreadsheet.", true);
+        } finally {
+          runButton.disabled = !selectedFile;
+        }
+      });
+
+      clearButton.addEventListener("click", () => {
+        selectedFile = null;
+        fileInput.value = "";
+        runButton.disabled = true;
+        clearButton.disabled = true;
+        resultsPanel.hidden = true;
+        tables.forEach((t) => { t.textContent = ""; });
+        setStatus("Cleared. No spreadsheet data is retained in this page.");
+      });
+    }
+
+    async function loadInpatientOnlyCodes() {
+      try {
+        const response = await fetch("AddendumE2004.txt", { cache: "no-store" });
+        if (!response.ok) throw new Error("CMS addendum file was not found.");
+        const text = await response.text();
+        const codes = text.match(/\[nt\]([A-Z]?\d{4}[A-Z]?|\d{5})\[nt\]/g) || [];
+        inpatientOnlyCodes = new Set(codes.map((item) => item.replace(/\[nt\]/g, "").toUpperCase()));
+      } catch (error) {
+        console.error("CMS Addendum E could not be loaded:", error);
+      }
+    }
+
     function auditRows(rows) {
       const populatedRows = rows.filter(hasData);
 
@@ -978,7 +963,7 @@
         throw new Error("The spreadsheet was readable, but no worksheet with data rows was found.");
       }
 
-      const headerInfo = findHeaderInfo(populatedRows);
+      const headerInfo = findHeaderInfoForColumns(populatedRows, requiredColumns);
       if (!headerInfo) throw new Error("Could not find the required audit columns in this spreadsheet.");
       const { indexes, headerRowIndex } = headerInfo;
 
@@ -1008,10 +993,11 @@
             orderCodes: orderCodes.codes,
             caseCodes: panelCodesList,
             missingCodes,
-            explanation: codeSentence(missingCodes, {
-              singular: "on the surgical order but has not been associated with any of the procedure panels",
-              plural: "on the surgical order but have not been associated with any of the procedure panels"
-            })
+            explanation: codeSentence(
+              missingCodes,
+              "on the surgical order but has not been associated with any of the procedure panels",
+              "on the surgical order but have not been associated with any of the procedure panels"
+            )
           });
         }
 
@@ -1066,7 +1052,7 @@
         includedRows.push({
           caseNumber,
           specialNeeds,
-          explanation: `${displayEquipmentTerm(missingTerm.keyword)} was listed in Special Needs but not added to Equipment TB ${today}`
+          explanation: `${missingTerm.keyword} was listed in Special Needs but not added to Equipment TB ${today}`
         });
       });
 
@@ -1074,6 +1060,51 @@
         totalRows: dataRows.length,
         includedRows
       };
+    }
+
+    function renderResults(result) {
+      totalRowsEl.textContent = String(result.totalRows);
+      missingCountEl.textContent = String(result.missingRows.length);
+      inpatientCountEl.textContent = String(result.inpatientRows.length);
+
+      missingTable.textContent = "";
+      inpatientTable.textContent = "";
+
+      if (result.missingRows.length) {
+        result.missingRows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.append(td(row.date));
+          tr.append(td(row.caseNumber));
+          tr.append(codeListTd(row.orderCodes));
+          tr.append(codeListTd(row.caseCodes));
+          tr.append(codeListTd(row.missingCodes));
+          tr.append(explanationTd(row.explanation, row.missingCodes));
+          missingTable.append(tr);
+        });
+      } else {
+        missingTable.append(emptyRow(6, "No missing CPT discrepancies found."));
+      }
+
+      result.errorMessages.forEach((message) => {
+        const tr = document.createElement("tr");
+        tr.className = "error-row";
+        const errorCell = td(`Error check: ${message}`);
+        errorCell.colSpan = 6;
+        tr.append(errorCell);
+        missingTable.append(tr);
+      });
+
+      if (result.inpatientRows.length) {
+        result.inpatientRows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.append(td(row.date));
+          tr.append(td(row.caseNumber));
+          tr.append(explanationTd(row.explanation, row.codes));
+          inpatientTable.append(tr);
+        });
+      } else {
+        inpatientTable.append(emptyRow(3, "No CMS inpatient-only CPT codes found on outpatient cases."));
+      }
     }
 
     function renderEquipmentResults(result) {
@@ -1093,8 +1124,6 @@
       } else {
         equipmentMissingTable.append(emptyRow(3, "No matching equipment request discrepancies found."));
       }
-
-      equipmentResultsPanel.hidden = false;
     }
 
     function findEquipmentTermsInText(text) {
@@ -1183,7 +1212,7 @@
       return String(text || "")
         .normalize("NFKC")
         .toLowerCase()
-        .replace(/[\u2010-\u2015]/g, "-")
+        .replace(/[‐-―]/g, "-")
         .match(/[a-z0-9]+/g) || [];
     }
 
@@ -1221,41 +1250,19 @@
     function levenshteinDistance(a, b) {
       const source = String(a || "");
       const target = String(b || "");
-      const previous = Array.from({ length: target.length + 1 }, (_, index) => index);
-      const current = Array(target.length + 1).fill(0);
+      let prev = Array.from({ length: target.length + 1 }, (_, i) => i);
+      let curr = new Array(target.length + 1);
 
       for (let i = 1; i <= source.length; i += 1) {
-        current[0] = i;
+        curr[0] = i;
         for (let j = 1; j <= target.length; j += 1) {
           const cost = source[i - 1] === target[j - 1] ? 0 : 1;
-          current[j] = Math.min(
-            current[j - 1] + 1,
-            previous[j] + 1,
-            previous[j - 1] + cost
-          );
+          curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
         }
-        previous.splice(0, previous.length, ...current);
+        [prev, curr] = [curr, prev];
       }
 
-      return previous[target.length];
-    }
-
-    function displayEquipmentTerm(keyword) {
-      const displayTerms = {
-        "C-arm": "C-arm",
-        "Airo": "Airo",
-        "Myosure fluid management": "Myosure fluid management",
-        "Fluid management system": "Fluid management system",
-        "Fluent": "Fluent",
-        "Myosure": "Myosure",
-        "NIM nerve": "NIM nerve",
-        "microscope": "Microscope",
-        "gamma": "Gamma",
-        "neoprobe": "Neoprobe",
-        "geiger": "Geiger",
-        "trunode": "Trunode"
-      };
-      return displayTerms[keyword] || String(keyword || "");
+      return prev[target.length];
     }
 
     function currentDateStamp() {
@@ -1265,71 +1272,24 @@
       return `${month}/${day}/${now.getFullYear()}`;
     }
 
-    function renderResults(result) {
-      totalRowsEl.textContent = String(result.totalRows);
-      missingCountEl.textContent = String(result.missingRows.length);
-      inpatientCountEl.textContent = String(result.inpatientRows.length);
-
-      missingTable.textContent = "";
-      inpatientTable.textContent = "";
-
-      if (result.missingRows.length) {
-        result.missingRows.forEach((row) => {
-          const tr = document.createElement("tr");
-          tr.append(td(row.date));
-          tr.append(td(row.caseNumber));
-          tr.append(codeListTd(row.orderCodes));
-          tr.append(codeListTd(row.caseCodes));
-          tr.append(codeListTd(row.missingCodes));
-          tr.append(explanationTd(row.explanation, row.missingCodes));
-          missingTable.append(tr);
-        });
-      } else {
-        missingTable.append(emptyRow(6, "No missing CPT discrepancies found."));
-      }
-
-      result.errorMessages.forEach((message) => {
-        const tr = document.createElement("tr");
-        tr.className = "error-row";
-        const cell = td(`Error check: ${message}`);
-        cell.colSpan = 6;
-        tr.append(cell);
-        missingTable.append(tr);
-      });
-
-      if (result.inpatientRows.length) {
-        result.inpatientRows.forEach((row) => {
-          const tr = document.createElement("tr");
-          tr.append(td(row.date));
-          tr.append(td(row.caseNumber));
-          tr.append(explanationTd(row.explanation, row.codes));
-          inpatientTable.append(tr);
-        });
-      } else {
-        inpatientTable.append(emptyRow(3, "No CMS inpatient-only CPT codes found on outpatient cases."));
-      }
-
-      resultsPanel.hidden = false;
-    }
-
     function td(text, className = "") {
-      const cell = document.createElement("td");
-      cell.textContent = text || "";
-      if (className) cell.className = className;
-      return cell;
+      const el = document.createElement("td");
+      el.textContent = text || "";
+      if (className) el.className = className;
+      return el;
     }
 
     function codeListTd(codes) {
-      const cell = document.createElement("td");
-      cell.className = "code-list";
-      appendCodeText(cell, codes.join(", "), codes);
-      return cell;
+      const el = document.createElement("td");
+      el.className = "code-list";
+      appendCodeText(el, codes.join(", "), codes);
+      return el;
     }
 
     function explanationTd(text, codes) {
-      const cell = document.createElement("td");
-      appendCodeText(cell, text, codes);
-      return cell;
+      const el = document.createElement("td");
+      appendCodeText(el, text, codes);
+      return el;
     }
 
     function appendCodeText(container, text, codes) {
@@ -1360,14 +1320,10 @@
     function emptyRow(colSpan, message) {
       const row = document.createElement("tr");
       row.className = "empty-row";
-      const cell = td(message);
-      cell.colSpan = colSpan;
-      row.append(cell);
+      const emptyCell = td(message);
+      emptyCell.colSpan = colSpan;
+      row.append(emptyCell);
       return row;
-    }
-
-    function findHeaderInfo(rows) {
-      return findHeaderInfoForColumns(rows, requiredColumns);
     }
 
     function findHeaderInfoForColumns(rows, columns) {
@@ -1397,7 +1353,7 @@
       return String(value || "")
         .normalize("NFKC")
         .trim()
-        .replace(/[\u2010-\u2015]/g, "-")
+        .replace(/[‐-―]/g, "-")
         .replace(/[_/]+/g, " ")
         .replace(/\s+/g, " ")
         .toLowerCase();
@@ -1454,13 +1410,11 @@
       return !beforePattern.test(before) && !/[A-Z0-9]/.test(after);
     }
 
-    function codeSentence(codes, ending) {
+    function codeSentence(codes, singularEnding, pluralEnding) {
       const verb = codes.length === 1 ? "is" : "are";
       const label = codes.length === 1 ? "CPT code" : "CPT codes";
-      const sentenceEnding = typeof ending === "string"
-        ? ending
-        : ending[codes.length === 1 ? "singular" : "plural"];
-      return `${label} ${codes.join(", ")} ${verb} ${sentenceEnding}.`;
+      const ending = codes.length === 1 ? singularEnding : (pluralEnding ?? singularEnding);
+      return `${label} ${codes.join(", ")} ${verb} ${ending}.`;
     }
 
     function isOutpatient(patientClass) {
@@ -1499,7 +1453,7 @@
       return new Date(dateInfo.getUTCFullYear(), dateInfo.getUTCMonth(), dateInfo.getUTCDate());
     }
 
-    async function readXlsxRows(file) {
+    async function readXlsxRows(file, columnDefs) {
       const bytes = new Uint8Array(await file.arrayBuffer());
       if (!isZipFile(bytes)) return parseTextWorkbook(new TextDecoder().decode(bytes));
 
@@ -1519,7 +1473,7 @@
           populatedRowCount: rows.filter(hasData).length
         };
       });
-      const matchingSheet = parsedSheets.find((sheet) => findHeaderInfo(sheet.rows.filter(hasData)));
+      const matchingSheet = parsedSheets.find((sheet) => findHeaderInfoForColumns(sheet.rows.filter(hasData), columnDefs));
 
       if (matchingSheet) return matchingSheet.rows;
 
@@ -1659,7 +1613,8 @@
       try {
         const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
         return new Uint8Array(await new Response(stream).arrayBuffer());
-      } catch (error) {
+      } catch (firstError) {
+        console.error("deflate-raw failed, retrying with deflate:", firstError);
         const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream("deflate"));
         return new Uint8Array(await new Response(stream).arrayBuffer());
       }
