@@ -573,13 +573,29 @@
       min-width: 210px;
     }
 
-    .gantt-cal-title {
+    .gantt-cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .gantt-cal-month-label {
       font-size: 0.87rem;
       font-weight: 700;
       color: var(--ink);
-      text-align: center;
-      margin-bottom: 8px;
     }
+    .gantt-cal-nav-btn {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 1px 8px;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    .gantt-cal-nav-btn:hover:not(:disabled) { color: var(--ink); background: var(--soft); }
+    .gantt-cal-nav-btn:disabled { opacity: 0.3; cursor: default; }
 
     .gantt-cal-dow {
       display: grid;
@@ -650,7 +666,7 @@
     }
 
     .gantt-room-label {
-      height: 44px;
+      height: 52px;
       display: flex;
       align-items: center;
       padding: 0 8px;
@@ -680,7 +696,7 @@
 
     .gantt-lane {
       position: relative;
-      height: 44px;
+      height: 52px;
       border-bottom: 1px solid var(--line);
       background: #ffffff;
     }
@@ -706,18 +722,14 @@
     .gantt-case-block {
       position: absolute;
       top: 5px;
-      height: 34px;
+      height: 42px;
       border-radius: 4px;
-      background: #e8d5b0;
       border-left: 4px solid transparent;
       cursor: pointer;
       overflow: hidden;
       display: flex;
-      align-items: center;
-      padding: 0 5px;
-      font-size: 0.72rem;
-      color: #3d2f00;
-      font-weight: 500;
+      flex-direction: row;
+      align-items: stretch;
       box-sizing: border-box;
       z-index: 2;
     }
@@ -728,6 +740,46 @@
     .gantt-viol-4 { border-left-color: #60a5fa; }
     .gantt-viol-5 { border-left-color: #9ca3af; }
 
+    .gantt-block-prep    { background: #c4a97d; flex-shrink: 0; }
+    .gantt-block-cleanup { background: #c4a97d; flex-shrink: 0; }
+    .gantt-block-proc {
+      background: #e8d5b0;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      padding: 1px 4px;
+    }
+    .gantt-block-surgeon {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #3d2f00;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .gantt-block-proctxt {
+      font-size: 0.63rem;
+      font-weight: 400;
+      color: #5a4520;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .gantt-block-casenum {
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: #3d2f00;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+
     .gantt-tooltip {
       position: fixed;
       z-index: 9000;
@@ -737,13 +789,19 @@
       padding: 10px 13px;
       font-size: 0.8rem;
       line-height: 1.45;
-      max-width: 280px;
+      max-width: 320px;
       pointer-events: none;
       box-shadow: 0 4px 14px rgba(0,0,0,0.35);
     }
     .gantt-tooltip strong { display: block; margin-bottom: 3px; font-size: 0.85rem; }
     .gantt-tooltip .tt-row { color: #c7dde8; }
-    .gantt-tooltip .tt-viol { color: #fca5a5; margin-top: 5px; font-weight: 600; }
+    .gantt-tooltip .tt-viol-header {
+      color: #fca5a5; margin-top: 7px; font-weight: 700;
+      border-top: 1px solid rgba(255,255,255,0.12); padding-top: 6px;
+    }
+    .gantt-tooltip .tt-viol-item { margin-top: 5px; }
+    .gantt-tooltip .tt-viol-label { color: #ffd0a0; font-weight: 600; font-size: 0.78rem; }
+    .gantt-tooltip .tt-viol-expl  { color: #c7dde8; font-size: 0.75rem; line-height: 1.35; margin-top: 1px; }
 
     .gantt-sidebar {
       position: fixed;
@@ -818,7 +876,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.1 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.2 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -2311,7 +2369,9 @@
       { key: "service",    label: "Service",         accepted: ["service"] },
       { key: "surgeon",    label: "Lead Surgeon",    accepted: ["lead surgeon", "surgeon"] },
       { key: "projStart",  label: "Proj Start Time", accepted: ["proj start time"] },
-      { key: "projEnd",    label: "Proj End Time",   accepted: ["proj end time"] }
+      { key: "projEnd",    label: "Proj End Time",   accepted: ["proj end time"] },
+      { key: "procStart",  label: "Proc Start",      accepted: ["proc start"] },
+      { key: "procEnd",    label: "Proc End",         accepted: ["proc end"] }
     ];
 
     const roomRulesRequiredColumns = [
@@ -2567,24 +2627,29 @@
         const rawEnd         = cell(row, indexes.projEnd);
         const startMin       = parseTimeToMinutes(rawStart);
         const endMin         = parseTimeToMinutes(rawEnd);
+        const procStartMin   = parseTimeToMinutes(cell(row, indexes.procStart));
+        const procEndMin     = parseTimeToMinutes(cell(row, indexes.procEnd));
 
         if (_debugCount < 5) {
           console.log(`[Gantt debug] case=${caseNumber} room=${normalizedRoom} ` +
-            `rawStart=${JSON.stringify(rawStart)} → ${startMin} ` +
-            `rawEnd=${JSON.stringify(rawEnd)} → ${endMin}`);
+            `projStart=${JSON.stringify(rawStart)} → ${startMin}  ` +
+            `procStart → ${procStartMin}  procEnd → ${procEndMin}  ` +
+            `projEnd=${JSON.stringify(rawEnd)} → ${endMin}`);
           _debugCount++;
         }
 
         cases.push({
           caseNumber,
-          date:       dateValue.display,
-          sortDate:   dateValue.sort,
-          room:       normalizedRoom || rawRoom,
-          procedures: proceduresText,
-          surgeon:    surgeonName,
-          service:    serviceText,
+          date:         dateValue.display,
+          sortDate:     dateValue.sort,
+          room:         normalizedRoom || rawRoom,
+          procedures:   proceduresText,
+          surgeon:      surgeonName,
+          service:      serviceText,
           startMin,
-          endMin
+          endMin,
+          procStartMin,
+          procEndMin
         });
 
         const ctx = { equipmentText, proceduresText, patientAge, serviceText, surgeonId, laterality };
@@ -2674,6 +2739,14 @@
       });
     }
 
+    // ── Calendar navigation state ─────────────────────────────────────────────
+    let _calMonths    = [];
+    let _calMonthIdx  = 0;
+    let _calDateMap   = new Map();
+    let _calOnSelect  = null;
+    let _calContainer = null;
+    let _calActiveSd  = null;
+
     // ── Gantt constants ───────────────────────────────────────────────────────
     const GANTT_START_MIN = 390;   // 06:30
     const GANTT_END_MIN   = 1140;  // 19:00
@@ -2717,97 +2790,128 @@
       // Build selection handler (shared by calendar cells)
       const ganttCalendar = document.getElementById("ganttCalendar");
       function selectDay(cell, sd) {
+        _calActiveSd = sd;
         ganttCalendar.querySelectorAll(".gantt-cal-cell").forEach((el) => el.classList.remove("active"));
-        cell.classList.add("active");
+        if (cell) cell.classList.add("active");
         buildDailyGantt(sd, byDate.get(sd), result.violations);
       }
 
-      // Build monthly calendar
-      buildCalendar(ganttCalendar, sortedDates, byDate, dayStatus, selectDay);
+      // Build monthly calendar (single-month view with prev/next nav)
+      buildCalendar(ganttCalendar, sortedDates, dayStatus, selectDay);
 
-      // Auto-select earliest date cell
+      // Auto-select earliest date
       const firstSd = sortedDates[0];
+      selectDay(null, firstSd);
       for (const el of ganttCalendar.querySelectorAll("[data-sd]")) {
         if (Number(el.dataset.sd) === firstSd) { el.classList.add("active"); break; }
       }
-      buildDailyGantt(firstSd, byDate.get(firstSd), result.violations);
     }
 
     // ── buildCalendar ─────────────────────────────────────────────────────────
-    function buildCalendar(container, sortedDates, byDate, dayStatus, onSelect) {
-      container.textContent = "";
-      const DOW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    function buildCalendar(container, sortedDates, dayStatus, onSelect) {
+      // Initialise navigation state
+      _calContainer = container;
+      _calOnSelect  = onSelect;
+      _calActiveSd  = null;
 
-      // Build a Set of Date keys "YYYY-M-D" for quick lookup
-      const dateColorMap = new Map(); // "YYYY-M-D" → { sd, color }
+      _calDateMap = new Map();
       sortedDates.forEach((sd) => {
         const d = new Date(sd);
-        dateColorMap.set(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`,
-                         { sd, color: dayStatus.get(sd) });
+        _calDateMap.set(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`,
+                        { sd, color: dayStatus.get(sd) });
       });
 
-      // Group into year-month buckets
-      const months = [];
+      _calMonths = [];
       sortedDates.forEach((sd) => {
         const d = new Date(sd);
         const key = d.getFullYear() * 100 + d.getMonth();
-        if (!months.length || months[months.length - 1].key !== key) {
-          months.push({ key, year: d.getFullYear(), month: d.getMonth() });
+        if (!_calMonths.length || _calMonths[_calMonths.length - 1].key !== key) {
+          _calMonths.push({ key, year: d.getFullYear(), month: d.getMonth() });
         }
       });
 
-      months.forEach(({ year, month }) => {
-        const monthEl = document.createElement("div");
-        monthEl.className = "gantt-cal-month";
+      _calMonthIdx = 0;
+      renderCalendarMonth();
+    }
 
-        // Title
-        const title = document.createElement("div");
-        title.className = "gantt-cal-title";
-        title.textContent = new Date(year, month, 1)
-          .toLocaleString("en-US", { month: "long", year: "numeric" });
-        monthEl.append(title);
+    function renderCalendarMonth() {
+      const container = _calContainer;
+      container.textContent = "";
 
-        // Day-of-week headers
-        const dowRow = document.createElement("div");
-        dowRow.className = "gantt-cal-dow";
-        DOW.forEach((d) => {
-          const s = document.createElement("span");
-          s.textContent = d;
-          dowRow.append(s);
-        });
-        monthEl.append(dowRow);
+      if (!_calMonths.length) return;
+      const { year, month } = _calMonths[_calMonthIdx];
+      const DOW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-        // Day grid
-        const grid = document.createElement("div");
-        grid.className = "gantt-cal-grid";
+      const monthEl = document.createElement("div");
+      monthEl.className = "gantt-cal-month";
 
-        const firstDow    = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
+      // Navigation row
+      const nav = document.createElement("div");
+      nav.className = "gantt-cal-nav";
 
-        for (let i = 0; i < firstDow; i++) {
-          const empty = document.createElement("div");
-          empty.className = "gantt-cal-cell gantt-cal-cell-empty";
-          empty.textContent = "0";
-          grid.append(empty);
-        }
+      const prevBtn = document.createElement("button");
+      prevBtn.type = "button";
+      prevBtn.className = "gantt-cal-nav-btn";
+      prevBtn.textContent = "‹";
+      prevBtn.disabled = _calMonthIdx === 0;
+      prevBtn.addEventListener("click", () => { _calMonthIdx--; renderCalendarMonth(); });
 
-        for (let day = 1; day <= daysInMonth; day++) {
-          const info = dateColorMap.get(`${year}-${month}-${day}`);
-          const el = document.createElement("div");
-          el.textContent = String(day);
-          if (info) {
-            el.className = `gantt-cal-cell gantt-cal-cell-${info.color}`;
-            el.dataset.sd = String(info.sd);
-            el.addEventListener("click", () => onSelect(el, info.sd));
-          } else {
-            el.className = "gantt-cal-cell gantt-cal-cell-no-case";
-          }
-          grid.append(el);
-        }
+      const lbl = document.createElement("span");
+      lbl.className = "gantt-cal-month-label";
+      lbl.textContent = new Date(year, month, 1)
+        .toLocaleString("en-US", { month: "long", year: "numeric" });
 
-        monthEl.append(grid);
-        container.append(monthEl);
+      const nextBtn = document.createElement("button");
+      nextBtn.type = "button";
+      nextBtn.className = "gantt-cal-nav-btn";
+      nextBtn.textContent = "›";
+      nextBtn.disabled = _calMonthIdx === _calMonths.length - 1;
+      nextBtn.addEventListener("click", () => { _calMonthIdx++; renderCalendarMonth(); });
+
+      nav.append(prevBtn, lbl, nextBtn);
+      monthEl.append(nav);
+
+      // Day-of-week headers
+      const dowRow = document.createElement("div");
+      dowRow.className = "gantt-cal-dow";
+      DOW.forEach((d) => {
+        const s = document.createElement("span");
+        s.textContent = d;
+        dowRow.append(s);
       });
+      monthEl.append(dowRow);
+
+      // Day grid
+      const grid = document.createElement("div");
+      grid.className = "gantt-cal-grid";
+
+      const firstDow    = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDow; i++) {
+        const empty = document.createElement("div");
+        empty.className = "gantt-cal-cell gantt-cal-cell-empty";
+        empty.textContent = "0";
+        grid.append(empty);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const info = _calDateMap.get(`${year}-${month}-${day}`);
+        const el = document.createElement("div");
+        el.textContent = String(day);
+        if (info) {
+          el.className = `gantt-cal-cell gantt-cal-cell-${info.color}`;
+          el.dataset.sd = String(info.sd);
+          if (info.sd === _calActiveSd) el.classList.add("active");
+          el.addEventListener("click", () => _calOnSelect(el, info.sd));
+        } else {
+          el.className = "gantt-cal-cell gantt-cal-cell-no-case";
+        }
+        grid.append(el);
+      }
+
+      monthEl.append(grid);
+      container.append(monthEl);
     }
 
     // ── buildDailyGantt ───────────────────────────────────────────────────────
@@ -2872,23 +2976,59 @@
         ref.style.left = ((refMin - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
         lane.append(ref);
 
-        // Case blocks
+        // Case blocks — 3-segment Epic-snapboard style
         cases.filter((c) => c.room === room && c.startMin !== null && c.endMin !== null)
           .forEach((c) => {
-            const viols    = violsByCaseNum.get(c.caseNumber) || [];
-            const minTier  = viols.length ? Math.min(...viols.map((v) => v.ruleTier)) : null;
-            const clampS   = Math.max(c.startMin, GANTT_START_MIN);
-            const clampE   = Math.min(c.endMin,   GANTT_END_MIN);
+            const viols   = violsByCaseNum.get(c.caseNumber) || [];
+            const minTier = viols.length ? Math.min(...viols.map((v) => v.ruleTier)) : null;
+            const clampS  = Math.max(c.startMin, GANTT_START_MIN);
+            const clampE  = Math.min(c.endMin,   GANTT_END_MIN);
             if (clampS >= clampE) return;
-            const left  = (clampS - GANTT_START_MIN) * GANTT_PX_MIN;
-            const width = Math.max((clampE - clampS) * GANTT_PX_MIN, GANTT_MIN_W);
+
+            const blockW  = Math.max((clampE - clampS) * GANTT_PX_MIN, GANTT_MIN_W);
+            const rangeMin = clampE - clampS;
+
+            // Pixel widths for setup/cleanup bands
+            const procS  = c.procStartMin !== null ? Math.max(c.procStartMin, clampS) : clampS;
+            const procE  = c.procEndMin   !== null ? Math.min(c.procEndMin,   clampE) : clampE;
+            const prepPx  = rangeMin > 0 ? ((procS - clampS) / rangeMin) * blockW : 0;
+            const cleanPx = rangeMin > 0 ? ((clampE - procE) / rangeMin) * blockW : 0;
 
             const block = document.createElement("div");
             block.className = "gantt-case-block" +
               (minTier !== null ? " gantt-viol-" + minTier : "");
-            block.style.left  = left + "px";
-            block.style.width = width + "px";
-            block.textContent = String(c.caseNumber);
+            block.style.left  = ((clampS - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
+            block.style.width = blockW + "px";
+
+            if (prepPx > 0.5) {
+              const prep = document.createElement("div");
+              prep.className = "gantt-block-prep";
+              prep.style.width = Math.round(prepPx) + "px";
+              block.append(prep);
+            }
+
+            const proc = document.createElement("div");
+            proc.className = "gantt-block-proc";
+            const s1 = document.createElement("div");
+            s1.className = "gantt-block-surgeon";
+            s1.textContent = c.surgeon || "";
+            const s2 = document.createElement("div");
+            s2.className = "gantt-block-proctxt";
+            s2.textContent = c.procedures
+              ? c.procedures.replace(/\s*\(.*?\)\s*/g, " ").split(/\s*[;,]\s*/)[0].trim()
+              : "";
+            const s3 = document.createElement("div");
+            s3.className = "gantt-block-casenum";
+            s3.textContent = String(c.caseNumber);
+            proc.append(s1, s2, s3);
+            block.append(proc);
+
+            if (cleanPx > 0.5) {
+              const cleanup = document.createElement("div");
+              cleanup.className = "gantt-block-cleanup";
+              cleanup.style.width = Math.round(cleanPx) + "px";
+              block.append(cleanup);
+            }
 
             block.addEventListener("mouseenter", (e) => showGanttTooltip(e, c, viols));
             block.addEventListener("mousemove",  moveGanttTooltip);
@@ -2926,10 +3066,22 @@
       }
 
       if (viols.length) {
-        const vDiv = document.createElement("div");
-        vDiv.className = "tt-viol";
-        vDiv.textContent = viols.length + " violation" + (viols.length > 1 ? "s" : "");
-        tt.append(vDiv);
+        const hdr = document.createElement("div");
+        hdr.className = "tt-viol-header";
+        hdr.textContent = viols.length + " violation" + (viols.length > 1 ? "s" : "");
+        tt.append(hdr);
+        viols.forEach((v) => {
+          const item  = document.createElement("div");
+          item.className = "tt-viol-item";
+          const lbl   = document.createElement("div");
+          lbl.className = "tt-viol-label";
+          lbl.textContent = v.ruleLabel;
+          const expl  = document.createElement("div");
+          expl.className = "tt-viol-expl";
+          expl.textContent = v.explanation;
+          item.append(lbl, expl);
+          tt.append(item);
+        });
       }
 
       tt.hidden = false;
