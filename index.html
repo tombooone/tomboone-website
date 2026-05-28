@@ -561,25 +561,72 @@
     .gantt-calendar {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 18px;
+      gap: 16px;
+      margin-bottom: 20px;
     }
 
-    .gantt-day-tile {
-      border: 2px solid transparent;
+    .gantt-cal-month {
+      border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 7px 14px;
-      font-size: 0.84rem;
-      font-weight: 600;
-      cursor: pointer;
-      background: none;
-      transition: opacity 0.12s;
+      padding: 12px 14px 14px;
+      background: var(--panel);
+      min-width: 210px;
     }
-    .gantt-day-tile:hover { opacity: 0.75; }
-    .gantt-day-tile.active { box-shadow: 0 0 0 2px var(--brand); }
-    .gantt-day-tile-green { background: #e8f6f3; color: #065f46; border-color: #6ee7b7; }
-    .gantt-day-tile-amber { background: #fff8e1; color: #92400e; border-color: #fcd34d; }
-    .gantt-day-tile-red   { background: #fce8e8; color: #b91c1c; border-color: #fca5a5; }
+
+    .gantt-cal-title {
+      font-size: 0.87rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .gantt-cal-dow {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 3px;
+    }
+    .gantt-cal-dow span {
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 2px 0;
+    }
+
+    .gantt-cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+
+    .gantt-cal-cell {
+      text-align: center;
+      border-radius: 5px;
+      padding: 4px 2px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      line-height: 1.4;
+      border: 1px solid transparent;
+    }
+    .gantt-cal-cell-empty { color: transparent; pointer-events: none; }
+    .gantt-cal-cell-no-case { color: #c4cdd5; pointer-events: none; }
+    .gantt-cal-cell-green {
+      background: #e8f6f3; color: #065f46;
+      border-color: #6ee7b7; cursor: pointer;
+    }
+    .gantt-cal-cell-amber {
+      background: #fff8e1; color: #92400e;
+      border-color: #fcd34d; cursor: pointer;
+    }
+    .gantt-cal-cell-red {
+      background: #fce8e8; color: #b91c1c;
+      border-color: #fca5a5; cursor: pointer;
+    }
+    .gantt-cal-cell-green:hover,
+    .gantt-cal-cell-amber:hover,
+    .gantt-cal-cell-red:hover { opacity: 0.72; }
+    .gantt-cal-cell.active { box-shadow: 0 0 0 2px var(--brand); font-weight: 700; }
 
     .gantt-container {
       display: flex;
@@ -771,7 +818,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.0 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.1 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -2346,28 +2393,46 @@
 
     function parseTimeToMinutes(value) {
       if (value === null || value === undefined || value === "") return null;
+
+      // Native JS number: pure fraction (0.3125) OR datetime serial (46209.3125).
+      // Use modulo to extract the time-of-day portion in both cases.
       if (typeof value === "number") {
-        // Excel serial fraction for a time-of-day within a day (0–1)
-        if (value > 0 && value < 2) return Math.round(value * 1440);
+        if (value >= 0) return Math.round((value % 1) * 1440);
         return null;
       }
+
       const s = String(value).trim();
-      // HH:MM[:SS] [AM/PM]
-      const mHM = s.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)?$/i);
-      if (mHM) {
-        let h = parseInt(mHM[1], 10);
-        const min = parseInt(mHM[2], 10);
-        const ampm = mHM[3] ? mHM[3].toLowerCase() : null;
+      if (!s) return null;
+
+      // Pure numeric string — covers "0.3125" and datetime serials like "46209.3125".
+      // readCellValue returns the raw <v> textContent, which is always a decimal string
+      // for numeric/date/time cells in XLSX (never a formatted string like "07:30:00").
+      if (/^\d+(\.\d+)?$/.test(s)) {
+        const n = parseFloat(s);
+        return Math.round((n % 1) * 1440);
+      }
+
+      // Time string: find HH:MM[:SS] [AM/PM] anywhere in the value.
+      // Word-boundary \b lets this handle both bare "07:30:00" and
+      // date-prefixed strings like "5/28/2026 7:30:00 AM".
+      const mT = s.match(/\b(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)?\b/i);
+      if (mT) {
+        let h = parseInt(mT[1], 10);
+        const min = parseInt(mT[2], 10);
+        const ampm = mT[3] ? mT[3].toLowerCase() : null;
         if (ampm === "pm" && h !== 12) h += 12;
         if (ampm === "am" && h === 12) h = 0;
-        return h * 60 + min;
+        if (h <= 23 && min <= 59) return h * 60 + min;
       }
+
       // Military HHMM (3–4 digits, no colon)
       const mMil = s.match(/^(\d{3,4})$/);
       if (mMil) {
         const n = parseInt(mMil[1], 10);
-        return Math.floor(n / 100) * 60 + (n % 100);
+        const h = Math.floor(n / 100), mm = n % 100;
+        if (h <= 23 && mm <= 59) return h * 60 + mm;
       }
+
       return null;
     }
 
@@ -2483,6 +2548,7 @@
       const dataRows = populatedRows.slice(headerRowIndex + 1);
       const violations = [];
       const cases = [];
+      let _debugCount = 0;
 
       dataRows.forEach((row) => {
         const caseNumber     = cell(row, indexes.caseNumber);
@@ -2497,8 +2563,17 @@
         const surgeonId      = extractSurgeonId(surgeonRaw);
         const surgeonName    = parseSurgeonLastName(surgeonRaw);
         const laterality     = parseLaterality(proceduresText);
-        const startMin       = parseTimeToMinutes(cell(row, indexes.projStart));
-        const endMin         = parseTimeToMinutes(cell(row, indexes.projEnd));
+        const rawStart       = cell(row, indexes.projStart);
+        const rawEnd         = cell(row, indexes.projEnd);
+        const startMin       = parseTimeToMinutes(rawStart);
+        const endMin         = parseTimeToMinutes(rawEnd);
+
+        if (_debugCount < 5) {
+          console.log(`[Gantt debug] case=${caseNumber} room=${normalizedRoom} ` +
+            `rawStart=${JSON.stringify(rawStart)} → ${startMin} ` +
+            `rawEnd=${JSON.stringify(rawEnd)} → ${endMin}`);
+          _debugCount++;
+        }
 
         cases.push({
           caseNumber,
@@ -2600,7 +2675,7 @@
     }
 
     // ── Gantt constants ───────────────────────────────────────────────────────
-    const GANTT_START_MIN = 420;   // 07:00
+    const GANTT_START_MIN = 390;   // 06:30
     const GANTT_END_MIN   = 1140;  // 19:00
     const GANTT_PX_MIN    = 1.5;
     const GANTT_ROW_H     = 44;
@@ -2614,48 +2689,125 @@
     // ── buildGantt ────────────────────────────────────────────────────────────
     function buildGantt(result) {
       const ganttSection = document.getElementById("ganttSection");
-      const ganttCalendar = document.getElementById("ganttCalendar");
-
       if (!result.cases || result.cases.length === 0) {
         ganttSection.hidden = true;
         return;
       }
 
       ganttSection.hidden = false;
-      ganttCalendar.textContent = "";
       hideGanttTooltip();
       document.getElementById("ganttSidebar").hidden = true;
 
-      // Group by date
+      // Group by sortDate
       const byDate = new Map();
       result.cases.forEach((c) => {
         if (!byDate.has(c.sortDate)) byDate.set(c.sortDate, []);
         byDate.get(c.sortDate).push(c);
       });
-
       const sortedDates = [...byDate.keys()].sort((a, b) => a - b);
 
-      sortedDates.forEach((sd, idx) => {
+      // Compute per-day violation status
+      const dayStatus = new Map();
+      sortedDates.forEach((sd) => {
         const hasTier12 = result.violations.some((v) => v.sortDate === sd && v.ruleTier <= 2);
         const hasViol   = result.violations.some((v) => v.sortDate === sd);
-        const colorClass = hasTier12 ? "gantt-day-tile-red"
-                         : hasViol   ? "gantt-day-tile-amber"
-                                     : "gantt-day-tile-green";
-
-        const tile = document.createElement("button");
-        tile.type = "button";
-        tile.className = "gantt-day-tile " + colorClass;
-        tile.textContent = byDate.get(sd)[0].date;
-        if (idx === 0) tile.classList.add("active");
-        tile.addEventListener("click", () => {
-          ganttCalendar.querySelectorAll(".gantt-day-tile").forEach((t) => t.classList.remove("active"));
-          tile.classList.add("active");
-          buildDailyGantt(sd, byDate.get(sd), result.violations);
-        });
-        ganttCalendar.append(tile);
+        dayStatus.set(sd, hasTier12 ? "red" : hasViol ? "amber" : "green");
       });
 
-      buildDailyGantt(sortedDates[0], byDate.get(sortedDates[0]), result.violations);
+      // Build selection handler (shared by calendar cells)
+      const ganttCalendar = document.getElementById("ganttCalendar");
+      function selectDay(cell, sd) {
+        ganttCalendar.querySelectorAll(".gantt-cal-cell").forEach((el) => el.classList.remove("active"));
+        cell.classList.add("active");
+        buildDailyGantt(sd, byDate.get(sd), result.violations);
+      }
+
+      // Build monthly calendar
+      buildCalendar(ganttCalendar, sortedDates, byDate, dayStatus, selectDay);
+
+      // Auto-select earliest date cell
+      const firstSd = sortedDates[0];
+      for (const el of ganttCalendar.querySelectorAll("[data-sd]")) {
+        if (Number(el.dataset.sd) === firstSd) { el.classList.add("active"); break; }
+      }
+      buildDailyGantt(firstSd, byDate.get(firstSd), result.violations);
+    }
+
+    // ── buildCalendar ─────────────────────────────────────────────────────────
+    function buildCalendar(container, sortedDates, byDate, dayStatus, onSelect) {
+      container.textContent = "";
+      const DOW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+      // Build a Set of Date keys "YYYY-M-D" for quick lookup
+      const dateColorMap = new Map(); // "YYYY-M-D" → { sd, color }
+      sortedDates.forEach((sd) => {
+        const d = new Date(sd);
+        dateColorMap.set(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`,
+                         { sd, color: dayStatus.get(sd) });
+      });
+
+      // Group into year-month buckets
+      const months = [];
+      sortedDates.forEach((sd) => {
+        const d = new Date(sd);
+        const key = d.getFullYear() * 100 + d.getMonth();
+        if (!months.length || months[months.length - 1].key !== key) {
+          months.push({ key, year: d.getFullYear(), month: d.getMonth() });
+        }
+      });
+
+      months.forEach(({ year, month }) => {
+        const monthEl = document.createElement("div");
+        monthEl.className = "gantt-cal-month";
+
+        // Title
+        const title = document.createElement("div");
+        title.className = "gantt-cal-title";
+        title.textContent = new Date(year, month, 1)
+          .toLocaleString("en-US", { month: "long", year: "numeric" });
+        monthEl.append(title);
+
+        // Day-of-week headers
+        const dowRow = document.createElement("div");
+        dowRow.className = "gantt-cal-dow";
+        DOW.forEach((d) => {
+          const s = document.createElement("span");
+          s.textContent = d;
+          dowRow.append(s);
+        });
+        monthEl.append(dowRow);
+
+        // Day grid
+        const grid = document.createElement("div");
+        grid.className = "gantt-cal-grid";
+
+        const firstDow    = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < firstDow; i++) {
+          const empty = document.createElement("div");
+          empty.className = "gantt-cal-cell gantt-cal-cell-empty";
+          empty.textContent = "0";
+          grid.append(empty);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const info = dateColorMap.get(`${year}-${month}-${day}`);
+          const el = document.createElement("div");
+          el.textContent = String(day);
+          if (info) {
+            el.className = `gantt-cal-cell gantt-cal-cell-${info.color}`;
+            el.dataset.sd = String(info.sd);
+            el.addEventListener("click", () => onSelect(el, info.sd));
+          } else {
+            el.className = "gantt-cal-cell gantt-cal-cell-no-case";
+          }
+          grid.append(el);
+        }
+
+        monthEl.append(grid);
+        container.append(monthEl);
+      });
     }
 
     // ── buildDailyGantt ───────────────────────────────────────────────────────
