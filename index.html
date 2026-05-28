@@ -1850,12 +1850,13 @@
       },
       {
         id: "peds-age",
-        tier: "hard",
+        tier: "soft",
         label: "Pediatric Patient",
-        description: "Patients under 18 must be in OR4 unless an equipment hard rule applies.",
+        description: "Patients under 18 should be in OR4 unless an equipment hard rule applies.",
         match: { patientAgeUnder: 18 },
         allowedRooms: ["OR4"],
-        overriddenBy: ["dv5-robot", "sp-robot"]
+        overriddenBy: ["dv5-robot", "sp-robot"],
+        explanation: "Pediatric case outside OR4. Please move to OR4 if available."
       }
     ];
 
@@ -1988,7 +1989,7 @@
               ruleId: rule.id,
               ruleTier: rule.tier,
               ruleLabel: rule.label,
-              explanation: `${normalizedRoom || rawRoom} is not an allowed room for this case. Allowed: ${allowedList}.`
+              explanation: rule.explanation || `${normalizedRoom || rawRoom} is not an allowed room for this case. Allowed: ${allowedList}.`
             });
           }
         });
