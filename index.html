@@ -542,6 +542,18 @@
       border-left: 4px solid #9ca3af;
     }
 
+    .date-separator td {
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 6px 12px;
+      border-top: 2px solid var(--line);
+      border-left: none;
+    }
+
     @media (max-width: 820px) {
       .topbar-inner {
         align-items: flex-start;
@@ -577,7 +589,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.2.8 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.2.9 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -916,6 +928,7 @@
                   <tr>
                     <th>Case #</th>
                     <th>Date</th>
+                    <th>Surgeon</th>
                     <th>Room</th>
                     <th>Procedure(s)</th>
                     <th>Severity</th>
@@ -2119,6 +2132,12 @@
       return match ? match[1].toLowerCase() : null;
     }
 
+    function parseSurgeonLastName(text) {
+      const s = String(text || "").trim();
+      const commaIdx = s.indexOf(",");
+      return commaIdx !== -1 ? s.slice(0, commaIdx).trim() : s;
+    }
+
     function parsePatientAge(text) {
       const match = String(text || "").match(/^(\d+)/);
       return match ? parseInt(match[1], 10) : null;
@@ -2245,7 +2264,9 @@
         const proceduresText = cell(row, indexes.procedures);
         const patientAge     = parsePatientAge(cell(row, indexes.patientAge));
         const serviceText    = cell(row, indexes.service);
-        const surgeonId      = extractSurgeonId(cell(row, indexes.surgeon));
+        const surgeonRaw     = cell(row, indexes.surgeon);
+        const surgeonId      = extractSurgeonId(surgeonRaw);
+        const surgeonName    = parseSurgeonLastName(surgeonRaw);
         const laterality     = parseLaterality(proceduresText);
 
         const ctx = { equipmentText, proceduresText, patientAge, serviceText, surgeonId, laterality };
@@ -2264,13 +2285,14 @@
           if (!rule.allowedRooms.includes(normalizedRoom)) {
             violations.push({
               caseNumber,
-              date:      dateValue.display,
-              sortDate:  dateValue.sort,
-              room:      normalizedRoom || rawRoom,
+              date:       dateValue.display,
+              sortDate:   dateValue.sort,
+              surgeon:    surgeonName,
+              room:       normalizedRoom || rawRoom,
               procedures: proceduresText,
-              ruleId:    rule.id,
-              ruleTier:  rule.tier,
-              ruleLabel: rule.label,
+              ruleId:     rule.id,
+              ruleTier:   rule.tier,
+              ruleLabel:  rule.label,
               explanation: buildExplanation(rule)
             });
           }
@@ -2290,22 +2312,35 @@
       roomRulesViolationsTable.textContent = "";
 
       if (!result.violations.length) {
-        roomRulesViolationsTable.append(emptyRow(7, "No room rule violations found."));
+        roomRulesViolationsTable.append(emptyRow(8, "No room rule violations found."));
         return;
       }
 
       const sorted = result.violations.slice().sort((a, b) => {
+        if (a.sortDate !== b.sortDate) return a.sortDate - b.sortDate;
         const tierDiff = a.ruleTier - b.ruleTier;
         if (tierDiff !== 0) return tierDiff;
-        if (a.sortDate !== b.sortDate) return a.sortDate - b.sortDate;
         return String(a.caseNumber).localeCompare(String(b.caseNumber), undefined, { numeric: true });
       });
 
+      let lastDate = null;
       sorted.forEach((v) => {
+        if (v.date !== lastDate) {
+          const sep = document.createElement("tr");
+          sep.className = "date-separator";
+          const sepCell = document.createElement("td");
+          sepCell.colSpan = 8;
+          sepCell.textContent = v.date;
+          sep.append(sepCell);
+          roomRulesViolationsTable.append(sep);
+          lastDate = v.date;
+        }
+
         const tr = document.createElement("tr");
         tr.className = `violation-tier-${v.ruleTier}`;
         tr.append(td(v.caseNumber));
         tr.append(td(v.date));
+        tr.append(td(v.surgeon));
         tr.append(td(v.room));
         tr.append(td(v.procedures));
         const severityCell = document.createElement("td");
