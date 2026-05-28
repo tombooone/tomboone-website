@@ -517,6 +517,41 @@
       border: 1px solid #d1d5db;
     }
 
+    /* ── Results top: calendar left + metrics stack right ───────── */
+    .results-top {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+      margin-bottom: 20px;
+    }
+    .summary-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .summary-stack .metric {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    /* ── Violation table rows are clickable ──────────────────────── */
+    tr[class*="violation-tier"] { cursor: pointer; }
+    tr[class*="violation-tier"]:hover td { filter: brightness(0.94); }
+
+    /* ── Gantt block highlight (from table row click) ────────────── */
+    @keyframes gantt-highlight-pulse {
+      0%   { box-shadow: 0 0 0 2px #2563eb; }
+      50%  { box-shadow: 0 0 0 5px rgba(37,99,235,0.5); }
+      100% { box-shadow: 0 0 0 2px #2563eb; }
+    }
+    .gantt-block-highlight {
+      animation: gantt-highlight-pulse 0.65s ease 2;
+      z-index: 4 !important;
+    }
+
     .violation-tier-1 td {
       background: #fff5f5;
       border-left: 4px solid #ef4444;
@@ -1014,7 +1049,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.5 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.6 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1332,35 +1367,33 @@
         </div>
 
         <section id="roomRulesResultsPanel" class="panel result-panel" hidden>
-          <div class="summary-grid" aria-label="Room rules audit summary">
-            <div class="metric">
-              <span class="metric-value" id="roomRulesTotalRows">0</span>
-              <span class="metric-label">Cases reviewed</span>
+          <div class="results-top">
+            <div id="ganttCalCol" class="gantt-cal-col" hidden>
+              <div id="ganttCalendar" class="gantt-calendar"></div>
+              <div id="ganttDayNav" class="gantt-day-nav"></div>
             </div>
-            <div class="metric">
-              <span class="metric-value" id="roomRulesHardCount">0</span>
-              <span class="metric-label">Tier 1–2 violations</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value" id="roomRulesSoftCount">0</span>
-              <span class="metric-label">Tier 3–5 flags</span>
+            <div class="summary-stack" aria-label="Room rules audit summary">
+              <div class="metric">
+                <span class="metric-value" id="roomRulesTotalRows">0</span>
+                <span class="metric-label">Cases reviewed</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value" id="roomRulesHardCount">0</span>
+                <span class="metric-label">Tier 1–2 violations</span>
+              </div>
+              <div class="metric">
+                <span class="metric-value" id="roomRulesSoftCount">0</span>
+                <span class="metric-label">Tier 3–5 flags</span>
+              </div>
             </div>
           </div>
 
           <div id="ganttSection" hidden>
             <div class="gantt-section">
               <h2>Schedule timeline</h2>
-              <div class="gantt-body">
-                <div class="gantt-cal-col">
-                  <div id="ganttCalendar" class="gantt-calendar"></div>
-                  <div id="ganttDayNav" class="gantt-day-nav"></div>
-                </div>
-                <div class="gantt-main">
-                  <div class="gantt-container">
-                    <div class="gantt-fixed-col" id="ganttFixedCol"></div>
-                    <div class="gantt-scrollable" id="ganttScrollable"></div>
-                  </div>
-                </div>
+              <div class="gantt-container">
+                <div class="gantt-fixed-col" id="ganttFixedCol"></div>
+                <div class="gantt-scrollable" id="ganttScrollable"></div>
               </div>
             </div>
           </div>
@@ -3020,6 +3053,7 @@
     }
 
     function renderRoomRulesResults(result) {
+      _lastAuditResult = result;
       roomRulesTotalRowsEl.textContent = String(result.totalRows);
       roomRulesHardCountEl.textContent = String(result.tier12Count);
       roomRulesSoftCountEl.textContent = String(result.tier345Count);
@@ -3067,9 +3101,14 @@
         tr.append(severityCell);
         tr.append(td(v.ruleLabel));
         tr.append(td(v.explanation));
+        tr.addEventListener("click", () => jumpToCase(v.caseNumber, v.sortDate));
         roomRulesViolationsTable.append(tr);
       });
     }
+
+    // ── Audit result state (for table→Gantt navigation) ──────────────────────
+    let _lastAuditResult = null;
+    let _ganttByDate     = new Map();
 
     // ── Rule management state ─────────────────────────────────────────────────
     let _lastRuleMatchCounts = new Map();
@@ -3099,13 +3138,16 @@
 
     // ── buildGantt ────────────────────────────────────────────────────────────
     function buildGantt(result) {
-      const ganttSection = document.getElementById("ganttSection");
+      const ganttSection  = document.getElementById("ganttSection");
+      const ganttCalCol   = document.getElementById("ganttCalCol");
       if (!result.cases || result.cases.length === 0) {
         ganttSection.hidden = true;
+        ganttCalCol.hidden  = true;
         return;
       }
 
       ganttSection.hidden = false;
+      ganttCalCol.hidden  = false;
       hideGanttTooltip();
       document.getElementById("ganttSidebar").hidden = true;
 
@@ -3116,6 +3158,7 @@
         byDate.get(c.sortDate).push(c);
       });
       const sortedDates = [...byDate.keys()].sort((a, b) => a - b);
+      _ganttByDate = byDate;
 
       // Compute per-day violation status
       const dayStatus = new Map();
@@ -3401,6 +3444,7 @@
               (minTier !== null ? " gantt-viol-" + minTier : "");
             block.style.left  = ((clampS - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
             block.style.width = blockW + "px";
+            block.dataset.caseNum = String(c.caseNumber);
 
             // Background segments (prep / proc / cleanup)
             if (prepPx > 0.5) {
@@ -3565,6 +3609,47 @@
 
       sb.hidden = false;
     }
+
+    // ── Table row → Gantt highlight + sidebar ────────────────────────────────
+    function jumpToCase(caseNumber, sortDate) {
+      // Switch to the correct day if needed
+      if (_calActiveSd !== sortDate) {
+        navigateToDay(sortDate);
+      }
+      // Find the block in the rendered Gantt
+      const scrollable = document.getElementById("ganttScrollable");
+      const block = scrollable
+        ? scrollable.querySelector(`[data-case-num="${CSS.escape(String(caseNumber))}"]`)
+        : null;
+      if (block) {
+        // Smooth-scroll the Gantt to bring the block into view
+        scrollable.scrollTo({ left: Math.max(0, block.offsetLeft - 60), behavior: "smooth" });
+        // Pulse-highlight the block
+        block.classList.remove("gantt-block-highlight");
+        void block.offsetWidth; // force reflow to restart animation
+        block.classList.add("gantt-block-highlight");
+        setTimeout(() => block.classList.remove("gantt-block-highlight"), 1400);
+      }
+      // Open sidebar for the case
+      const casesForDay = _ganttByDate.get(sortDate) || [];
+      const c = casesForDay.find((cas) => String(cas.caseNumber) === String(caseNumber));
+      if (c) {
+        const viols = (_lastAuditResult ? _lastAuditResult.violations : []).filter(
+          (v) => String(v.caseNumber) === String(caseNumber) && v.sortDate === sortDate
+        );
+        showGanttSidebar(c, viols);
+      }
+    }
+
+    // ── Sidebar close on outside click ───────────────────────────────────────
+    document.addEventListener("pointerdown", (e) => {
+      const sb = document.getElementById("ganttSidebar");
+      if (sb.hidden) return;
+      if (sb.contains(e.target)) return;
+      // Clicking a case block closes current sidebar; the block's own click handler re-opens it
+      if (e.target.closest(".gantt-case-block")) return;
+      sb.hidden = true;
+    });
 
     // Sidebar close button + back button closes sidebar
     document.getElementById("ganttSidebarClose").addEventListener("click", () => {
