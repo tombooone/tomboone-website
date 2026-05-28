@@ -1048,7 +1048,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.7 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.8 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1378,7 +1378,7 @@
               </div>
               <div class="metric">
                 <span class="metric-value" id="roomRulesHardCount">0</span>
-                <span class="metric-label">Tier 1–2 violations</span>
+                <span class="metric-label">Tier 1–2 alerts</span>
               </div>
               <div class="metric">
                 <span class="metric-value" id="roomRulesSoftCount">0</span>
@@ -1397,7 +1397,7 @@
           </div>
 
           <div class="table-section">
-            <h2>Room rule violations</h2>
+            <h2>Room rule alerts and flags</h2>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -2613,6 +2613,12 @@
         const result = auditRoomRules(rows);
         renderRoomRulesResults(result);
         setStatus(`Audit complete. Reviewed ${result.totalRows} case${result.totalRows === 1 ? "" : "s"}.`);
+        setTimeout(() => {
+          const _scrollTarget = document.getElementById("ganttSection");
+          if (!_scrollTarget.hidden) {
+            _scrollTarget.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 50);
       }
     });
 
@@ -3060,7 +3066,7 @@
       buildGantt(result);
 
       if (!result.violations.length) {
-        roomRulesViolationsTable.append(emptyRow(8, "No room rule violations found."));
+        roomRulesViolationsTable.append(emptyRow(8, "No room rule alerts or flags found."));
         return;
       }
 
@@ -3518,7 +3524,10 @@
       if (viols.length) {
         const hdr = document.createElement("div");
         hdr.className = "tt-viol-header";
-        hdr.textContent = viols.length + " violation" + (viols.length > 1 ? "s" : "");
+        const _t12 = viols.filter((v) => v.ruleTier <= 2).length;
+        const _t35 = viols.filter((v) => v.ruleTier >= 3).length;
+        const _issueWord = _t12 && _t35 ? "alerts & flags" : _t12 ? (_t12 === 1 ? "alert" : "alerts") : (_t35 === 1 ? "flag" : "flags");
+        hdr.textContent = viols.length + " " + _issueWord;
         tt.append(hdr);
         viols.forEach((v) => {
           const item  = document.createElement("div");
@@ -3588,7 +3597,10 @@
         const vSection = document.createElement("div");
         vSection.className = "sb-violations";
         const h4 = document.createElement("h4");
-        h4.textContent = "Violations (" + viols.length + ")";
+        const _sb12 = viols.filter((v) => v.ruleTier <= 2).length;
+        const _sb35 = viols.filter((v) => v.ruleTier >= 3).length;
+        const _sbLabel = _sb12 && _sb35 ? "Alerts & flags" : _sb12 ? "Alerts" : "Flags";
+        h4.textContent = _sbLabel + " (" + viols.length + ")";
         vSection.append(h4);
         viols.forEach((v) => {
           const item  = document.createElement("div");
