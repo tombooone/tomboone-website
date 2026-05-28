@@ -759,6 +759,33 @@
       z-index: 1;
     }
 
+    .gantt-block-sched {
+      position: absolute;
+      top: 0;
+      height: 52px;
+      box-sizing: border-box;
+      background: rgba(0, 124, 137, 0.05);
+      border-left: 1px dashed rgba(0, 95, 107, 0.22);
+      border-right: 1px dashed rgba(0, 95, 107, 0.22);
+      pointer-events: none;
+      z-index: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .gantt-block-sched-text {
+      font-size: 0.62rem;
+      font-weight: 500;
+      color: rgba(0, 95, 107, 0.6);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0 4px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
     .gantt-case-block {
       position: absolute;
       top: 5px;
@@ -1044,11 +1071,10 @@
     <header class="topbar">
       <div class="topbar-inner">
         <div class="brand" aria-label="PHI-Safe Work Tools">
-          <span class="brand-mark">TB</span>
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.8 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.10 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1075,7 +1101,7 @@
                 <path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/>
               </svg>
             </span>
-            <span class="tool-title">CPT Audit Tool</span>
+            <span class="tool-title">CPT Audit</span>
             <span class="tool-copy">Compare Epic report CPTs against panel CPTs and CMS inpatient-only codes.</span>
           </button>
 
@@ -1102,17 +1128,6 @@
             <span class="tool-copy">Check an OR schedule against hard, soft, and preference room assignment rules.</span>
           </button>
 
-          <button class="tool-tile" type="button" id="openRuleManagementTool">
-            <span class="tool-icon" aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
-                <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-            <span class="tool-title">Rule Management</span>
-            <span class="tool-copy">View, annotate, and flag room assignment rules organized by tier.</span>
-          </button>
         </div>
       </section>
 
@@ -1343,9 +1358,13 @@
           <aside class="panel instructions">
             <h2>Instructions</h2>
             <ol>
-              <li>Export the OR schedule from Epic as an .xlsx file.</li>
-              <li>Select the file and select Run audit.</li>
+              <li>In Epic, run the report <strong>WBVC OR Upcoming Case Audit [58976502]</strong> and export it as an .xlsx file.</li>
+              <li>Select the exported file and select Run audit.</li>
+              <li>Optionally, upload a block schedule file to overlay block names on the Gantt.</li>
             </ol>
+            <div style="margin-top: 12px;">
+              <button class="ghost-button" type="button" id="viewActiveRulesBtn" style="font-size: 0.82rem; padding: 5px 10px;">View active rules</button>
+            </div>
           </aside>
 
           <section class="panel">
@@ -1361,6 +1380,15 @@
                 <button class="secondary-button" type="button" id="clearRoomRulesAudit" disabled>Clear</button>
               </div>
               <p id="roomRulesStatus" class="status" role="status">Waiting for a spreadsheet.</p>
+            </div>
+            <div class="upload-box" style="margin-top: 14px; border-top: 1px solid var(--line); padding-top: 14px;">
+              <label class="file-input">
+                <span>
+                  <strong>Block schedule</strong> <span style="font-weight:400; color:var(--muted);">(optional — overlays block names on Gantt)</span><br>
+                  <input id="blockScheduleFileInput" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+                </span>
+              </label>
+              <p id="blockScheduleStatus" class="status" role="status" style="margin-top: 6px;"></p>
             </div>
           </section>
         </div>
@@ -2527,6 +2555,22 @@
         match: { service: "Pain Management" },
         allowedRooms: ["OR 11", "OR 12", "OR 4"]
       },
+      {
+        id: "svc-8",
+        tier: 3,
+        label: "Bronchoscopy Room",
+        description: "Bronchoscopy cases are generally scheduled in OR 8 — please verify room assignment.",
+        match: { procedureTextContains: "bronch" },
+        allowedRooms: ["OR 8"]
+      },
+      {
+        id: "svc-9",
+        tier: 3,
+        label: "Gynecology Room",
+        description: "Gynecology cases are generally assigned to OR 1 — please verify this room assignment.",
+        match: { service: "Gynecology" },
+        allowedRooms: ["OR 1"]
+      },
       // ── Tier 4: Surgeon Preference (generated from SURGEON_PREFS) ─────────
       ...SURGEON_PREFS.map((s) => ({
         id: `surgeon-${s.id}`,
@@ -2598,7 +2642,6 @@
 
     document.getElementById("openRoomRulesTool").addEventListener("click", () => showView("roomRules"));
     document.getElementById("roomRulesBackHome").addEventListener("click", () => showView("home"));
-    document.getElementById("openRuleManagementTool").addEventListener("click", () => showView("ruleManagement"));
     document.getElementById("ruleManagementBackHome").addEventListener("click", () => showView("home"));
 
     wireAuditTool({
@@ -2631,6 +2674,45 @@
       ruleManagementView.classList.toggle("active", viewName === "ruleManagement");
       if (viewName === "ruleManagement") buildRuleManagementView();
     };
+
+    document.getElementById("viewActiveRulesBtn").addEventListener("click", () => showView("ruleManagement"));
+
+    // ── Block schedule ────────────────────────────────────────────────────────
+    let _blocksByDateRoom = new Map();
+
+    const blockScheduleColumns = [
+      { key: "room",      label: "Room",       accepted: ["room"] },
+      { key: "date",      label: "Date",       accepted: ["date"] },
+      { key: "block",     label: "Block",      accepted: ["block"] },
+      { key: "startTime", label: "Start Time", accepted: ["start time", "start"] },
+      { key: "endTime",   label: "End Time",   accepted: ["end time", "end"] }
+    ];
+
+    document.getElementById("blockScheduleFileInput").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      const statusEl = document.getElementById("blockScheduleStatus");
+      if (!file) { _blocksByDateRoom = new Map(); statusEl.textContent = ""; return; }
+      try {
+        const rows = await readXlsxRows(file, blockScheduleColumns);
+        _blocksByDateRoom = new Map();
+        for (const row of rows) {
+          const room = normalizeRoomName(row.room || "");
+          const dateVal = parseDateCell(row.date);
+          const sd = dateVal.sort;
+          const blockName = String(row.block || "").trim();
+          const startMin = parseTimeToMinutes(row.startTime);
+          const endMin = parseTimeToMinutes(row.endTime);
+          if (!blockName || startMin === null || endMin === null || !Number.isFinite(sd)) continue;
+          const key = `${sd}::${room}`;
+          if (!_blocksByDateRoom.has(key)) _blocksByDateRoom.set(key, []);
+          _blocksByDateRoom.get(key).push({ blockName, startMin, endMin });
+        }
+        statusEl.textContent = "Block schedule loaded.";
+        if (_calActiveSd !== null) navigateToDay(_calActiveSd);
+      } catch (err) {
+        statusEl.textContent = "Could not read block schedule file.";
+      }
+    });
 
     function normalizeRoomName(text) {
       const match = String(text || "").match(/\bOR\s*(\d+)/i);
@@ -3424,6 +3506,23 @@
         ref.className = "gantt-ref-line";
         ref.style.left = ((refMin - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
         lane.append(ref);
+
+        // Block schedule backgrounds (optional overlay, reference only)
+        const blockKey = `${sortDate}::${room}`;
+        (_blocksByDateRoom.get(blockKey) || []).forEach((blk) => {
+          const clampS = Math.max(blk.startMin, GANTT_START_MIN);
+          const clampE = Math.min(blk.endMin, GANTT_END_MIN);
+          if (clampS >= clampE) return;
+          const bs = document.createElement("div");
+          bs.className = "gantt-block-sched";
+          bs.style.left  = ((clampS - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
+          bs.style.width = ((clampE - clampS) * GANTT_PX_MIN) + "px";
+          const bt = document.createElement("div");
+          bt.className = "gantt-block-sched-text";
+          bt.textContent = blk.blockName;
+          bs.append(bt);
+          lane.append(bs);
+        });
 
         // Case blocks — 3-segment Epic-snapboard style
         cases.filter((c) => c.room === room && c.startMin !== null && c.endMin !== null)
