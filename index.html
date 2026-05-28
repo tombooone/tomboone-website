@@ -841,6 +841,123 @@
     .gantt-sidebar .sb-viol-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
     .gantt-sidebar .sb-viol-text { font-size: 0.82rem; color: var(--ink); line-height: 1.4; }
 
+    /* ── Day navigation ──────────────────────────────────────────── */
+    .gantt-day-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .gantt-day-nav-btn {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 1px 10px;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    .gantt-day-nav-btn:hover:not(:disabled) { color: var(--ink); background: var(--soft); }
+    .gantt-day-nav-btn:disabled { opacity: 0.3; cursor: default; }
+    .gantt-day-nav-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      min-width: 220px;
+      text-align: center;
+    }
+
+    /* ── Rule Management ─────────────────────────────────────────── */
+    .rule-tier-section { margin-bottom: 28px; }
+    .rule-tier-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--line);
+    }
+    .rule-tier-header h3 { margin: 0; font-size: 1rem; color: var(--ink); }
+    .rule-tier-desc { font-size: 0.82rem; color: var(--muted); }
+    .rule-cards { display: flex; flex-direction: column; gap: 8px; }
+    .rule-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px 14px;
+      align-items: start;
+    }
+    .rule-card.rule-flagged { border-color: #f59e0b; background: #fffbeb; }
+    .rule-card-badge { padding-top: 1px; }
+    .rule-card-main { min-width: 0; }
+    .rule-card-label {
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--ink);
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .rule-flagged-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #f59e0b;
+      flex-shrink: 0;
+      display: inline-block;
+    }
+    .rule-card-match {
+      font-size: 0.77rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+    .rule-card-rooms { font-size: 0.77rem; color: var(--ink); }
+    .rule-card-meta {
+      display: flex;
+      gap: 14px;
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+    .rule-card-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      min-width: 110px;
+    }
+    .rule-flag-btn {
+      background: none;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: 0.77rem;
+      cursor: pointer;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .rule-flag-btn.flagged { border-color: #f59e0b; color: #92400e; background: #fff8e1; }
+    .rule-flag-btn:hover { background: var(--soft); }
+    .rule-note-input {
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 0.77rem;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 4px 7px;
+      resize: vertical;
+      min-height: 38px;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: inherit;
+    }
+    .rule-note-input:focus { outline: none; border-color: var(--brand); }
+
     @media (max-width: 820px) {
       .topbar-inner {
         align-items: flex-start;
@@ -876,7 +993,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.2 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.3 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -928,6 +1045,18 @@
             </span>
             <span class="tool-title">Room Rules Audit</span>
             <span class="tool-copy">Check an OR schedule against hard, soft, and preference room assignment rules.</span>
+          </button>
+
+          <button class="tool-tile" type="button" id="openRuleManagementTool">
+            <span class="tool-icon" aria-hidden="true">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+                <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="tool-title">Rule Management</span>
+            <span class="tool-copy">View, annotate, and flag room assignment rules organized by tier.</span>
           </button>
         </div>
       </section>
@@ -1161,17 +1290,7 @@
             <ol>
               <li>Export the OR schedule from Epic as an .xlsx file.</li>
               <li>Select the file and select Run audit.</li>
-              <li>Violations are color-coded by tier: <span class="badge badge-tier-1">Tier 1</span> physical absolute, <span class="badge badge-tier-2">Tier 2</span> strong operational, <span class="badge badge-tier-3">Tier 3</span> service preference, <span class="badge badge-tier-4">Tier 4</span> surgeon preference, <span class="badge badge-tier-5">Tier 5</span> suggestion.</li>
             </ol>
-            <h3>Active rules:</h3>
-            <div class="keyword-list" aria-label="Active rule tiers">
-              <span class="keyword-pill"><span class="badge badge-tier-1">Tier 1</span> &nbsp;6 rules · Physical absolute</span>
-              <span class="keyword-pill"><span class="badge badge-tier-2">Tier 2</span> &nbsp;2 rules · Strong operational</span>
-              <span class="keyword-pill"><span class="badge badge-tier-3">Tier 3</span> &nbsp;7 rules · Service preference</span>
-              <span class="keyword-pill"><span class="badge badge-tier-4">Tier 4</span> &nbsp;40 surgeons · Surgeon preference</span>
-              <span class="keyword-pill"><span class="badge badge-tier-5">Tier 5</span> &nbsp;2 rules · Laterality suggestion</span>
-            </div>
-            <div class="local-note">Lower tier number = higher priority. All fired violations are shown; lower-tier constraints determine the room.</div>
           </aside>
 
           <section class="panel">
@@ -1211,6 +1330,7 @@
             <div class="gantt-section">
               <h2>Schedule timeline</h2>
               <div id="ganttCalendar" class="gantt-calendar"></div>
+              <div id="ganttDayNav" class="gantt-day-nav"></div>
               <div class="gantt-container">
                 <div class="gantt-fixed-col" id="ganttFixedCol"></div>
                 <div class="gantt-scrollable" id="ganttScrollable"></div>
@@ -1245,6 +1365,24 @@
           <button class="gantt-sidebar-close" id="ganttSidebarClose" type="button" aria-label="Close sidebar">&#x2715;</button>
           <div id="ganttSidebarContent"></div>
         </div>
+      </section>
+
+      <section id="ruleManagementView" class="view" aria-labelledby="ruleManagementTitle">
+        <div class="back-row">
+          <button class="ghost-button" type="button" id="ruleManagementBackHome">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Back to tools</span>
+          </button>
+        </div>
+
+        <div class="page-heading">
+          <h1 id="ruleManagementTitle">Rule Management</h1>
+          <p class="lede">Active room assignment rules organized by tier. Add a note or flag any rule for review — changes are saved locally in this browser.</p>
+        </div>
+
+        <div id="ruleManagementContent"></div>
       </section>
     </main>
   </div>
@@ -2402,6 +2540,8 @@
 
     document.getElementById("openRoomRulesTool").addEventListener("click", () => showView("roomRules"));
     document.getElementById("roomRulesBackHome").addEventListener("click", () => showView("home"));
+    document.getElementById("openRuleManagementTool").addEventListener("click", () => showView("ruleManagement"));
+    document.getElementById("ruleManagementBackHome").addEventListener("click", () => showView("home"));
 
     wireAuditTool({
       fileInput: document.getElementById("roomRulesFileInput"),
@@ -2418,11 +2558,14 @@
       }
     });
 
-    // Update showView to handle roomRules
+    // Update showView to handle roomRules and ruleManagement
+    const ruleManagementView = document.getElementById("ruleManagementView");
     const _origShowView = showView;
     showView = function showViewExtended(viewName) {
       _origShowView(viewName);
       roomRulesView.classList.toggle("active", viewName === "roomRules");
+      ruleManagementView.classList.toggle("active", viewName === "ruleManagement");
+      if (viewName === "ruleManagement") buildRuleManagementView();
     };
 
     function normalizeRoomName(text) {
@@ -2535,6 +2678,161 @@
       }
     }
 
+    function describeMatch(rule) {
+      const m = rule.match;
+      if (!m) return "–";
+      if (m.anyOf) {
+        return m.anyOf.map((sub) => describeMatch({ match: sub })).join(" or ");
+      }
+      if (m.equipmentContainsAny) {
+        const n = m.equipmentContainsAny.length;
+        if (n <= 2) return "Equipment: " + m.equipmentContainsAny.join(", ");
+        return `Equipment (any of ${n}): ${m.equipmentContainsAny.slice(0, 2).join(", ")}…`;
+      }
+      if (m.service !== undefined) return "Service: " + m.service;
+      if (m.surgeonId !== undefined) return "Surgeon ID: " + m.surgeonId;
+      if (m.procedureTextContains !== undefined) {
+        return "Procedure: " + m.procedureTextContains + (m.laterality ? " (" + m.laterality + " side)" : "");
+      }
+      if (m.patientAgeUnder !== undefined) return "Patient age < " + m.patientAgeUnder;
+      return "–";
+    }
+
+    const TIER_META = [
+      null,
+      { label: "Tier 1 — Physical Absolute", desc: "Immovable equipment — cannot be overridden" },
+      { label: "Tier 2 — Strong Operational", desc: "Designated room assignments" },
+      { label: "Tier 3 — Service Preference", desc: "Service line clustering, strong but flexible" },
+      { label: "Tier 4 — Surgeon Preference", desc: "Behavioral patterns, no hard clinical reason" },
+      { label: "Tier 5 — Suggestion", desc: "Low-confidence patterns, convenience preferences" }
+    ];
+
+    function buildRuleManagementView() {
+      const content = document.getElementById("ruleManagementContent");
+      if (!content) return;
+      content.textContent = "";
+
+      const byTier = new Map();
+      ROOM_RULES.forEach((rule) => {
+        if (!byTier.has(rule.tier)) byTier.set(rule.tier, []);
+        byTier.get(rule.tier).push(rule);
+      });
+
+      [1, 2, 3, 4, 5].forEach((tier) => {
+        const rules = byTier.get(tier) || [];
+        if (!rules.length) return;
+
+        const meta = TIER_META[tier];
+        const section = document.createElement("div");
+        section.className = "rule-tier-section";
+
+        const header = document.createElement("div");
+        header.className = "rule-tier-header";
+        const hdg = document.createElement("h3");
+        hdg.textContent = meta.label;
+        const desc = document.createElement("span");
+        desc.className = "rule-tier-desc";
+        desc.textContent = meta.desc;
+        header.append(hdg, desc);
+        section.append(header);
+
+        const cards = document.createElement("div");
+        cards.className = "rule-cards";
+
+        rules.forEach((rule) => {
+          const flagKey = `ruleFlagged_${rule.id}`;
+          const noteKey = `ruleNote_${rule.id}`;
+          const isFlagged = localStorage.getItem(flagKey) === "1";
+          const savedNote = localStorage.getItem(noteKey) || "";
+          const caseCount = _lastRuleMatchCounts.get(rule.id);
+          const tierConf = ["High", "High", "High", "Medium", "Low"][tier - 1];
+
+          const card = document.createElement("div");
+          card.className = "rule-card" + (isFlagged ? " rule-flagged" : "");
+
+          // Badge column
+          const badgeWrap = document.createElement("div");
+          badgeWrap.className = "rule-card-badge";
+          const badge = document.createElement("span");
+          badge.className = `badge badge-tier-${tier}`;
+          badge.textContent = "Tier " + tier;
+          badgeWrap.append(badge);
+
+          // Main column
+          const main = document.createElement("div");
+          main.className = "rule-card-main";
+
+          const labelRow = document.createElement("div");
+          labelRow.className = "rule-card-label";
+          labelRow.textContent = rule.label;
+          if (isFlagged) {
+            const dot = document.createElement("span");
+            dot.className = "rule-flagged-dot";
+            dot.title = "Flagged for review";
+            labelRow.append(dot);
+          }
+
+          const matchRow = document.createElement("div");
+          matchRow.className = "rule-card-match";
+          matchRow.textContent = "Trigger: " + describeMatch(rule);
+
+          const roomsRow = document.createElement("div");
+          roomsRow.className = "rule-card-rooms";
+          roomsRow.textContent = "Rooms: " + rule.allowedRooms.join(", ");
+
+          const meta2 = document.createElement("div");
+          meta2.className = "rule-card-meta";
+          const confSpan = document.createElement("span");
+          confSpan.textContent = "Confidence: " + tierConf;
+          const countSpan = document.createElement("span");
+          countSpan.textContent = "Cases matched: " +
+            (caseCount !== undefined ? String(caseCount) : "–");
+          meta2.append(confSpan, countSpan);
+
+          main.append(labelRow, matchRow, roomsRow, meta2);
+
+          // Actions column
+          const actions = document.createElement("div");
+          actions.className = "rule-card-actions";
+
+          const flagBtn = document.createElement("button");
+          flagBtn.type = "button";
+          flagBtn.className = "rule-flag-btn" + (isFlagged ? " flagged" : "");
+          flagBtn.textContent = isFlagged ? "⚑ Flagged" : "Flag for review";
+          flagBtn.addEventListener("click", () => {
+            const nowFlagged = localStorage.getItem(flagKey) === "1";
+            if (nowFlagged) {
+              localStorage.removeItem(flagKey);
+            } else {
+              localStorage.setItem(flagKey, "1");
+            }
+            buildRuleManagementView();
+          });
+
+          const noteInput = document.createElement("textarea");
+          noteInput.className = "rule-note-input";
+          noteInput.placeholder = "Add a note…";
+          noteInput.rows = 2;
+          noteInput.value = savedNote;
+          noteInput.addEventListener("change", () => {
+            const val = noteInput.value.trim();
+            if (val) {
+              localStorage.setItem(noteKey, val);
+            } else {
+              localStorage.removeItem(noteKey);
+            }
+          });
+
+          actions.append(flagBtn, noteInput);
+          card.append(badgeWrap, main, actions);
+          cards.append(card);
+        });
+
+        section.append(cards);
+        content.append(section);
+      });
+    }
+
     function validateRoomRulesColumns(populatedRows) {
       const scanLimit = Math.min(populatedRows.length, 40);
       let bestHeaders = [];
@@ -2608,6 +2906,8 @@
       const dataRows = populatedRows.slice(headerRowIndex + 1);
       const violations = [];
       const cases = [];
+      const ruleMatchCounts = new Map();
+      ROOM_RULES.forEach((rule) => ruleMatchCounts.set(rule.id, 0));
       let _debugCount = 0;
 
       dataRows.forEach((row) => {
@@ -2656,6 +2956,10 @@
 
         const firedRules = ROOM_RULES.filter((rule) => ruleTriggersForCase(rule, ctx));
 
+        firedRules.forEach((rule) => {
+          ruleMatchCounts.set(rule.id, (ruleMatchCounts.get(rule.id) || 0) + 1);
+        });
+
         const suppressedIds = new Set();
         firedRules.forEach((rule) => {
           if (rule.suppressesWhenCompliant && rule.allowedRooms.includes(normalizedRoom)) {
@@ -2685,7 +2989,7 @@
       const tier12Count  = violations.filter((v) => v.ruleTier <= 2).length;
       const tier345Count = violations.filter((v) => v.ruleTier >= 3).length;
 
-      return { totalRows: dataRows.length, violations, tier12Count, tier345Count, cases };
+      return { totalRows: dataRows.length, violations, tier12Count, tier345Count, cases, ruleMatchCounts };
     }
 
     function renderRoomRulesResults(result) {
@@ -2693,6 +2997,7 @@
       roomRulesHardCountEl.textContent = String(result.tier12Count);
       roomRulesSoftCountEl.textContent = String(result.tier345Count);
       roomRulesViolationsTable.textContent = "";
+      if (result.ruleMatchCounts) _lastRuleMatchCounts = result.ruleMatchCounts;
       buildGantt(result);
 
       if (!result.violations.length) {
@@ -2739,17 +3044,23 @@
       });
     }
 
+    // ── Rule management state ─────────────────────────────────────────────────
+    let _lastRuleMatchCounts = new Map();
+
     // ── Calendar navigation state ─────────────────────────────────────────────
-    let _calMonths    = [];
-    let _calMonthIdx  = 0;
-    let _calDateMap   = new Map();
-    let _calOnSelect  = null;
-    let _calContainer = null;
-    let _calActiveSd  = null;
+    let _calMonths       = [];
+    let _calMonthIdx     = 0;
+    let _calDateMap      = new Map();
+    let _calOnSelect     = null;
+    let _calContainer    = null;
+    let _calActiveSd     = null;
+    let _calSortedDates  = [];
 
     // ── Gantt constants ───────────────────────────────────────────────────────
     const GANTT_START_MIN = 390;   // 06:30
     const GANTT_END_MIN   = 1140;  // 19:00
+    // Biweekly staff inservice Fridays (every 14 days from 2026-05-29) → OR start at 09:00
+    const BIWEEKLY_FRI_ANCHOR_MS = new Date(2026, 4, 29).getTime();
     const GANTT_PX_MIN    = 1.5;
     const GANTT_ROW_H     = 44;
     const GANTT_AXIS_H    = 28;
@@ -2787,13 +3098,15 @@
         dayStatus.set(sd, hasTier12 ? "red" : hasViol ? "amber" : "green");
       });
 
-      // Build selection handler (shared by calendar cells)
+      // Build selection handler (shared by calendar cells and day-nav arrows)
       const ganttCalendar = document.getElementById("ganttCalendar");
       function selectDay(cell, sd) {
         _calActiveSd = sd;
-        ganttCalendar.querySelectorAll(".gantt-cal-cell").forEach((el) => el.classList.remove("active"));
-        if (cell) cell.classList.add("active");
+        ganttCalendar.querySelectorAll(".gantt-cal-cell").forEach((el) => {
+          el.classList.toggle("active", el.dataset.sd !== undefined && Number(el.dataset.sd) === sd);
+        });
         buildDailyGantt(sd, byDate.get(sd), result.violations);
+        renderDayNav();
       }
 
       // Build monthly calendar (single-month view with prev/next nav)
@@ -2810,9 +3123,10 @@
     // ── buildCalendar ─────────────────────────────────────────────────────────
     function buildCalendar(container, sortedDates, dayStatus, onSelect) {
       // Initialise navigation state
-      _calContainer = container;
-      _calOnSelect  = onSelect;
-      _calActiveSd  = null;
+      _calContainer   = container;
+      _calOnSelect    = onSelect;
+      _calActiveSd    = null;
+      _calSortedDates = sortedDates.slice().sort((a, b) => a - b);
 
       _calDateMap = new Map();
       sortedDates.forEach((sd) => {
@@ -2914,6 +3228,51 @@
       container.append(monthEl);
     }
 
+    // ── Day navigation (prev/next arrows below calendar) ──────────────────────
+    function renderDayNav() {
+      const nav = document.getElementById("ganttDayNav");
+      if (!nav) return;
+      nav.textContent = "";
+      if (!_calSortedDates.length || _calActiveSd === null) return;
+      const idx = _calSortedDates.indexOf(_calActiveSd);
+
+      const prevBtn = document.createElement("button");
+      prevBtn.type = "button";
+      prevBtn.className = "gantt-day-nav-btn";
+      prevBtn.textContent = "‹";
+      prevBtn.title = "Previous day";
+      prevBtn.disabled = idx <= 0;
+      prevBtn.addEventListener("click", () => { if (idx > 0) navigateToDay(_calSortedDates[idx - 1]); });
+
+      const lbl = document.createElement("span");
+      lbl.className = "gantt-day-nav-label";
+      lbl.textContent = new Date(_calActiveSd).toLocaleDateString("en-US",
+        { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+
+      const nextBtn = document.createElement("button");
+      nextBtn.type = "button";
+      nextBtn.className = "gantt-day-nav-btn";
+      nextBtn.textContent = "›";
+      nextBtn.title = "Next day";
+      nextBtn.disabled = idx >= _calSortedDates.length - 1;
+      nextBtn.addEventListener("click", () => {
+        if (idx < _calSortedDates.length - 1) navigateToDay(_calSortedDates[idx + 1]);
+      });
+
+      nav.append(prevBtn, lbl, nextBtn);
+    }
+
+    function navigateToDay(sd) {
+      const d = new Date(sd);
+      const key = d.getFullYear() * 100 + d.getMonth();
+      const mIdx = _calMonths.findIndex((m) => m.key === key);
+      if (mIdx !== -1 && mIdx !== _calMonthIdx) {
+        _calMonthIdx = mIdx;
+        renderCalendarMonth();
+      }
+      _calOnSelect(null, sd);
+    }
+
     // ── buildDailyGantt ───────────────────────────────────────────────────────
     function buildDailyGantt(sortDate, cases, allViolations) {
       const fixedCol   = document.getElementById("ganttFixedCol");
@@ -2934,11 +3293,12 @@
         fixedCol.append(label);
       });
 
-      // Time axis
+      // Time axis — start at first full hour >= GANTT_START_MIN to avoid mislabeled ticks
+      const firstTickMin = Math.ceil(GANTT_START_MIN / 60) * 60;
       const axis = document.createElement("div");
       axis.className = "gantt-time-axis";
       axis.style.width = GANTT_TOTAL_W + "px";
-      for (let m = GANTT_START_MIN; m <= GANTT_END_MIN; m += 60) {
+      for (let m = firstTickMin; m <= GANTT_END_MIN; m += 60) {
         const tick = document.createElement("div");
         tick.className = "gantt-time-tick";
         const h = Math.floor(m / 60);
@@ -2947,6 +3307,13 @@
         axis.append(tick);
       }
       scrollable.append(axis);
+
+      // Biweekly inservice Friday → OR start at 09:00 instead of 07:30
+      const dayMs = 86400000;
+      const diffDays = Math.round((sortDate - BIWEEKLY_FRI_ANCHOR_MS) / dayMs);
+      const isInserviceFriday = new Date(sortDate).getDay() === 5
+        && diffDays >= 0 && diffDays % 14 === 0;
+      const refMin = isInserviceFriday ? 9 * 60 : 7 * 60 + 30;
 
       // Index violations for this day by case number
       const violsByCaseNum = new Map();
@@ -2961,16 +3328,15 @@
         lane.className = "gantt-lane" + (i % 2 === 1 ? " gantt-lane-alt" : "");
         lane.style.width = GANTT_TOTAL_W + "px";
 
-        // Gridlines on the hour
-        for (let m = GANTT_START_MIN; m <= GANTT_END_MIN; m += 60) {
+        // Gridlines on the hour (aligned to tick marks)
+        for (let m = firstTickMin; m <= GANTT_END_MIN; m += 60) {
           const gl = document.createElement("div");
           gl.className = "gantt-lane-gridline";
           gl.style.left = ((m - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
           lane.append(gl);
         }
 
-        // Reference line at 07:30
-        const refMin = 7 * 60 + 30;
+        // Reference line (07:30 standard, 09:00 on biweekly inservice Fridays)
         const ref = document.createElement("div");
         ref.className = "gantt-ref-line";
         ref.style.left = ((refMin - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
