@@ -1074,7 +1074,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.10 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.11 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1604,6 +1604,9 @@
       homeView.classList.toggle("active", viewName === "home");
       auditView.classList.toggle("active", viewName === "audit");
       equipmentView.classList.toggle("active", viewName === "equipment");
+      document.getElementById("roomRulesView").classList.toggle("active", viewName === "roomRules");
+      document.getElementById("ruleManagementView").classList.toggle("active", viewName === "ruleManagement");
+      if (viewName === "ruleManagement") buildRuleManagementView();
     }
 
     function wireAuditTool({ fileInput, runButton, clearButton, statusEl, resultsPanel, tables, onRun }) {
@@ -2665,16 +2668,6 @@
       }
     });
 
-    // Update showView to handle roomRules and ruleManagement
-    const ruleManagementView = document.getElementById("ruleManagementView");
-    const _origShowView = showView;
-    showView = function showViewExtended(viewName) {
-      _origShowView(viewName);
-      roomRulesView.classList.toggle("active", viewName === "roomRules");
-      ruleManagementView.classList.toggle("active", viewName === "ruleManagement");
-      if (viewName === "ruleManagement") buildRuleManagementView();
-    };
-
     document.getElementById("viewActiveRulesBtn").addEventListener("click", () => showView("ruleManagement"));
 
     // ── Block schedule ────────────────────────────────────────────────────────
@@ -2808,7 +2801,8 @@
         }
         case 3: {
           const list = formatRoomList(rooms, "and");
-          return `${rule.match.service} cases are generally assigned to ${list} — please verify this room assignment.`;
+          const subject = rule.match.service || rule.label.replace(/ Room$| Service$/, "");
+          return `${subject} cases are generally assigned to ${list} — please verify this room assignment.`;
         }
         case 4: {
           const surgeonName = rule.label.replace(/ Preference$/, "");
@@ -3113,8 +3107,13 @@
           }
         });
 
+        const hasTier12Compliant = firedRules.some(
+          (rule) => rule.tier <= 2 && rule.allowedRooms.includes(normalizedRoom)
+        );
+
         firedRules.forEach((rule) => {
           if (suppressedIds.has(rule.id)) return;
+          if (hasTier12Compliant && rule.tier >= 3) return;
           if (!rule.allowedRooms.includes(normalizedRoom)) {
             violations.push({
               caseNumber,
