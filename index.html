@@ -577,7 +577,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.2.7 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.2.8 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -2185,6 +2185,10 @@
     }
 
     function ruleTriggersForCase(rule, ctx) {
+      if (rule.serviceExclusions) {
+        const svc = String(ctx.serviceText || "").toLowerCase();
+        if (rule.serviceExclusions.some((excl) => excl.toLowerCase() === svc)) return false;
+      }
       const m = rule.match;
       if (m.anyOf) {
         return m.anyOf.some((sub) => ruleTriggersForCase({ match: sub }, ctx));
