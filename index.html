@@ -487,37 +487,59 @@
       white-space: nowrap;
     }
 
-    .badge-hard {
+    .badge-tier-1 {
       background: #fce8e8;
       color: #b91c1c;
       border: 1px solid #fca5a5;
     }
 
-    .badge-soft {
+    .badge-tier-2 {
+      background: #fff3ed;
+      color: #c2410c;
+      border: 1px solid #fdba74;
+    }
+
+    .badge-tier-3 {
       background: #fff8e1;
       color: #92400e;
       border: 1px solid #fcd34d;
     }
 
-    .badge-pref {
+    .badge-tier-4 {
       background: #eff6ff;
       color: #1e40af;
       border: 1px solid #bfdbfe;
     }
 
-    .violation-hard td {
+    .badge-tier-5 {
+      background: #f8f9fa;
+      color: #4b5563;
+      border: 1px solid #d1d5db;
+    }
+
+    .violation-tier-1 td {
       background: #fff5f5;
       border-left: 4px solid #ef4444;
     }
 
-    .violation-soft td {
+    .violation-tier-2 td {
+      background: #fff7f0;
+      border-left: 4px solid #f97316;
+    }
+
+    .violation-tier-3 td {
       background: #fffbeb;
       border-left: 4px solid #f59e0b;
     }
 
-    .violation-pref td {
+    .violation-tier-4 td {
       background: #f0f7ff;
       border-left: 4px solid #60a5fa;
+    }
+
+    .violation-tier-5 td {
+      background: #f9fafb;
+      border-left: 4px solid #9ca3af;
     }
 
     @media (max-width: 820px) {
@@ -555,7 +577,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 15, 2026">v1.2.0 · 2026-05-27</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.2.4 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -840,16 +862,17 @@
             <ol>
               <li>Export the OR schedule from Epic as an .xlsx file.</li>
               <li>Select the file and select Run audit.</li>
-              <li>Violations are grouped by severity: <span class="badge badge-hard">Hard</span> rules must be resolved; <span class="badge badge-soft">Soft</span> rules are strong preferences.</li>
+              <li>Violations are color-coded by tier: <span class="badge badge-tier-1">Tier 1</span> physical absolute, <span class="badge badge-tier-2">Tier 2</span> strong operational, <span class="badge badge-tier-3">Tier 3</span> service preference, <span class="badge badge-tier-4">Tier 4</span> surgeon preference, <span class="badge badge-tier-5">Tier 5</span> suggestion.</li>
             </ol>
-            <h3>Active hard rules:</h3>
-            <div class="keyword-list" aria-label="Active hard rules">
-              <span class="keyword-pill">DV5 → OR2 or OR3</span>
-              <span class="keyword-pill">SP robot → OR5</span>
-              <span class="keyword-pill">Free flap → OR6–OR9</span>
-              <span class="keyword-pill">Age &lt;18 → OR4</span>
+            <h3>Active rules:</h3>
+            <div class="keyword-list" aria-label="Active rule tiers">
+              <span class="keyword-pill"><span class="badge badge-tier-1">Tier 1</span> &nbsp;6 rules · Physical absolute</span>
+              <span class="keyword-pill"><span class="badge badge-tier-2">Tier 2</span> &nbsp;2 rules · Strong operational</span>
+              <span class="keyword-pill"><span class="badge badge-tier-3">Tier 3</span> &nbsp;7 rules · Service preference</span>
+              <span class="keyword-pill"><span class="badge badge-tier-4">Tier 4</span> &nbsp;40 surgeons · Surgeon preference</span>
+              <span class="keyword-pill"><span class="badge badge-tier-5">Tier 5</span> &nbsp;2 rules · Laterality suggestion</span>
             </div>
-            <div class="local-note">Equipment rules take priority over the pediatric room rule when both apply to the same case.</div>
+            <div class="local-note">Lower tier number = higher priority. All fired violations are shown; lower-tier constraints determine the room.</div>
           </aside>
 
           <section class="panel">
@@ -877,11 +900,11 @@
             </div>
             <div class="metric">
               <span class="metric-value" id="roomRulesHardCount">0</span>
-              <span class="metric-label">Hard violations</span>
+              <span class="metric-label">Tier 1–2 violations</span>
             </div>
             <div class="metric">
               <span class="metric-value" id="roomRulesSoftCount">0</span>
-              <span class="metric-label">Soft violations</span>
+              <span class="metric-label">Tier 3–5 flags</span>
             </div>
           </div>
 
@@ -1823,50 +1846,228 @@
 
     // ─── Room Rules ───────────────────────────────────────────────────────────
 
+    const SURGEON_PREFS = [
+      { name: "Jossart",    id: "105751",   rooms: ["OR 10"] },
+      { name: "Zakaria",    id: "20144424", rooms: ["OR 11", "OR 12"] },
+      { name: "Egrie",      id: "30059201", rooms: ["OR 7"] },
+      { name: "Chan",       id: "309844",   rooms: ["OR 1"] },
+      { name: "Lin",        id: "107858",   rooms: ["OR 5"] },
+      { name: "Kardos",     id: "108387",   rooms: ["OR 2"] },
+      { name: "Macdougall", id: "20120390", rooms: ["OR 11", "OR 12"] },
+      { name: "Valone",     id: "20041597", rooms: ["OR 11", "OR 12"] },
+      { name: "Kennedy",    id: "515122",   rooms: ["OR 4"] },
+      { name: "Shah",       id: "20159245", rooms: ["OR 5"] },
+      { name: "So",         id: "30069070", rooms: ["OR 5"] },
+      { name: "Weber",      id: "105621",   rooms: ["OR 11", "OR 12"] },
+      { name: "Sheth",      id: "20137324", rooms: ["OR 4"] },
+      { name: "Kim",        id: "30113240", rooms: ["OR 11", "OR 12"] },
+      { name: "Oshtory",    id: "30079667", rooms: ["OR 11", "OR 12"] },
+      { name: "Leng",       id: "20048503", rooms: ["OR 11", "OR 12"] },
+      { name: "Char",       id: "500276",   rooms: ["OR 10"] },
+      { name: "Seiff",      id: "501360",   rooms: ["OR 10"] },
+      { name: "Reiter",     id: "20063777", rooms: ["OR 5"] },
+      { name: "Goyal",      id: "96086",    rooms: ["OR 14"] },
+      { name: "Hongo",      id: "30068728", rooms: ["OR 14"] },
+      { name: "Nathanson",  id: "30045153", rooms: ["OR 12", "OR 14"] },
+      { name: "Kutzscher",  id: "20002631", rooms: ["OR 5"] },
+      { name: "Zhang",      id: "20158330", rooms: ["OR 11", "OR 12"] },
+      { name: "Liu",        id: "20028386", rooms: ["OR 5"] },
+      { name: "Denny",      id: "20063171", rooms: ["OR 5"] },
+      { name: "Kan",        id: "20126149", rooms: ["OR 4"] },
+      { name: "Agarwal",    id: "20111453", rooms: ["OR 10", "OR 5"] },
+      { name: "Thomas",     id: "20113222", rooms: ["OR 5"] },
+      { name: "Longar",     id: "30068849", rooms: ["OR 10", "OR 5"] },
+      { name: "Korver",     id: "30025215", rooms: ["OR 7", "OR 8"] },
+      { name: "Moscato",    id: "30068912", rooms: ["OR 10", "OR 5"] },
+      { name: "Good",       id: "500568",   rooms: ["OR 4"] },
+      { name: "Yeh",        id: "20150680", rooms: ["OR 5"] },
+      { name: "Ali",        id: "10028590", rooms: ["OR 4", "OR 5"] },
+      { name: "Fuchs",      id: "10003434", rooms: ["OR 4", "OR 5"] },
+      { name: "Charlson",   id: "20131783", rooms: ["OR 10", "OR 5"] },
+      { name: "Lu",         id: "10101593", rooms: ["OR 5"] },
+      { name: "Chen",       id: "30233068", rooms: ["OR 12", "OR 5"] }
+    ];
+
     const ROOM_RULES = [
+      // ── Tier 1: Physical Absolute ─────────────────────────────────────────
       {
-        id: "dv5-robot",
-        tier: "hard",
-        label: "DV5 Robot Room",
-        description: "DV5 robot is immovable — cases must be in OR2 or OR3.",
-        match: { equipmentContains: ["DV5"] },
-        allowedRooms: ["OR2", "OR3"]
+        id: "hard-1",
+        tier: 1,
+        label: "DaVinci DV5 Robot",
+        description: "DaVinci DV5 robot is immovable — cases must be in OR 2 or OR 3.",
+        match: { equipmentContainsAny: ["Robot DaVinci DV5", "Davinci Robot Xi", "Table Trumpf 7000dV", "daVinci Surgeon Chair", "Tower Robot"] },
+        allowedRooms: ["OR 2", "OR 3"]
       },
       {
-        id: "sp-robot",
-        tier: "hard",
-        label: "SP Robot Room",
-        description: "SP robot is immovable — cases must be in OR5.",
-        match: { equipmentContains: ["Robot SP"] },
-        allowedRooms: ["OR5"]
+        id: "hard-2",
+        tier: 1,
+        label: "DaVinci SP Robot",
+        description: "DaVinci SP robot is immovable — cases must be in OR 5.",
+        match: { equipmentContainsAny: ["DaVinci Robot SP"] },
+        allowedRooms: ["OR 5"]
       },
       {
-        id: "free-flap",
-        tier: "hard",
-        label: "Free Flap — 3-Light Room",
-        description: "Free flap procedures require a 3-light room (OR6, OR7, OR8, or OR9).",
-        match: { procedureIds: [] }, // placeholder — add Epic procedure IDs here
-        allowedRooms: ["OR6", "OR7", "OR8", "OR9"]
+        id: "hard-3",
+        tier: 1,
+        label: "Neuro/Spine Room",
+        description: "Neuro/spine equipment is fixed to OR 11 or OR 12.",
+        match: { equipmentContainsAny: ["Robot Neuro Excelsius GPS Globus", "Table Intraop CT Spine AIRO", "Table Intraop CT Cranial AIRO", "Scanner Airo Mobile Intraoperative CT", "System Navigation Brainlab", "Unit Doppler Micro Neuro", "Table Jackson", "Frame Wilson", "Mayfield Basic Unit", "Table Double Decker", "Trios Jackson Spinal", "Cart Electrophysiology Neuro"] },
+        allowedRooms: ["OR 11", "OR 12"]
       },
       {
-        id: "peds-age",
-        tier: "soft",
-        label: "Pediatric Patient",
-        description: "Patients under 18 should be in OR4 unless an equipment hard rule applies.",
-        match: { patientAgeUnder: 18 },
-        allowedRooms: ["OR4"],
-        overriddenBy: ["dv5-robot", "sp-robot"],
-        explanation: "Pediatric case outside OR4. Please move to OR4 if available."
+        id: "hard-4",
+        tier: 1,
+        label: "Cardiac Surgery Room",
+        description: "Cardiac surgery equipment is fixed to OR 7.",
+        match: { equipmentContainsAny: ["Machine Heart Lung Perfusion", "Mount Table Large Estech", "Stool Hydraulic Ima", "Unit Hemopro 5500", "Cable Pacing Tester"] },
+        allowedRooms: ["OR 7"]
+      },
+      {
+        id: "hard-5",
+        tier: 1,
+        label: "Transplant Room",
+        description: "Transplant equipment requires OR 6 or OR 9.",
+        match: { equipmentContainsAny: ["Table Back w/o shelf (Transplant)", "Table Small w/o shelf (Transplant)", "Cooler Donor", "Cart Renal Transplant", "ORGANOX"] },
+        allowedRooms: ["OR 6", "OR 9"]
+      },
+      {
+        id: "hard-6",
+        tier: 1,
+        label: "Hybrid/Cath Lab",
+        description: "Hybrid/cath lab equipment requires OR 14.",
+        match: { equipmentContainsAny: ["CV ACCESSION EQ"] },
+        allowedRooms: ["OR 14"]
+      },
+      // ── Tier 2: Strong Operational ────────────────────────────────────────
+      {
+        id: "ops-1",
+        tier: 2,
+        label: "Ophthalmology Equipment Room",
+        description: "Ophthalmology equipment should be in OR 5 or OR 10.",
+        match: { equipmentContainsAny: ["Unit Phaco Centurion", "Microscope Zeiss Eye", "Microscope Leica Eye", "Suction Irrigation System ROSI", "Cart Eye", "Gurney Eye", "Unit MIRA Diathermy", "Unit MIRA Transilluminator", "Wristrest Chan", "Tower Video Eye", "Ophthalmoscope Indirect Omega", "Unit Vitrectomy Constellation", "Machine Optiwave Refractive Analysis (ORA)", "Cart Vitrectomy"] },
+        allowedRooms: ["OR 5", "OR 10"]
+      },
+      {
+        id: "ops-2",
+        tier: 2,
+        label: "Pediatric Room",
+        description: "Pediatric cases should be in OR 4.",
+        match: { anyOf: [{ equipmentContainsAny: ["Cart Pediatric", "Warmer Overhead (French Fry)"] }, { patientAgeUnder: 18 }] },
+        allowedRooms: ["OR 4"],
+        explanation: "Pediatric case outside OR 4. Please move to OR 4 if available."
+      },
+      // ── Tier 3: Service Preference ────────────────────────────────────────
+      {
+        id: "svc-1",
+        tier: 3,
+        label: "Cardiac Surgery Service",
+        description: "Cardiac surgery cases are typically in OR 7, OR 8, or OR 14.",
+        match: { service: "Cardiac" },
+        allowedRooms: ["OR 7", "OR 8", "OR 14"]
+      },
+      {
+        id: "svc-2",
+        tier: 3,
+        label: "Neurosurgery Service",
+        description: "Neurosurgery cases are typically in OR 11 or OR 12.",
+        match: { service: "Neurosurgery" },
+        allowedRooms: ["OR 11", "OR 12"]
+      },
+      {
+        id: "svc-3",
+        tier: 3,
+        label: "Ophthalmology Service",
+        description: "Ophthalmology cases are typically in OR 5 or OR 10.",
+        match: { service: "Ophthalmology" },
+        allowedRooms: ["OR 5", "OR 10"]
+      },
+      {
+        id: "svc-4",
+        tier: 3,
+        label: "Spine Service",
+        description: "Spine cases are typically in OR 11 or OR 12.",
+        match: { service: "Spine" },
+        allowedRooms: ["OR 11", "OR 12"]
+      },
+      {
+        id: "svc-5",
+        tier: 3,
+        label: "Orthopedics Service",
+        description: "Orthopedics cases are typically in OR 11 or OR 12.",
+        match: { service: "Orthopedics" },
+        allowedRooms: ["OR 11", "OR 12"]
+      },
+      {
+        id: "svc-6",
+        tier: 3,
+        label: "Cardiology Service",
+        description: "Cardiology cases are typically in OR 14.",
+        match: { service: "Cardiology" },
+        allowedRooms: ["OR 14"]
+      },
+      {
+        id: "svc-7",
+        tier: 3,
+        label: "Pain Management Service",
+        description: "Pain management cases are typically in OR 11, OR 12, or OR 4.",
+        match: { service: "Pain Management" },
+        allowedRooms: ["OR 11", "OR 12", "OR 4"]
+      },
+      // ── Tier 4: Surgeon Preference (generated from SURGEON_PREFS) ─────────
+      ...SURGEON_PREFS.map((s) => ({
+        id: `surgeon-${s.id}`,
+        tier: 4,
+        label: `${s.name} Preference`,
+        description: `${s.name} typically operates in ${s.rooms.join(" or ")}.`,
+        match: { surgeonId: s.id },
+        allowedRooms: s.rooms
+      })),
+      // ── Tier 5: Laterality Suggestion ─────────────────────────────────────
+      {
+        id: "lat-001",
+        tier: 5,
+        label: "PCNL Right",
+        description: "Right PCNL cases are suggested in OR 2, OR 8, or OR 12.",
+        match: { procedureTextContains: "PCNL", laterality: "right" },
+        allowedRooms: ["OR 2", "OR 8", "OR 12"]
+      },
+      {
+        id: "lat-002",
+        tier: 5,
+        label: "PCNL Left",
+        description: "Left PCNL cases are suggested in OR 4, OR 5, or OR 11.",
+        match: { procedureTextContains: "PCNL", laterality: "left" },
+        allowedRooms: ["OR 4", "OR 5", "OR 11"]
       }
     ];
 
     const roomRulesColumns = [
-      { key: "caseNumber", label: "Case #", accepted: ["case #", "case number", "case id"] },
-      { key: "date", label: "Date", accepted: ["date", "surgery date", "procedure date"] },
-      { key: "room", label: "Room", accepted: ["room", "or room", "location"] },
-      { key: "procedures", label: "Case Procedures", accepted: ["case procedures", "procedure", "procedure name", "procedures"] },
-      { key: "equipment", label: "Equipment", accepted: ["equipment", "equipment items"] },
-      { key: "patientAge", label: "Patient Age", accepted: ["patient age", "age"] }
+      { key: "caseNumber", label: "Case #",        accepted: ["case #", "case number", "case id"] },
+      { key: "date",       label: "Date",           accepted: ["date", "surgery date", "procedure date"] },
+      { key: "room",       label: "Room",           accepted: ["room", "or room", "location"] },
+      { key: "procedures", label: "Case Procedures",accepted: ["case procedures", "procedure", "procedure name", "procedures"] },
+      { key: "equipment",  label: "Equipment",      accepted: ["equipment", "equipment items"] },
+      { key: "patientAge", label: "Patient Age",    accepted: ["patient age", "age"] },
+      { key: "service",    label: "Service",        accepted: ["service"] },
+      { key: "surgeon",    label: "Lead Surgeon",   accepted: ["lead surgeon", "surgeon"] }
+    ];
+
+    const roomRulesRequiredColumns = [
+      { label: "Date",                accepted: ["date"] },
+      { label: "Proc Start",          accepted: ["proc start"] },
+      { label: "Proc End",            accepted: ["proc end"] },
+      { label: "Case #",              accepted: ["case #", "case number"] },
+      { label: "Lead Surgeon",        accepted: ["lead surgeon"] },
+      { label: "Service",             accepted: ["service"] },
+      { label: "Case Procedures",     accepted: ["case procedures"] },
+      { label: "Patient Class",       accepted: ["patient class", "base patient class"] },
+      { label: "Room",                accepted: ["room"] },
+      { label: "Status",              accepted: ["status"] },
+      { label: "Equipment",           accepted: ["equipment"] },
+      { label: "Patient Age",         accepted: ["patient age"] },
+      { label: "Proj Start Time",     accepted: ["proj start time"] },
+      { label: "Proj End Time",       accepted: ["proj end time"] },
+      { label: "Case Classification", accepted: ["case classification"] }
     ];
 
     // DOM refs for room rules
@@ -1904,17 +2105,17 @@
 
     function normalizeRoomName(text) {
       const match = String(text || "").match(/\bOR\s*(\d+)/i);
-      return match ? "OR" + parseInt(match[1], 10) : String(text || "").trim().toUpperCase();
+      return match ? "OR " + parseInt(match[1], 10) : String(text || "").trim().toUpperCase();
     }
 
-    function extractProcedureIds(text) {
-      const ids = [];
-      const pattern = /\[(\d+)\]/g;
-      let match;
-      while ((match = pattern.exec(String(text || ""))) !== null) {
-        ids.push(match[1]);
-      }
-      return ids;
+    function extractSurgeonId(text) {
+      const match = String(text || "").match(/\[(\d+)\]/);
+      return match ? match[1] : null;
+    }
+
+    function parseLaterality(text) {
+      const match = String(text || "").match(/\b(left|right)\b/i);
+      return match ? match[1].toLowerCase() : null;
     }
 
     function parsePatientAge(text) {
@@ -1922,18 +2123,50 @@
       return match ? parseInt(match[1], 10) : null;
     }
 
-    function ruleTriggersForCase(rule, equipmentText, procedureIds, patientAge) {
-      const m = rule.match;
-      if (m.equipmentContains) {
-        const src = String(equipmentText || "").toLowerCase();
-        return m.equipmentContains.some((term) => src.includes(term.toLowerCase()));
+    function validateRoomRulesColumns(populatedRows) {
+      const scanLimit = Math.min(populatedRows.length, 40);
+      let bestHeaders = [];
+      let bestCount = 0;
+
+      for (let i = 0; i < scanLimit; i++) {
+        const headers = (populatedRows[i] || []).map((v) => normalizeHeader(v));
+        const count = roomRulesRequiredColumns.filter(
+          (col) => findHeader(headers, col.accepted) !== -1
+        ).length;
+        if (count > bestCount) {
+          bestCount = count;
+          bestHeaders = headers;
+        }
       }
-      if (m.procedureIds) {
-        if (!m.procedureIds.length) return false;
-        return m.procedureIds.some((id) => procedureIds.includes(String(id)));
+
+      return roomRulesRequiredColumns
+        .filter((col) => findHeader(bestHeaders, col.accepted) === -1)
+        .map((col) => col.label);
+    }
+
+    function ruleTriggersForCase(rule, ctx) {
+      const m = rule.match;
+      if (m.anyOf) {
+        return m.anyOf.some((sub) => ruleTriggersForCase({ match: sub }, ctx));
+      }
+      if (m.equipmentContainsAny) {
+        const src = String(ctx.equipmentText || "").toLowerCase();
+        return m.equipmentContainsAny.some((term) => src.includes(term.toLowerCase()));
+      }
+      if (m.service !== undefined) {
+        return String(ctx.serviceText || "").toLowerCase() === m.service.toLowerCase();
+      }
+      if (m.surgeonId !== undefined) {
+        return ctx.surgeonId === m.surgeonId;
+      }
+      if (m.procedureTextContains !== undefined) {
+        const textMatch = String(ctx.proceduresText || "").toLowerCase().includes(m.procedureTextContains.toLowerCase());
+        if (!textMatch) return false;
+        if (m.laterality !== undefined) return ctx.laterality === m.laterality;
+        return true;
       }
       if (m.patientAgeUnder !== undefined) {
-        return patientAge !== null && patientAge < m.patientAgeUnder;
+        return ctx.patientAge !== null && ctx.patientAge < m.patientAgeUnder;
       }
       return false;
     }
@@ -1944,50 +2177,47 @@
         throw new Error("The spreadsheet was readable, but no data rows were found.");
       }
 
+      const missingColumns = validateRoomRulesColumns(populatedRows);
+      if (missingColumns.length) {
+        throw new Error(
+          `This file is missing ${missingColumns.length} required column${missingColumns.length === 1 ? "" : "s"}: ` +
+          missingColumns.join(", ") +
+          ". Please export a complete OR schedule from Epic."
+        );
+      }
+
       const headerInfo = findHeaderInfoForColumns(populatedRows, roomRulesColumns);
-      if (!headerInfo) throw new Error("Could not find the required columns (Case #, Date, Room, Case Procedures, Equipment, Patient Age) in this spreadsheet.");
+      if (!headerInfo) throw new Error("Could not locate the header row in this spreadsheet.");
       const { indexes, headerRowIndex } = headerInfo;
       const dataRows = populatedRows.slice(headerRowIndex + 1);
       const violations = [];
 
       dataRows.forEach((row) => {
-        const caseNumber = cell(row, indexes.caseNumber);
-        const dateValue = parseDateCell(cell(row, indexes.date));
-        const rawRoom = cell(row, indexes.room);
+        const caseNumber   = cell(row, indexes.caseNumber);
+        const dateValue    = parseDateCell(cell(row, indexes.date));
+        const rawRoom      = cell(row, indexes.room);
         const normalizedRoom = normalizeRoomName(rawRoom);
-        const equipmentText = cell(row, indexes.equipment);
+        const equipmentText  = cell(row, indexes.equipment);
         const proceduresText = cell(row, indexes.procedures);
-        const procedureIds = extractProcedureIds(proceduresText);
-        const patientAge = parsePatientAge(cell(row, indexes.patientAge));
+        const patientAge     = parsePatientAge(cell(row, indexes.patientAge));
+        const serviceText    = cell(row, indexes.service);
+        const surgeonId      = extractSurgeonId(cell(row, indexes.surgeon));
+        const laterality     = parseLaterality(proceduresText);
 
-        // Determine which rules fire
-        const firedRuleIds = new Set();
+        const ctx = { equipmentText, proceduresText, patientAge, serviceText, surgeonId, laterality };
+
         ROOM_RULES.forEach((rule) => {
-          if (ruleTriggersForCase(rule, equipmentText, procedureIds, patientAge)) {
-            firedRuleIds.add(rule.id);
-          }
-        });
-
-        // Check violations, applying override suppression for peds rule
-        ROOM_RULES.forEach((rule) => {
-          if (!firedRuleIds.has(rule.id)) return;
-
-          // Suppress peds rule if an overriding equipment rule also fired
-          if (rule.overriddenBy) {
-            const overrideFired = rule.overriddenBy.some((id) => firedRuleIds.has(id));
-            if (overrideFired) return;
-          }
-
+          if (!ruleTriggersForCase(rule, ctx)) return;
           if (!rule.allowedRooms.includes(normalizedRoom)) {
             const allowedList = rule.allowedRooms.join(", ");
             violations.push({
               caseNumber,
-              date: dateValue.display,
-              sortDate: dateValue.sort,
-              room: normalizedRoom || rawRoom,
+              date:      dateValue.display,
+              sortDate:  dateValue.sort,
+              room:      normalizedRoom || rawRoom,
               procedures: proceduresText,
-              ruleId: rule.id,
-              ruleTier: rule.tier,
+              ruleId:    rule.id,
+              ruleTier:  rule.tier,
               ruleLabel: rule.label,
               explanation: rule.explanation || `${normalizedRoom || rawRoom} is not an allowed room for this case. Allowed: ${allowedList}.`
             });
@@ -1995,16 +2225,16 @@
         });
       });
 
-      const hardCount = violations.filter((v) => v.ruleTier === "hard").length;
-      const softCount = violations.filter((v) => v.ruleTier === "soft").length;
+      const tier12Count  = violations.filter((v) => v.ruleTier <= 2).length;
+      const tier345Count = violations.filter((v) => v.ruleTier >= 3).length;
 
-      return { totalRows: dataRows.length, violations, hardCount, softCount };
+      return { totalRows: dataRows.length, violations, tier12Count, tier345Count };
     }
 
     function renderRoomRulesResults(result) {
       roomRulesTotalRowsEl.textContent = String(result.totalRows);
-      roomRulesHardCountEl.textContent = String(result.hardCount);
-      roomRulesSoftCountEl.textContent = String(result.softCount);
+      roomRulesHardCountEl.textContent = String(result.tier12Count);
+      roomRulesSoftCountEl.textContent = String(result.tier345Count);
       roomRulesViolationsTable.textContent = "";
 
       if (!result.violations.length) {
@@ -2013,8 +2243,7 @@
       }
 
       const sorted = result.violations.slice().sort((a, b) => {
-        const tierOrder = { hard: 0, soft: 1, preference: 2 };
-        const tierDiff = (tierOrder[a.ruleTier] ?? 9) - (tierOrder[b.ruleTier] ?? 9);
+        const tierDiff = a.ruleTier - b.ruleTier;
         if (tierDiff !== 0) return tierDiff;
         if (a.sortDate !== b.sortDate) return a.sortDate - b.sortDate;
         return String(a.caseNumber).localeCompare(String(b.caseNumber), undefined, { numeric: true });
@@ -2022,15 +2251,15 @@
 
       sorted.forEach((v) => {
         const tr = document.createElement("tr");
-        tr.className = `violation-${v.ruleTier}`;
+        tr.className = `violation-tier-${v.ruleTier}`;
         tr.append(td(v.caseNumber));
         tr.append(td(v.date));
         tr.append(td(v.room));
         tr.append(td(v.procedures));
         const severityCell = document.createElement("td");
         const badge = document.createElement("span");
-        badge.className = `badge badge-${v.ruleTier}`;
-        badge.textContent = v.ruleTier.charAt(0).toUpperCase() + v.ruleTier.slice(1);
+        badge.className = `badge badge-tier-${v.ruleTier}`;
+        badge.textContent = `Tier ${v.ruleTier}`;
         severityCell.append(badge);
         tr.append(severityCell);
         tr.append(td(v.ruleLabel));
