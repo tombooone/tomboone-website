@@ -556,14 +556,17 @@
 
     /* ── Gantt chart ─────────────────────────────────────────── */
     .gantt-section { margin-bottom: 28px; }
-    .gantt-section > h2 { margin-bottom: 10px; }
+    .gantt-section > h2 { margin-bottom: 12px; }
 
-    .gantt-calendar {
+    .gantt-body {
       display: flex;
-      flex-wrap: wrap;
       gap: 16px;
-      margin-bottom: 20px;
+      align-items: flex-start;
     }
+    .gantt-cal-col { flex-shrink: 0; }
+    .gantt-main    { flex: 1; min-width: 0; }
+
+    .gantt-calendar { display: block; }
 
     .gantt-cal-month {
       border: 1px solid var(--line);
@@ -613,7 +616,10 @@
     .gantt-cal-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: 26px;
       gap: 2px;
+      height: 166px; /* fixed: 6 rows × 26px + 5 × 2px gaps */
+      align-content: start;
     }
 
     .gantt-cal-cell {
@@ -724,7 +730,6 @@
       top: 5px;
       height: 42px;
       border-radius: 4px;
-      border-left: 4px solid transparent;
       cursor: pointer;
       overflow: hidden;
       display: flex;
@@ -734,18 +739,34 @@
       z-index: 2;
     }
     .gantt-case-block:hover { filter: brightness(0.91); }
-    .gantt-viol-1 { border-left-color: #ef4444; }
-    .gantt-viol-2 { border-left-color: #f97316; }
-    .gantt-viol-3 { border-left-color: #f59e0b; }
-    .gantt-viol-4 { border-left-color: #60a5fa; }
-    .gantt-viol-5 { border-left-color: #9ca3af; }
 
+    /* Violation tiers: proc segment (lighter), prep/cleanup (darker) */
     .gantt-block-prep    { background: #c4a97d; flex-shrink: 0; }
     .gantt-block-cleanup { background: #c4a97d; flex-shrink: 0; }
-    .gantt-block-proc {
-      background: #e8d5b0;
-      flex: 1;
-      min-width: 0;
+    .gantt-block-proc    { background: #e8d5b0; flex: 1; min-width: 0; }
+
+    .gantt-viol-1 .gantt-block-proc              { background: #fce8e8; }
+    .gantt-viol-1 .gantt-block-prep,
+    .gantt-viol-1 .gantt-block-cleanup            { background: #fca5a5; }
+    .gantt-viol-2 .gantt-block-proc              { background: #fff3ed; }
+    .gantt-viol-2 .gantt-block-prep,
+    .gantt-viol-2 .gantt-block-cleanup            { background: #fdba74; }
+    .gantt-viol-3 .gantt-block-proc              { background: #fff8e1; }
+    .gantt-viol-3 .gantt-block-prep,
+    .gantt-viol-3 .gantt-block-cleanup            { background: #fcd34d; }
+    .gantt-viol-4 .gantt-block-proc              { background: #eff6ff; }
+    .gantt-viol-4 .gantt-block-prep,
+    .gantt-viol-4 .gantt-block-cleanup            { background: #bfdbfe; }
+    .gantt-viol-5 .gantt-block-proc              { background: #f8f9fa; }
+    .gantt-viol-5 .gantt-block-prep,
+    .gantt-viol-5 .gantt-block-cleanup            { background: #d1d5db; }
+
+    /* Text overlay: absolutely positioned, spans the full tile so text starts at left edge */
+    .gantt-block-text {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -846,7 +867,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-top: 10px;
     }
     .gantt-day-nav-btn {
       background: none;
@@ -993,7 +1014,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.4 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.5 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1329,11 +1350,17 @@
           <div id="ganttSection" hidden>
             <div class="gantt-section">
               <h2>Schedule timeline</h2>
-              <div id="ganttCalendar" class="gantt-calendar"></div>
-              <div id="ganttDayNav" class="gantt-day-nav"></div>
-              <div class="gantt-container">
-                <div class="gantt-fixed-col" id="ganttFixedCol"></div>
-                <div class="gantt-scrollable" id="ganttScrollable"></div>
+              <div class="gantt-body">
+                <div class="gantt-cal-col">
+                  <div id="ganttCalendar" class="gantt-calendar"></div>
+                  <div id="ganttDayNav" class="gantt-day-nav"></div>
+                </div>
+                <div class="gantt-main">
+                  <div class="gantt-container">
+                    <div class="gantt-fixed-col" id="ganttFixedCol"></div>
+                    <div class="gantt-scrollable" id="ganttScrollable"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -3224,6 +3251,15 @@
         grid.append(el);
       }
 
+      // Pad to 42 cells (6 full rows) so the calendar height is constant across months
+      const totalCells = firstDow + daysInMonth;
+      for (let i = totalCells; i < 42; i++) {
+        const empty = document.createElement("div");
+        empty.className = "gantt-cal-cell gantt-cal-cell-empty";
+        empty.textContent = "0";
+        grid.append(empty);
+      }
+
       monthEl.append(grid);
       container.append(monthEl);
     }
@@ -3366,6 +3402,7 @@
             block.style.left  = ((clampS - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
             block.style.width = blockW + "px";
 
+            // Background segments (prep / proc / cleanup)
             if (prepPx > 0.5) {
               const prep = document.createElement("div");
               prep.className = "gantt-block-prep";
@@ -3375,6 +3412,18 @@
 
             const proc = document.createElement("div");
             proc.className = "gantt-block-proc";
+            block.append(proc);
+
+            if (cleanPx > 0.5) {
+              const cleanup = document.createElement("div");
+              cleanup.className = "gantt-block-cleanup";
+              cleanup.style.width = Math.round(cleanPx) + "px";
+              block.append(cleanup);
+            }
+
+            // Text overlay — position:absolute so text starts at the left edge of the full tile
+            const txt = document.createElement("div");
+            txt.className = "gantt-block-text";
             const s1 = document.createElement("div");
             s1.className = "gantt-block-surgeon";
             s1.textContent = c.surgeon || "";
@@ -3386,15 +3435,8 @@
             const s3 = document.createElement("div");
             s3.className = "gantt-block-casenum";
             s3.textContent = String(c.caseNumber);
-            proc.append(s1, s2, s3);
-            block.append(proc);
-
-            if (cleanPx > 0.5) {
-              const cleanup = document.createElement("div");
-              cleanup.className = "gantt-block-cleanup";
-              cleanup.style.width = Math.round(cleanPx) + "px";
-              block.append(cleanup);
-            }
+            txt.append(s1, s2, s3);
+            block.append(txt);
 
             block.addEventListener("mouseenter", (e) => showGanttTooltip(e, c, viols));
             block.addEventListener("mousemove",  moveGanttTooltip);
