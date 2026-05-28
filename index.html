@@ -577,7 +577,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.2.4 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.2.5 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1953,8 +1953,7 @@
         label: "Pediatric Room",
         description: "Pediatric cases should be in OR 4.",
         match: { anyOf: [{ equipmentContainsAny: ["Cart Pediatric", "Warmer Overhead (French Fry)"] }, { patientAgeUnder: 18 }] },
-        allowedRooms: ["OR 4"],
-        explanation: "Pediatric case outside OR 4. Please move to OR 4 if available."
+        allowedRooms: ["OR 4"]
       },
       // ── Tier 3: Service Preference ────────────────────────────────────────
       {
@@ -2123,6 +2122,45 @@
       return match ? parseInt(match[1], 10) : null;
     }
 
+    function formatRoomList(rooms, conjunction) {
+      if (rooms.length === 1) return rooms[0];
+      if (rooms.length === 2) return `${rooms[0]} ${conjunction} ${rooms[1]}`;
+      return `${rooms.slice(0, -1).join(", ")}, ${conjunction} ${rooms[rooms.length - 1]}`;
+    }
+
+    function buildExplanation(rule) {
+      const rooms = rule.allowedRooms;
+      switch (rule.tier) {
+        case 1: {
+          const fixed = formatRoomList(rooms, "and");
+          const move  = formatRoomList(rooms, "or");
+          return `${rule.label} is fixed in ${fixed}. Please move this case to ${move}.`;
+        }
+        case 2: {
+          if (rule.id === "ops-2") {
+            return "OR 4 is the designated pediatric room. Please move this case to OR 4 if available.";
+          }
+          const list = formatRoomList(rooms, "and");
+          return `${rule.label} equipment is designated for ${list}. Please move this case if available.`;
+        }
+        case 3: {
+          const list = formatRoomList(rooms, "and");
+          return `${rule.match.service} cases are generally assigned to ${list} — please verify this room assignment.`;
+        }
+        case 4: {
+          const surgeonName = rule.label.replace(/ Preference$/, "");
+          const list = formatRoomList(rooms, "or");
+          return `${surgeonName} typically operates in ${list} — consider reassigning if possible.`;
+        }
+        case 5: {
+          const list = formatRoomList(rooms, "or");
+          return `${rule.match.procedureTextContains} on the ${rule.match.laterality} side is usually scheduled in ${list} for setup convenience.`;
+        }
+        default:
+          return `Allowed rooms: ${rooms.join(", ")}.`;
+      }
+    }
+
     function validateRoomRulesColumns(populatedRows) {
       const scanLimit = Math.min(populatedRows.length, 40);
       let bestHeaders = [];
@@ -2209,7 +2247,6 @@
         ROOM_RULES.forEach((rule) => {
           if (!ruleTriggersForCase(rule, ctx)) return;
           if (!rule.allowedRooms.includes(normalizedRoom)) {
-            const allowedList = rule.allowedRooms.join(", ");
             violations.push({
               caseNumber,
               date:      dateValue.display,
@@ -2219,7 +2256,7 @@
               ruleId:    rule.id,
               ruleTier:  rule.tier,
               ruleLabel: rule.label,
-              explanation: rule.explanation || `${normalizedRoom || rawRoom} is not an allowed room for this case. Allowed: ${allowedList}.`
+              explanation: buildExplanation(rule)
             });
           }
         });
