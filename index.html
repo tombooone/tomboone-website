@@ -577,7 +577,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.2.5 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.2.7 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1895,7 +1895,7 @@
         tier: 1,
         label: "DaVinci DV5 Robot",
         description: "DaVinci DV5 robot is immovable — cases must be in OR 2 or OR 3.",
-        match: { equipmentContainsAny: ["Robot DaVinci DV5", "Davinci Robot Xi", "Table Trumpf 7000dV", "daVinci Surgeon Chair", "Tower Robot"] },
+        match: { equipmentContainsAny: ["Robot DaVinci DV5", "Davinci Robot Xi"] },
         allowedRooms: ["OR 2", "OR 3"]
       },
       {
@@ -1904,7 +1904,8 @@
         label: "DaVinci SP Robot",
         description: "DaVinci SP robot is immovable — cases must be in OR 5.",
         match: { equipmentContainsAny: ["DaVinci Robot SP"] },
-        allowedRooms: ["OR 5"]
+        allowedRooms: ["OR 5"],
+        suppressesWhenCompliant: ["hard-1"]
       },
       {
         id: "hard-3",
@@ -2244,8 +2245,17 @@
 
         const ctx = { equipmentText, proceduresText, patientAge, serviceText, surgeonId, laterality };
 
-        ROOM_RULES.forEach((rule) => {
-          if (!ruleTriggersForCase(rule, ctx)) return;
+        const firedRules = ROOM_RULES.filter((rule) => ruleTriggersForCase(rule, ctx));
+
+        const suppressedIds = new Set();
+        firedRules.forEach((rule) => {
+          if (rule.suppressesWhenCompliant && rule.allowedRooms.includes(normalizedRoom)) {
+            rule.suppressesWhenCompliant.forEach((id) => suppressedIds.add(id));
+          }
+        });
+
+        firedRules.forEach((rule) => {
+          if (suppressedIds.has(rule.id)) return;
           if (!rule.allowedRooms.includes(normalizedRoom)) {
             violations.push({
               caseNumber,
