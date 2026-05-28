@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-05-28
+## Last updated: 2026-05-28 (v1.3.4 in progress)
 
 ---
 
@@ -9,38 +9,41 @@
 - **NEVER touch the existing CPT audit or equipment audit code** — those tools are live and working
 - All processing is **local browser only** — no server, no uploads, no external data storage
 - PHI-safe by design — the only unique identifier in schedule data is Case #
+- Always commit and push to GitHub after every change
+- Always bump the version number with every change
 
 ---
 
 ## Project Overview
 
-A PHI-safe OR scheduling audit web tool at **tombooone.github.io/tomboone-website**.
+A PHI-safe OR scheduling audit web tool at **tomboone.io** (custom domain → tombooone.github.io/tomboone-website).
 
-Three tools on the home screen:
-1. **CPT Audit Tool** — compares Epic report CPTs against panel CPTs and CMS inpatient-only codes ✅ complete, do not touch
-2. **Equipment Request Audit** — finds cases where Special Needs terms are missing from Equipment ✅ complete, do not touch
-3. **Room Rules Audit** — checks upcoming OR schedule against a validated rule set 🔧 in progress
+Four tools on the home screen:
+1. **CPT Audit Tool** ✅ complete, do not touch
+2. **Equipment Request Audit** ✅ complete, do not touch
+3. **Room Rules Audit** 🔧 active development — see below
+4. **Rule Management** 🔧 planned — read-only view of active rules by tier
 
 ---
 
-## Deployment
+## Current Version & Deployment
 
-- **Repo:** github.com/tombooone/tomboone-website
-- **Deploy:** `git add index.html` → `git commit -m "message"` → `git push`
-- **Live site updates automatically** after push
-- **Version badge** in topbar must be bumped with every change (currently v1.2.7)
+- Current version: **v1.3.4** (in progress)
+- Repo: github.com/tombooone/tomboone-website
+- Deploy: `git add index.html && git commit -m "message" && git push`
+- GitHub Pages auto-deploys on push
 
 ---
 
 ## Data Schema
 
-Both historical and prospective Epic reports share the same 24 columns:
+Both historical and prospective Epic reports share the same columns:
 
 | Column | Use | Notes |
 |--------|-----|-------|
 | Date | Case date | Excel serial or date string |
-| Proc Start | Scheduled wheels-in | Decimal time |
-| Proc End | Scheduled wheels-out | Decimal time |
+| Proc Start | Scheduled wheels-in | Time string HH:MM:SS or decimal fraction |
+| Proc End | Scheduled wheels-out | Time string HH:MM:SS or decimal fraction |
 | Case # | Unique identifier | Only PHI-safe ID |
 | Lead Surgeon | Primary surgeon | Format: "Last, First, MD [providerID]" — use bracketed ID for rules |
 | Service | Service line | Reliable for service rules; ignore "Robotics" service |
@@ -57,8 +60,8 @@ Both historical and prospective Epic reports share the same 24 columns:
 | OR Ready to Schedule | Ignore | |
 | Patient Age | e.g. "62 yrs" | Parse leading integer; under 18 = peds rule |
 | Base Patient Class | Ignore for rules | IP/OP/ED |
-| Proj Start Time | Setup start = Gantt left edge | Actual in historical, scheduled in prospective |
-| Proj End Time | Cleanup end = Gantt right edge | Actual in historical, scheduled in prospective |
+| Proj Start Time | Setup start = Gantt block left edge | Actual in historical, scheduled in prospective |
+| Proj End Time | Cleanup end = Gantt block right edge | Actual in historical, scheduled in prospective |
 | Case Classification | Elective = full weight | All others = low/zero weight for rule discovery |
 | Add-on | Two values, treat same | Low weight for rule discovery |
 | Add-on Date | Reference only | |
@@ -67,61 +70,71 @@ Both historical and prospective Epic reports share the same 24 columns:
 
 ## Room Rules Architecture
 
-### Tier System (numeric, 1 = highest priority)
+### Tier System
 
-| Tier | Name | Color | Description |
+| Tier | Name | Color | Term to use |
 |------|------|-------|-------------|
-| 1 | Physical Absolute | Red | Immovable equipment — cannot be overridden |
-| 2 | Strong Operational | Orange | Designated room assignments, override requires coordination |
-| 3 | Service Preference | Amber | Service line clustering, strong but flexible |
-| 4 | Surgeon Preference | Blue | Behavioral patterns, no hard clinical reason |
-| 5 | Suggestion | Grey | Low-confidence patterns, convenience preferences |
+| 1 | Physical Absolute | Red | Alert |
+| 2 | Strong Operational | Orange | Alert |
+| 3 | Service Preference | Amber | Flag |
+| 4 | Surgeon Preference | Blue | Flag |
+| 5 | Suggestion | Grey | Flag |
+
+**Language rules:**
+- Tier 1-2 issues = "alerts" 
+- Tier 3-5 issues = "flags"
+- Metric label: "Tier 1-2 alerts" and "Tier 3-5 flags"
+- Table header: "Room rule alerts and flags"
+- Never use the word "violation" in user-facing text
+- "Audit" is fine to keep
+- Explanation language should be brief, suggestive, not punitive
 
 **Conflict resolution:** Lower tier number wins. If Tier 1 fires, it overrides all others.
-**Special case:** Ophthalmology equipment (Tier 2) takes priority over peds age rule (Tier 2) — ophtho wins.
-**SP robot rule:** If SP robot fires AND room is compliant (OR5), do not evaluate DV5 rule for that case.
+**Special case:** Ophthalmology equipment (Tier 2) takes priority over peds age rule (Tier 2).
+**SP robot rule:** If SP robot fires AND room is compliant (OR5), suppress DV5 rule evaluation for that case (`suppressesWhenCompliant` field).
+**Maxillofacial/Dental exception:** Service = Maxillofacial or Dental suppresses HARD-3 Neuro/Spine rule even if equipment triggers it.
 
 ### Rule Match Types
 
-- `equipmentContainsAny` — array of strings, fires if ANY matches equipment field (case-insensitive substring, after stripping "W " prefix)
+- `equipmentContainsAny` — array of strings, fires if ANY matches (case-insensitive substring, after stripping prefix)
 - `service` — exact match against Service column
 - `surgeonId` — matches bracketed ID in Lead Surgeon column
-- `procedureTextContains` + `laterality` — text match in Case Procedures + parsed laterality (left/right)
-- `patientAgeUnder` — numeric comparison against parsed Patient Age
+- `procedureTextContains` + `laterality` — text match in Case Procedures + parsed laterality
+- `patientAgeUnder` — numeric comparison
 - `anyOf` — OR condition combining multiple match types
 
 ### Robot Case Detection
 
-- DV5 cases: equipment contains "Robot DaVinci DV5" OR "Davinci Robot Xi"
-- SP cases: equipment contains "DaVinci Robot SP"
-- Do NOT use Service = "Robotics" as a trigger — too inconsistent
-- Accessories like "Tower Robot", "daVinci Surgeon Chair", "Table Trumpf 7000dV" appear on non-robot cases — do NOT use as triggers
+- DV5: equipment contains "Robot DaVinci DV5" OR "Davinci Robot Xi"
+- SP: equipment contains "DaVinci Robot SP"
+- Do NOT use "Tower Robot", "daVinci Surgeon Chair", "Table Trumpf 7000dV" as triggers — false positives
+- Do NOT use Service = "Robotics"
 
 ---
 
-## Active Rule Set (v1.2.7)
+## Active Rule Set
 
-### Tier 1 — Physical Absolute
+### Tier 1 — Physical Absolute (Alert)
 
 | ID | Label | Trigger | Rooms |
 |----|-------|---------|-------|
 | HARD-1 | DaVinci DV5 Robot | equipmentContainsAny: ["Robot DaVinci DV5", "Davinci Robot Xi"] | OR2, OR3 |
-| HARD-2 | DaVinci SP Robot | equipmentContainsAny: ["DaVinci Robot SP"] | OR5 |
-| HARD-3 | Neuro/Spine Room | equipmentContainsAny: ["Robot Neuro Excelsius GPS Globus", "Table Intraop CT Spine AIRO", "Table Intraop CT Cranial AIRO", "Scanner Airo Mobile Intraoperative CT", "System Navigation Brainlab", "Unit Doppler Micro Neuro", "Table Jackson", "Frame Wilson", "Mayfield Basic Unit", "Table Double Decker", "Trios Jackson Spinal", "Cart Electrophysiology Neuro"] | OR11, OR12 |
+| HARD-2 | DaVinci SP Robot | equipmentContainsAny: ["DaVinci Robot SP"] — suppressesWhenCompliant: ["hard-1"] | OR5 |
+| HARD-3 | Neuro/Spine Room | equipmentContainsAny: ["Robot Neuro Excelsius GPS Globus", "Table Intraop CT Spine AIRO", "Table Intraop CT Cranial AIRO", "Scanner Airo Mobile Intraoperative CT", "System Navigation Brainlab", "Unit Doppler Micro Neuro", "Table Jackson", "Frame Wilson", "Mayfield Basic Unit", "Table Double Decker", "Trios Jackson Spinal", "Cart Electrophysiology Neuro"] — EXCEPTION: suppress if Service = Maxillofacial or Dental | OR11, OR12 |
 | HARD-4 | Cardiac Surgery Room | equipmentContainsAny: ["Machine Heart Lung Perfusion", "Mount Table Large Estech", "Stool Hydraulic Ima", "Unit Hemopro 5500", "Cable Pacing Tester"] | OR7 |
 | HARD-5 | Transplant Room | equipmentContainsAny: ["Table Back w/o shelf (Transplant)", "Table Small w/o shelf (Transplant)", "Cooler Donor", "Cart Renal Transplant", "ORGANOX"] | OR6, OR9 |
 | HARD-6 | Hybrid/Cath Lab | equipmentContainsAny: ["CV ACCESSION EQ"] | OR14 |
 
-### Tier 2 — Strong Operational
+### Tier 2 — Strong Operational (Alert)
 
 | ID | Label | Trigger | Rooms |
 |----|-------|---------|-------|
 | OPS-1 | Ophthalmology Equipment | equipmentContainsAny: ["Unit Phaco Centurion", "Microscope Zeiss Eye", "Microscope Leica Eye", "Suction Irrigation System ROSI", "Cart Eye", "Gurney Eye", "Unit MIRA Diathermy", "Unit MIRA Transilluminator", "Wristrest Chan", "Tower Video Eye", "Ophthalmoscope Indirect Omega", "Unit Vitrectomy Constellation", "Machine Optiwave Refractive Analysis (ORA)", "Cart Vitrectomy"] | OR5, OR10 |
-| OPS-2 | Pediatric Room | equipmentContainsAny: ["Cart Pediatric", "Warmer Overhead (French Fry)"] OR patientAgeUnder: 18 | OR4 |
+| OPS-2 | Pediatric Room | equipmentContainsAny: ["Cart Pediatric", "Warmer Overhead (French Fry)"] OR patientAgeUnder: 18 — overridden by OPS-1 | OR4 |
 
 Peds explanation: "OR4 is the designated pediatric room. Please move this case to OR4 if available."
 
-### Tier 3 — Service Preference
+### Tier 3 — Service Preference (Flag)
 
 | ID | Service | Rooms |
 |----|---------|-------|
@@ -133,7 +146,7 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 | SVC-6 | Cardiology | OR14 |
 | SVC-7 | Pain Management | OR11, OR12, OR4 |
 
-### Tier 4 — Surgeon Preference
+### Tier 4 — Surgeon Preference (Flag)
 
 | Surgeon | ID | Rooms |
 |---------|----|-------|
@@ -177,7 +190,7 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 | Lu | 10101593 | OR5 |
 | Chen | 30233068 | OR12, OR5 |
 
-### Tier 5 — Laterality Suggestion
+### Tier 5 — Laterality Suggestion (Flag)
 
 | ID | Label | Trigger | Rooms |
 |----|-------|---------|-------|
@@ -186,55 +199,61 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 
 ---
 
+## Gantt Chart
+
+- Integrated into Room Rules Audit view — above violations table
+- X axis: 06:30 to 19:00
+- Y axis: OR1 through OR14, all 14 always shown
+- Case blocks: Proj Start Time (left edge) to Proj End Time (right edge)
+- Darker beige for setup/cleanup (Proj Start→Proc Start and Proc End→Proj End)
+- Lighter beige for procedure time (Proc Start to Proc End)
+- Case tile text: surgeon last name bold, procedure name, case number bold — left-aligned to full tile edge
+- Case tile color: entire tile takes color of highest severity alert/flag (red=T1, orange=T2, amber=T3, blue=T4, grey=T5). Clean cases = beige.
+- Both left and right corners of tiles are rounded
+- Reference line: dashed vertical at 07:30. Every other Friday starting 5/29/2026, line moves to 09:00 (biweekly: 5/29, 6/12, 6/26, 7/10...)
+- Hover tooltip: shows surgeon, procedure, room, lists each alert/flag with rule label and explanation
+- Click tile: opens right sidebar with full case details and per-violation tier badges. Clicking outside sidebar closes it (except clicking another tile opens that tile's sidebar instead)
+- Calendar: single month view with prev/next month arrows AND prev/next day arrows. Fixed height regardless of week count. Positioned to LEFT of metric stack. Days color-coded: red=Tier 1-2 alert, amber=Tier 3-5 flag, green=clean, no style=no cases.
+- Metrics (Cases reviewed, Tier 1-2 alerts, Tier 3-5 flags): stacked vertically to RIGHT of calendar
+- Clicking a row in violations table scrolls to and highlights that case tile in Gantt, opens sidebar
+
+---
+
 ## Facility Facts
 
-- **Campus:** WBVC (West Bay Van Ness Campus)
-- **Rooms:** OR1–OR14 (no OR13)
-- **OR14:** Primary hybrid/cath lab room
-- **OR7:** Also hybrid capable but primarily used for standard cardiac cases
-- **OR start time:** 0730 standard; 0900 every other Friday (biweekly staff inservice)
-- **Robots:** DV5 in OR2/OR3 (immovable), SP in OR5 (immovable)
-- **Ophthalmology:** WBVC is no longer primary ophtho campus — emergency cases only now
+- Campus: WBVC (West Bay Van Ness Campus)
+- Rooms: OR1–OR14 (no OR13)
+- OR14: Primary hybrid/cath lab
+- OR7: Also hybrid capable, primarily standard cardiac
+- OR start: 0730 standard; 0900 every other Friday (biweekly starting 5/29/2026)
+- Robots: DV5 in OR2/OR3 (immovable), SP in OR5 (immovable)
+- Ophthalmology: WBVC no longer primary ophtho campus — emergency cases only
 
 ---
 
 ## Phases Remaining
 
-### Phase 3 — Gantt Visualization
-- Room rows on Y axis, time on X axis
-- Beige case blocks from Proj Start Time to Proj End Time
-- Violations highlighted in place by tier color
-- Click case block for violation detail sidebar
-- OR start time: 0730 (0900 every other Friday)
-
-### Phase 4 — Rule Management UI
-- View all active rules organized by tier
-- Add, edit, delete rules without touching code
-- Rules stored as JSON in the page
-- Each rule has: ID, tier, label, description, match conditions, allowed/preferred rooms
-
-### Phase 5 (future) — Case Duration Audit
-- Compare scheduled duration against PTA (Epic procedure time averaging)
-- Surgeon classification: self-scheduling vs PTA-required
-- Data already available in historical export
+### In Progress
+- Rule Management UI — new home screen tile, read-only view of all rules by tier, confidence, case count, service lead can add notes and flag rules for review
 
 ### Deferred
-- Block scheduling constraints (architecturally complex)
-- Multi-campus support (WBVC only for now)
-- Add-on holds display (waiting on analyst help)
-- Additional laterality rules (waiting on service lead input)
+- Case duration audit / PTA comparison
+- Block scheduling constraints
+- Multi-campus support
+- Add-on holds display
 
 ---
 
-## Key Decisions Made
+## Key Decisions
 
-- No fuzzy matching for equipment — controlled vocabulary, exact substring only
-- Procedure matching keys off bracketed Epic ID e.g. [87810129], not procedure name
-- Laterality parsed from Case Procedures free text, not a separate column
-- Service = "Robotics" ignored — use equipment field to identify robot cases
+- No fuzzy matching for equipment — exact substring only
+- Procedure matching keys off bracketed Epic ID, not name
+- Laterality parsed from Case Procedures free text
+- Service = "Robotics" ignored — use equipment field for robot cases
 - Add-on and urgent/emergent cases weighted near zero for rule discovery
-- Peds rule is Tier 2 soft — OR4 preferred but not always possible (single room)
-- Laterality rules not statistically significant at WBVC — only PCNL confirmed by service leads
-- All violation language should be suggestive not punitive — explain the reason briefly
-- Show all violations regardless of tier (no suppression)
-- Equipment accessories (Tower Robot, daVinci Surgeon Chair, Table Trumpf 7000dV) must NOT be used as robot rule triggers — they appear on non-robot cases
+- Peds rule is Tier 2 — OR4 preferred but not always possible
+- Laterality rules not statistically significant at WBVC — only PCNL confirmed
+- All alert/flag language should be suggestive not punitive — brief, explain the reason
+- Show all alerts and flags regardless of tier (no suppression in output)
+- "Violation" replaced with "alert" (Tier 1-2) and "flag" (Tier 3-5) in all user-facing text
+- Equipment accessories must NOT be used as robot triggers (Tower Robot, daVinci Surgeon Chair, Table Trumpf 7000dV)
