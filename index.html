@@ -1462,7 +1462,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.35 · 2026-05-29</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.36 · 2026-05-29</p>
     </footer>
   </div>
 
@@ -1929,7 +1929,17 @@
       const source = String(text || "");
       if (source.toLowerCase().includes(termMatch.keyword.toLowerCase())) return true;
       if (findPrefixTokenMatch(source, termMatch.keyword)) return true;
+      if (tokenBagMatch(source, termMatch.keyword)) return true;
       return Boolean(findBestFuzzyEquipmentMatch(source, termMatch.keyword));
+    }
+
+    function tokenBagMatch(sourceText, keyword) {
+      const kwTokens = normalizedTokens(keyword).filter((t) => t.length >= 3);
+      if (!kwTokens.length) return false;
+      const srcTokens = tokenSpans(sourceText).map((s) => s.normalized);
+      return kwTokens.every((kt) =>
+        srcTokens.some((st) => st === kt || st.startsWith(kt))
+      );
     }
 
     function findPrefixTokenMatch(sourceText, keyword) {
