@@ -1047,7 +1047,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.13 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.14 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -3062,8 +3062,8 @@
 
       // Post-process svc-9: suppress flag when OR 1 has no feasible prime-time slot
       // that day long enough to hold the gyn case's full projected duration.
-      const SVC9_PRIME_START = 450; // 07:30
-      const SVC9_PRIME_END   = 930; // 15:30
+      const SVC9_PRIME_END = 930; // 15:30
+      const svc9DayMs = 86400000;
       const svc9Suppressed = new Set();
       violations.forEach((v) => {
         if (v.ruleId !== "svc-9") return;
@@ -3071,11 +3071,16 @@
         if (!gynCase || gynCase.startMin === null || gynCase.endMin === null) return;
         const duration = gynCase.endMin - gynCase.startMin;
         if (duration <= 0) return;
+        // Biweekly inservice Fridays start at 09:00; all other days start at 07:30
+        const diffDays = Math.round((v.sortDate - BIWEEKLY_FRI_ANCHOR_MS) / svc9DayMs);
+        const isInserviceFriday = new Date(v.sortDate).getDay() === 5
+          && diffDays >= 0 && diffDays % 14 === 0;
+        const primeStart = isInserviceFriday ? 540 : 450; // 09:00 or 07:30
         const or1Occupied = cases
           .filter((c) => c.room === "OR 1" && c.sortDate === v.sortDate && c.startMin !== null && c.endMin !== null)
           .map((c) => [c.startMin, c.endMin])
           .sort((a, b) => a[0] - b[0]);
-        let cursor = SVC9_PRIME_START;
+        let cursor = primeStart;
         let feasible = false;
         for (const [s, e] of or1Occupied) {
           if (s > cursor && s - cursor >= duration) { feasible = true; break; }
