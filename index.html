@@ -102,16 +102,6 @@
       gap: 10px;
     }
 
-    .version-badge {
-      color: #4c6579;
-      background: #f4f9fb;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 7px 11px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      white-space: nowrap;
-    }
 
     .privacy-pill {
       display: flex;
@@ -297,7 +287,7 @@
     .instructions {
       display: grid;
       gap: 12px;
-      color: #315066;
+      color: var(--ink);
     }
 
     .instructions ol {
@@ -365,7 +355,7 @@
       border-radius: 999px;
       border: 1px solid var(--line);
       background: #f4f9fb;
-      color: #315066;
+      color: var(--ink);
       padding: 5px 9px;
       font-size: 0.82rem;
       font-weight: 700;
@@ -386,7 +376,7 @@
       border: 2px dashed #8fc7cf;
       border-radius: 8px;
       background: #f2fafc;
-      color: #3d5a70;
+      color: var(--ink);
     }
 
     .file-input input {
@@ -828,7 +818,7 @@
     .gantt-block-surgeon {
       font-size: 0.68rem;
       font-weight: 700;
-      color: #3d2f00;
+      color: var(--ink);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -837,7 +827,7 @@
     .gantt-block-proctxt {
       font-size: 0.68rem;
       font-weight: 400;
-      color: #5a4520;
+      color: var(--muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -846,7 +836,7 @@
     .gantt-block-casenum {
       font-size: 0.68rem;
       font-weight: 700;
-      color: #3d2f00;
+      color: var(--ink);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -927,7 +917,7 @@
       cursor: pointer;
       text-align: center;
     }
-    .gantt-sidebar .sb-view-btn:hover { background: var(--brand); color: #fff; }
+    .gantt-sidebar .sb-view-btn:hover { background: var(--brand); color: #ffffff; }
 
     /* ── Day navigation ──────────────────────────────────────────── */
     .gantt-day-nav {
@@ -1078,7 +1068,6 @@
       <div class="topbar-inner">
         <div class="brand" aria-label="CPMC Scheduling Tools"></div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.21 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -1246,7 +1235,7 @@
 
         <div class="page-heading">
           <h1 id="equipmentTitle">Equipment Request Audit</h1>
-          <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Schedule audit: CPMC Van Ness OR only</p>
+          <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
           <p class="lede">Select an Epic Excel export to find rows where a requested Special Needs term is not present in Equipment. The audit runs in this browser tab without sending, uploading, or saving the file.</p>
         </div>
 
@@ -1436,6 +1425,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.22 · 2026-05-28</p>
     </footer>
   </div>
 
