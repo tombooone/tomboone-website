@@ -1041,12 +1041,11 @@
     .equip-row-main { cursor: pointer; user-select: none; }
     .equip-row-main:hover td { filter: brightness(0.96); }
     .equip-toggle-icon {
-      display: inline-block;
+      display: block;
       font-size: 0.6rem;
       color: var(--muted);
-      margin-right: 7px;
+      margin-top: 4px;
       transition: transform 120ms ease;
-      vertical-align: middle;
     }
     .equip-row-main.expanded .equip-toggle-icon { transform: rotate(90deg); }
     .equip-detail-row td {
@@ -1463,7 +1462,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.34 · 2026-05-29</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.35 · 2026-05-29</p>
     </footer>
   </div>
 
@@ -1830,7 +1829,7 @@
           const icon = document.createElement("span");
           icon.className = "equip-toggle-icon";
           icon.textContent = "▶";
-          caseCell.append(icon, document.createTextNode(row.caseNumber || ""));
+          caseCell.append(document.createTextNode(row.caseNumber || ""), icon);
           tr.append(caseCell);
           tr.append(td(row.specialNeeds));
           tr.append(td(row.explanation));
