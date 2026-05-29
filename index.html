@@ -1047,7 +1047,7 @@
           <span>PHI-Safe Work Tools</span>
         </div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.12 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.13 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -3060,10 +3060,38 @@
         });
       });
 
-      const tier12Count  = violations.filter((v) => v.ruleTier <= 2).length;
-      const tier345Count = violations.filter((v) => v.ruleTier >= 3).length;
+      // Post-process svc-9: suppress flag when OR 1 has no feasible prime-time slot
+      // that day long enough to hold the gyn case's full projected duration.
+      const SVC9_PRIME_START = 450; // 07:30
+      const SVC9_PRIME_END   = 930; // 15:30
+      const svc9Suppressed = new Set();
+      violations.forEach((v) => {
+        if (v.ruleId !== "svc-9") return;
+        const gynCase = cases.find((c) => c.caseNumber === v.caseNumber);
+        if (!gynCase || gynCase.startMin === null || gynCase.endMin === null) return;
+        const duration = gynCase.endMin - gynCase.startMin;
+        if (duration <= 0) return;
+        const or1Occupied = cases
+          .filter((c) => c.room === "OR 1" && c.sortDate === v.sortDate && c.startMin !== null && c.endMin !== null)
+          .map((c) => [c.startMin, c.endMin])
+          .sort((a, b) => a[0] - b[0]);
+        let cursor = SVC9_PRIME_START;
+        let feasible = false;
+        for (const [s, e] of or1Occupied) {
+          if (s > cursor && s - cursor >= duration) { feasible = true; break; }
+          if (e > cursor) cursor = e;
+        }
+        if (!feasible && SVC9_PRIME_END - cursor >= duration) feasible = true;
+        if (!feasible) svc9Suppressed.add(v.caseNumber);
+      });
+      const finalViolations = svc9Suppressed.size > 0
+        ? violations.filter((v) => !(v.ruleId === "svc-9" && svc9Suppressed.has(v.caseNumber)))
+        : violations;
 
-      return { totalRows: dataRows.length, violations, tier12Count, tier345Count, cases, ruleMatchCounts };
+      const tier12Count  = finalViolations.filter((v) => v.ruleTier <= 2).length;
+      const tier345Count = finalViolations.filter((v) => v.ruleTier >= 3).length;
+
+      return { totalRows: dataRows.length, violations: finalViolations, tier12Count, tier345Count, cases, ruleMatchCounts };
     }
 
     function renderRoomRulesResults(result) {
