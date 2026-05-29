@@ -1285,6 +1285,9 @@
               <li>In Epic, run the report <strong>WBVC OR Equipment Request Audit [51532137]</strong> and export it as an .xlsx file.</li>
               <li>Select the exported file and select Run audit.</li>
             </ol>
+            <div style="margin-top: 12px;">
+              <button class="ghost-button" type="button" id="viewEquipmentTermsBtn" style="padding: 5px 10px;">View terms being checked</button>
+            </div>
           </aside>
 
           <section class="panel">
@@ -1459,10 +1462,26 @@
 
         <div id="ruleManagementContent"></div>
       </section>
+
+      <section id="equipmentTermsView" class="view" aria-labelledby="equipmentTermsTitle">
+        <div class="back-row">
+          <button class="ghost-button" type="button" id="equipmentTermsBack">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Back to audit</span>
+          </button>
+        </div>
+        <div class="page-heading">
+          <h1 id="equipmentTermsTitle">Terms Being Checked</h1>
+          <p class="lede">The audit flags cases where any of these terms appear in Special Needs but are not present in the Equipment field.</p>
+        </div>
+        <div id="equipmentTermsContent"></div>
+      </section>
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.37 · 2026-05-29</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.38 · 2026-05-29</p>
     </footer>
   </div>
 
@@ -1600,7 +1619,9 @@
       equipmentView.classList.toggle("active", viewName === "equipment");
       document.getElementById("roomRulesView").classList.toggle("active", viewName === "roomRules");
       document.getElementById("ruleManagementView").classList.toggle("active", viewName === "ruleManagement");
+      document.getElementById("equipmentTermsView").classList.toggle("active", viewName === "equipmentTerms");
       if (viewName === "ruleManagement") buildRuleManagementView();
+      if (viewName === "equipmentTerms") buildEquipmentTermsView();
     }
 
     function wireAuditTool({ fileInput, runButton, clearButton, statusEl, resultsPanel, tables, onRun }) {
@@ -2739,6 +2760,8 @@
     });
 
     document.getElementById("viewActiveRulesBtn").addEventListener("click", () => showView("ruleManagement"));
+    document.getElementById("viewEquipmentTermsBtn").addEventListener("click", () => showView("equipmentTerms"));
+    document.getElementById("equipmentTermsBack").addEventListener("click", () => showView("equipment"));
 
 
 
@@ -3006,6 +3029,21 @@
         section.append(cards);
         content.append(section);
       });
+    }
+
+    function buildEquipmentTermsView() {
+      const content = document.getElementById("equipmentTermsContent");
+      if (!content) return;
+      content.textContent = "";
+      const list = document.createElement("div");
+      list.className = "keyword-list";
+      equipmentKeywords.forEach((kw) => {
+        const pill = document.createElement("span");
+        pill.className = "keyword-pill";
+        pill.textContent = kw;
+        list.append(pill);
+      });
+      content.append(list);
     }
 
     function validateRoomRulesColumns(populatedRows) {
