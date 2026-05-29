@@ -225,6 +225,15 @@
       color: var(--muted);
     }
 
+    .tool-lede {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 10px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+    }
+
     .back-row {
       margin-bottom: 18px;
     }
@@ -1102,6 +1111,7 @@
             </span>
             <span class="tool-title">CPT Audit</span>
             <span class="tool-copy">Compare CPTs from the surgical order against CPTs on the case and CMS inpatient-only codes.</span>
+            <span class="tool-lede">The audit runs locally in this browser tab — no file is uploaded or stored.</span>
           </button>
 
           <button class="tool-tile" type="button" id="openEquipmentTool">
@@ -1113,6 +1123,7 @@
             </span>
             <span class="tool-title">Equipment Request Audit</span>
             <span class="tool-copy">Find cases where surgeon-requested special equipment is missing from the case's equipment list.</span>
+            <span class="tool-lede">The audit runs locally in this browser tab — no file is uploaded or stored.</span>
           </button>
 
           <button class="tool-tile" type="button" id="openRoomRulesTool">
@@ -1125,6 +1136,7 @@
             </span>
             <span class="tool-title">OR Schedule and Room Assignment Audit</span>
             <span class="tool-copy">Check an upcoming OR schedule for room assignment conflicts and suggestions based on equipment requirements, service lines, and surgeon preferences.</span>
+            <span class="tool-lede">The audit runs locally in this browser tab — no file is uploaded or stored.</span>
           </button>
 
         </div>
@@ -1151,7 +1163,7 @@
             <h2>Instructions</h2>
             <ol>
               <li>In Epic, run the report <strong>CPMC CPT Audit [51177697]</strong> and export it as an .xlsx file.</li>
-              <li>Select the report file here and select Run audit.</li>
+              <li>Select the exported file and select Run audit.</li>
             </ol>
           </aside>
 
@@ -1244,9 +1256,8 @@
           <aside class="panel instructions">
             <h2>Instructions</h2>
             <ol>
-              <li>Export the relevant Epic report as an .xlsx file.</li>
-              <li>Select the report file here and select Run audit.</li>
-              <li>The tool checks only Case #, Special Needs, and Equipment.</li>
+              <li>In Epic, run the report <strong>WBVC OR Equipment Request Audit [51532137]</strong> and export it as an .xlsx file.</li>
+              <li>Select the exported file and select Run audit.</li>
             </ol>
           </aside>
 
@@ -1320,11 +1331,11 @@
           <aside class="panel instructions">
             <h2>Instructions</h2>
             <ol>
-              <li>In Epic, run the report <strong>WBVC OR Upcoming Case Audit [51512750]</strong> and export it as an .xlsx file.</li>
+              <li>In Epic, run the report <strong>WBVC OR Schedule and Room Assignment Audit [51512750]</strong> and export it as an .xlsx file.</li>
               <li>Select the exported file and select Run audit.</li>
             </ol>
             <div style="margin-top: 12px;">
-              <button class="ghost-button" type="button" id="viewActiveRulesBtn" style="font-size: 0.82rem; padding: 5px 10px;">View active rules</button>
+              <button class="ghost-button" type="button" id="viewActiveRulesBtn" style="padding: 5px 10px;">View active rules</button>
             </div>
           </aside>
 
@@ -1425,7 +1436,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.29 · 2026-05-29</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.31 · 2026-05-29</p>
     </footer>
   </div>
 
