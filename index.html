@@ -1101,7 +1101,7 @@
               </svg>
             </span>
             <span class="tool-title">CPT Audit</span>
-            <span class="tool-copy">Compare Epic report CPTs against panel CPTs and CMS inpatient-only codes.</span>
+            <span class="tool-copy">Compare CPTs from the surgical order against CPTs on the case and CMS inpatient-only codes.</span>
           </button>
 
           <button class="tool-tile" type="button" id="openEquipmentTool">
@@ -1112,7 +1112,7 @@
               </svg>
             </span>
             <span class="tool-title">Equipment Request Audit</span>
-            <span class="tool-copy">Find cases where surgeon-requested Special Needs terms are missing from Equipment.</span>
+            <span class="tool-copy">Find cases where surgeon-requested special equipment is missing from the case's equipment list.</span>
           </button>
 
           <button class="tool-tile" type="button" id="openRoomRulesTool">
@@ -1124,7 +1124,7 @@
               </svg>
             </span>
             <span class="tool-title">Room Rules Audit</span>
-            <span class="tool-copy">Check an OR schedule against hard, soft, and preference room assignment rules.</span>
+            <span class="tool-copy">Check an upcoming OR schedule for room assignment conflicts and suggestions based on equipment requirements, service lines, and surgeon preferences.</span>
           </button>
 
         </div>
@@ -1142,6 +1142,7 @@
 
         <div class="page-heading">
           <h1 id="auditTitle">CPT Audit Tool</h1>
+          <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
           <p class="lede">Run the Epic report "CPMC CPT Audit [51177697]", export it as an .xlsx file, and select the file here. The audit runs in this browser tab without sending or saving the file.</p>
         </div>
 
@@ -1312,7 +1313,7 @@
 
         <div class="page-heading">
           <h1 id="roomRulesTitle">Room Rules Audit</h1>
-          <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Schedule audit: CPMC Van Ness OR only</p>
+          <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
           <p class="lede">Upload an Epic OR schedule export to check each case against room assignment rules. The audit runs locally in this browser tab — no file is uploaded or stored.</p>
         </div>
 
@@ -1425,7 +1426,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.23 · 2026-05-28</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.24 · 2026-05-28</p>
     </footer>
   </div>
 
