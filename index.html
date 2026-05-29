@@ -1046,6 +1046,7 @@
       color: var(--muted);
       margin-top: 4px;
       transition: transform 120ms ease;
+      transform-origin: center;
     }
     .equip-row-main.expanded .equip-toggle-icon { transform: rotate(90deg); }
     .equip-detail-row td {
@@ -1191,6 +1192,7 @@
               <li>In Epic, run the report <strong>CPMC CPT Audit [51177697]</strong> and export it as an .xlsx file.</li>
               <li>Select the exported file and select Run audit.</li>
             </ol>
+            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">If you do not have access to this report, please email <a href="mailto:Thomas.Boone@SutterHealth.org" style="color: inherit;">Thomas.Boone@SutterHealth.org</a>.</p>
           </aside>
 
           <section class="panel">
@@ -1363,6 +1365,7 @@
               <li>In Epic, run the report <strong>WBVC OR Schedule and Room Assignment Audit [51512750]</strong> and export it as an .xlsx file.</li>
               <li>Select the exported file and select Run audit.</li>
             </ol>
+            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">If you do not have access to this report, please email <a href="mailto:Thomas.Boone@SutterHealth.org" style="color: inherit;">Thomas.Boone@SutterHealth.org</a>.</p>
             <div style="margin-top: 12px;">
               <button class="ghost-button" type="button" id="viewActiveRulesBtn" style="padding: 5px 10px;">View active rules</button>
             </div>
@@ -1481,7 +1484,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.39 · 2026-05-29</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.41 · 2026-05-29</p>
     </footer>
   </div>
 
@@ -1780,6 +1783,9 @@
           caseNumber,
           specialNeeds,
           equipment,
+          keyword: missingTerm.keyword,
+          matchStart: missingTerm.startIndex,
+          matchEnd: missingTerm.startIndex + missingTerm.matchedText.length,
           explanation: `${missingTerm.keyword} was listed in Special Needs but not added to Equipment TB ${today}`
         });
       });
@@ -1873,13 +1879,29 @@
           snLabel.textContent = "Special Needs";
           const snValue = document.createElement("div");
           snValue.className = "equip-detail-value";
-          snValue.textContent = row.specialNeeds || "–";
+          const snText = row.specialNeeds || "–";
+          if (row.matchStart !== undefined && row.matchEnd !== undefined && row.matchEnd <= snText.length) {
+            snValue.append(document.createTextNode(snText.slice(0, row.matchStart)));
+            const mark = document.createElement("mark");
+            mark.style.cssText = "background: #fef3c7; font-weight: 700; border-radius: 2px; padding: 0 2px; color: #92400e;";
+            mark.textContent = snText.slice(row.matchStart, row.matchEnd);
+            snValue.append(mark);
+            snValue.append(document.createTextNode(snText.slice(row.matchEnd)));
+          } else {
+            snValue.textContent = snText;
+          }
           snSection.append(snLabel, snValue);
 
           const eqSection = document.createElement("div");
           const eqLabel = document.createElement("div");
           eqLabel.className = "equip-detail-label";
           eqLabel.textContent = "Equipment List";
+          if (row.keyword) {
+            const missingTag = document.createElement("span");
+            missingTag.style.cssText = "margin-left: 6px; font-size: 0.68rem; font-weight: 700; color: #b91c1c; text-transform: none; letter-spacing: 0;";
+            missingTag.textContent = `— ${row.keyword} not found`;
+            eqLabel.append(missingTag);
+          }
           const eqValue = document.createElement("div");
           eqValue.className = "equip-detail-value";
           const eqItems = String(row.equipment || "")
