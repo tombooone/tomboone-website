@@ -1123,7 +1123,7 @@
                 <path d="M7 14h2M11 14h2M15 14h2M7 18h2M11 18h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </span>
-            <span class="tool-title">Room Rules Audit</span>
+            <span class="tool-title">OR Schedule and Room Assignment Audit</span>
             <span class="tool-copy">Check an upcoming OR schedule for room assignment conflicts and suggestions based on equipment requirements, service lines, and surgeon preferences.</span>
           </button>
 
@@ -1143,14 +1143,14 @@
         <div class="page-heading">
           <h1 id="auditTitle">CPT Audit Tool</h1>
           <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
-          <p class="lede">Run the Epic report "CPMC CPT Audit [51177697]", export it as an .xlsx file, and select the file here. The audit runs in this browser tab without sending or saving the file.</p>
+          <p class="lede">The audit runs locally in this browser tab — no file is uploaded or stored.</p>
         </div>
 
         <div class="workspace">
           <aside class="panel instructions">
             <h2>Instructions</h2>
             <ol>
-              <li>Run the Epic report "CPMC CPT Audit [51177697]" and export it as an .xlsx file.</li>
+              <li>In Epic, run the report <strong>CPMC CPT Audit [51177697]</strong> and export it as an .xlsx file.</li>
               <li>Select the report file here and select Run audit.</li>
             </ol>
           </aside>
@@ -1237,7 +1237,7 @@
         <div class="page-heading">
           <h1 id="equipmentTitle">Equipment Request Audit</h1>
           <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
-          <p class="lede">Select an Epic Excel export to find rows where a requested Special Needs term is not present in Equipment. The audit runs in this browser tab without sending, uploading, or saving the file.</p>
+          <p class="lede">The audit runs locally in this browser tab — no file is uploaded or stored.</p>
         </div>
 
         <div class="workspace">
@@ -1312,16 +1312,15 @@
         </div>
 
         <div class="page-heading">
-          <h1 id="roomRulesTitle">Room Rules Audit</h1>
+          <h1 id="roomRulesTitle">OR Schedule and Room Assignment Audit</h1>
           <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
-          <p class="lede">Upload an Epic OR schedule export to check each case against room assignment rules. The audit runs locally in this browser tab — no file is uploaded or stored.</p>
         </div>
 
         <div class="workspace">
           <aside class="panel instructions">
             <h2>Instructions</h2>
             <ol>
-              <li>In Epic, run the report <strong>WBVC OR Upcoming Case Audit [58976502]</strong> and export it as an .xlsx file.</li>
+              <li>In Epic, run the report <strong>WBVC OR Upcoming Case Audit [51512750]</strong> and export it as an .xlsx file.</li>
               <li>Select the exported file and select Run audit.</li>
             </ol>
             <div style="margin-top: 12px;">
@@ -1352,7 +1351,7 @@
               <div id="ganttCalendar" class="gantt-calendar"></div>
               <div id="ganttDayNav" class="gantt-day-nav"></div>
             </div>
-            <div class="summary-stack" aria-label="Room rules audit summary">
+            <div class="summary-stack" aria-label="Schedule audit summary">
               <div class="metric">
                 <span class="metric-value" id="roomRulesTotalRows">0</span>
                 <span class="metric-label">Cases reviewed</span>
@@ -1426,7 +1425,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.25 · 2026-05-28</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.29 · 2026-05-29</p>
     </footer>
   </div>
 
