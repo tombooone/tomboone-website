@@ -1037,6 +1037,44 @@
     }
     .rule-note-input:focus { outline: none; border-color: var(--brand); }
 
+    /* ── Equipment audit expand/collapse ────────────────────────── */
+    .equip-row-main { cursor: pointer; user-select: none; }
+    .equip-row-main:hover td { filter: brightness(0.96); }
+    .equip-toggle-icon {
+      display: inline-block;
+      font-size: 0.6rem;
+      color: var(--muted);
+      margin-right: 7px;
+      transition: transform 120ms ease;
+      vertical-align: middle;
+    }
+    .equip-row-main.expanded .equip-toggle-icon { transform: rotate(90deg); }
+    .equip-detail-row td {
+      background: #f4f9fb;
+      padding: 0;
+      border-left: none;
+    }
+    .equip-detail {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding: 14px 16px 16px;
+    }
+    .equip-detail-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 5px;
+    }
+    .equip-detail-value {
+      font-size: 0.82rem;
+      color: var(--ink);
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
     @media (max-width: 820px) {
       .topbar-inner {
         align-items: flex-start;
@@ -1425,7 +1463,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.33 · 2026-05-29</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.34 · 2026-05-29</p>
     </footer>
   </div>
 
@@ -1720,6 +1758,7 @@
         includedRows.push({
           caseNumber,
           specialNeeds,
+          equipment,
           explanation: `${missingTerm.keyword} was listed in Special Needs but not added to Equipment TB ${today}`
         });
       });
@@ -1783,11 +1822,63 @@
 
       if (result.includedRows.length) {
         result.includedRows.forEach((row) => {
+          // Main row with toggle
           const tr = document.createElement("tr");
-          tr.append(td(row.caseNumber));
+          tr.className = "equip-row-main";
+
+          const caseCell = document.createElement("td");
+          const icon = document.createElement("span");
+          icon.className = "equip-toggle-icon";
+          icon.textContent = "▶";
+          caseCell.append(icon, document.createTextNode(row.caseNumber || ""));
+          tr.append(caseCell);
           tr.append(td(row.specialNeeds));
           tr.append(td(row.explanation));
-          equipmentMissingTable.append(tr);
+
+          // Detail row (hidden until expanded)
+          const detailTr = document.createElement("tr");
+          detailTr.className = "equip-detail-row";
+          detailTr.hidden = true;
+
+          const detailCell = document.createElement("td");
+          detailCell.colSpan = 3;
+
+          const detailDiv = document.createElement("div");
+          detailDiv.className = "equip-detail";
+
+          const snSection = document.createElement("div");
+          const snLabel = document.createElement("div");
+          snLabel.className = "equip-detail-label";
+          snLabel.textContent = "Special Needs";
+          const snValue = document.createElement("div");
+          snValue.className = "equip-detail-value";
+          snValue.textContent = row.specialNeeds || "–";
+          snSection.append(snLabel, snValue);
+
+          const eqSection = document.createElement("div");
+          const eqLabel = document.createElement("div");
+          eqLabel.className = "equip-detail-label";
+          eqLabel.textContent = "Equipment List";
+          const eqValue = document.createElement("div");
+          eqValue.className = "equip-detail-value";
+          const eqItems = String(row.equipment || "")
+            .split(/\n/)
+            .map((s) => s.replace(/^W\s+/, "").trim())
+            .filter(Boolean);
+          eqValue.textContent = eqItems.length ? eqItems.join("\n") : "–";
+          eqSection.append(eqLabel, eqValue);
+
+          detailDiv.append(snSection, eqSection);
+          detailCell.append(detailDiv);
+          detailTr.append(detailCell);
+
+          tr.addEventListener("click", () => {
+            const nowHidden = detailTr.hidden;
+            detailTr.hidden = !nowHidden;
+            tr.classList.toggle("expanded", nowHidden);
+          });
+
+          equipmentMissingTable.append(tr, detailTr);
         });
       } else {
         equipmentMissingTable.append(emptyRow(3, "No matching equipment request discrepancies found."));
