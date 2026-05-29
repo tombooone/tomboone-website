@@ -3,7 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PHI-Safe Work Tools</title>
+  <title>CPMC Scheduler Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       color-scheme: light;
@@ -28,7 +31,7 @@
 
     body {
       margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Roboto, Arial, ui-sans-serif, system-ui, sans-serif;
       background:
         linear-gradient(180deg, #eef8fb 0, rgba(246, 251, 253, 0) 344px),
         #f6fbfd;
@@ -167,6 +170,21 @@
       color: var(--muted);
       font-size: 1.05rem;
     }
+
+    .home-subtitle {
+      margin: 4px 0 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .site-footer {
+      padding: 18px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+      border-top: 1px solid var(--line);
+    }
+    .site-footer a { color: inherit; }
 
     .tool-grid {
       display: grid;
@@ -895,6 +913,21 @@
     .gantt-sidebar .sb-violations h4 { font-size: 0.85rem; color: var(--muted); margin: 0 0 10px; }
     .gantt-sidebar .sb-viol-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
     .gantt-sidebar .sb-viol-text { font-size: 0.82rem; color: var(--ink); line-height: 1.4; }
+    .gantt-sidebar .sb-view-btn {
+      display: block;
+      width: 100%;
+      margin: 14px 0 4px;
+      padding: 7px 12px;
+      background: none;
+      border: 1px solid var(--brand);
+      border-radius: 5px;
+      color: var(--brand-dark);
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+    .gantt-sidebar .sb-view-btn:hover { background: var(--brand); color: #fff; }
 
     /* ── Day navigation ──────────────────────────────────────────── */
     .gantt-day-nav {
@@ -1043,17 +1076,21 @@
   <div class="app-shell">
     <header class="topbar">
       <div class="topbar-inner">
-        <div class="brand" aria-label="PHI-Safe Work Tools">
-          <span>PHI-Safe Work Tools</span>
-        </div>
+        <div class="brand" aria-label="CPMC Scheduler Tools"></div>
         <div class="topbar-meta">
-          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.14 · 2026-05-28</span>
+          <span class="version-badge" title="Site version deployed May 28, 2026">v1.3.16 · 2026-05-28</span>
           <div class="privacy-pill" title="Files are processed locally in this browser session.">
             <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
               <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <path d="M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2"/>
             </svg>
             <span>Local browser processing only</span>
+          </div>
+          <div class="privacy-pill" title="No PHI leaves your browser.">
+            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+            <span>PHI Safe</span>
           </div>
         </div>
       </div>
@@ -1062,8 +1099,9 @@
     <main>
       <section id="homeView" class="view active" aria-labelledby="homeTitle">
         <div class="page-heading">
-          <h1 id="homeTitle">Work Tools</h1>
-          <p class="lede">Open files only in tools you trust. This site is built to process data locally in your browser to avoid storing PHI.</p>
+          <h1 id="homeTitle">CPMC Scheduler Tools</h1>
+          <p class="home-subtitle">Currently operational for CPMC Van Ness OR only</p>
+          <p class="lede">Only open files in tools you trust. This site is built to avoid storing or transmitting PHI.</p>
         </div>
 
         <div class="tool-grid">
@@ -1126,29 +1164,6 @@
               <li>Run the Epic report "CPMC CPT Audit [51177697]" and export it as an .xlsx file.</li>
               <li>Select the report file here and select Run audit.</li>
             </ol>
-            <div class="trust-badges" aria-label="Privacy safeguards">
-              <div class="trust-badge">
-                <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                  <path d="m9 12 2 2 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <strong>PHI-Safe Design</strong>
-              </div>
-              <div class="trust-badge">
-                <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                <strong>No File Upload</strong>
-              </div>
-              <div class="trust-badge">
-                <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 7h16M7 7V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2M9 11v6M15 11v6M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <strong>No Data Storage</strong>
-              </div>
-            </div>
-            <div class="local-note">Nothing is sent to a server. Use the clear button or close the tab to remove the file data from this session.</div>
           </aside>
 
           <section class="panel">
@@ -1243,22 +1258,6 @@
               <li>Select the report file here and select Run audit.</li>
               <li>The tool checks only Case #, Special Needs, and Equipment.</li>
             </ol>
-            <h3>Current audit terms:</h3>
-            <div class="keyword-list" aria-label="Equipment audit terms">
-              <span class="keyword-pill">C-arm</span>
-              <span class="keyword-pill">Airo</span>
-              <span class="keyword-pill">Myosure fluid management</span>
-              <span class="keyword-pill">Fluid management system</span>
-              <span class="keyword-pill">Fluent</span>
-              <span class="keyword-pill">Myosure</span>
-              <span class="keyword-pill">NIM nerve</span>
-              <span class="keyword-pill">Microscope</span>
-              <span class="keyword-pill">Gamma</span>
-              <span class="keyword-pill">Neoprobe</span>
-              <span class="keyword-pill">Geiger</span>
-              <span class="keyword-pill">Trunode</span>
-            </div>
-            <div class="local-note">Matching is deterministic: exact matching first, then fixed-threshold fuzzy matching for typos. No synonyms, inference, abbreviation expansion, or clinical interpretation are used.</div>
           </aside>
 
           <section class="panel">
@@ -1333,7 +1332,6 @@
             <ol>
               <li>In Epic, run the report <strong>WBVC OR Upcoming Case Audit [58976502]</strong> and export it as an .xlsx file.</li>
               <li>Select the exported file and select Run audit.</li>
-              <li>Optionally, upload a block schedule file to overlay block names on the Gantt.</li>
             </ol>
             <div style="margin-top: 12px;">
               <button class="ghost-button" type="button" id="viewActiveRulesBtn" style="font-size: 0.82rem; padding: 5px 10px;">View active rules</button>
@@ -1435,6 +1433,9 @@
         <div id="ruleManagementContent"></div>
       </section>
     </main>
+    <footer class="site-footer">
+      <p>Site by Thomas Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
+    </footer>
   </div>
 
   <script>
@@ -3636,6 +3637,28 @@
         content.append(row);
       });
 
+      const viewBtn = document.createElement("button");
+      viewBtn.type = "button";
+      viewBtn.className = "sb-view-btn";
+      viewBtn.textContent = "View on schedule";
+      viewBtn.addEventListener("click", () => {
+        if (_calActiveSd !== c.sortDate) navigateToDay(c.sortDate);
+        const dayNav = document.getElementById("ganttDayNav");
+        if (dayNav) dayNav.scrollIntoView({ behavior: "smooth", block: "start" });
+        const scrollable = document.getElementById("ganttScrollable");
+        const block = scrollable
+          ? scrollable.querySelector(`[data-case-num="${CSS.escape(String(c.caseNumber))}"]`)
+          : null;
+        if (block) {
+          scrollable.scrollTo({ left: Math.max(0, block.offsetLeft - 60), behavior: "smooth" });
+          block.classList.remove("gantt-block-highlight");
+          void block.offsetWidth;
+          block.classList.add("gantt-block-highlight");
+          setTimeout(() => block.classList.remove("gantt-block-highlight"), 1400);
+        }
+      });
+      content.append(viewBtn);
+
       if (viols.length) {
         const vSection = document.createElement("div");
         vSection.className = "sb-violations";
@@ -3663,25 +3686,11 @@
       sb.hidden = false;
     }
 
-    // ── Table row → Gantt highlight + sidebar ────────────────────────────────
+    // ── Table row → sidebar ──────────────────────────────────────────────────
     function jumpToCase(caseNumber, sortDate) {
-      // Switch to the correct day if needed
+      // Switch to the correct day if needed so the Gantt matches the sidebar
       if (_calActiveSd !== sortDate) {
         navigateToDay(sortDate);
-      }
-      // Find the block in the rendered Gantt
-      const scrollable = document.getElementById("ganttScrollable");
-      const block = scrollable
-        ? scrollable.querySelector(`[data-case-num="${CSS.escape(String(caseNumber))}"]`)
-        : null;
-      if (block) {
-        // Smooth-scroll the Gantt to bring the block into view
-        scrollable.scrollTo({ left: Math.max(0, block.offsetLeft - 60), behavior: "smooth" });
-        // Pulse-highlight the block
-        block.classList.remove("gantt-block-highlight");
-        void block.offsetWidth; // force reflow to restart animation
-        block.classList.add("gantt-block-highlight");
-        setTimeout(() => block.classList.remove("gantt-block-highlight"), 1400);
       }
       // Open sidebar for the case
       const casesForDay = _ganttByDate.get(sortDate) || [];
