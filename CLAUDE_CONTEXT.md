@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-05-31 (v1.3.46)
+## Last updated: 2026-05-31 (v1.3.50)
 
 ---
 
@@ -28,7 +28,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.46**
+- Current version: **v1.3.50**
 - Repo: github.com/tombooone/tomboone-website
 - Deploy: `git add index.html && git commit -m "message" && git push`
 - Cloudflare Pages auto-deploys on push to main
@@ -251,10 +251,18 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 Accessed via "View active rules" link on OR Schedule Audit instructions panel.
 
 - Shows all rules organized by tier (Tier 1–5)
-- Each rule card: Tier badge | Label, Trigger, Rooms, Confidence, Cases matched | Actions
+- Each rule card: Tier badge | Label, Trigger, Rooms, Confidence | Actions (no "Cases matched" field)
 - **Flag for review:** Button on each card → textarea + Send → opens `mailto:Thomas.Boone@SutterHealth.org` with subject "Rule Review Request: [label]" and body "COMMENT: [user text]\n\nRule: [label] (Tier N)"
-- **Request new rule:** Button right-aligned next to "Rule Management" h1 → opens `mailto:Thomas.Boone@SutterHealth.org` with subject "New Rule Request" and blank COMMENT field
+- **Request new rule:** Button right-aligned in heading row (white, alongside "How this works" button) → opens `mailto:Thomas.Boone@SutterHealth.org` with subject "New Rule Request" and blank COMMENT field
+- **How this works:** Button in heading row → opens `ruleInfoView` sub-page
 - No localStorage — email is the record
+
+### How This Works view (ruleInfoView)
+
+Accessed via "How this works" button in Rule Management heading. Back button returns to Rule Management.
+
+- Sections: How these rules were developed, What Confidence means, Tier 1 through Tier 5 descriptions, How flags are suppressed
+- Prose format with bold `<h3>` section headers, max-width 680px
 
 ---
 
@@ -290,7 +298,10 @@ Accessed via "View active rules" link on OR Schedule Audit instructions panel.
 - Peds rule is Tier 2 — OR4 preferred but not always possible
 - Laterality rules not statistically significant at WBVC — only PCNL confirmed
 - All alert/flag language should be suggestive not punitive — brief, explain the reason
-- Show all alerts and flags regardless of tier (no suppression in output except SVC-9 feasibility check)
+- Tier 3 post-processing: group contiguous same-service-or-surgeon cases in same room (gap ≤ 30 min) into a block; suppress the flag for all cases in the block if no allowed room has a prime-time gap (07:30–15:30, or 09:00–15:30 on biweekly inservice Fridays) large enough to hold the entire block
+- Show all alerts and flags regardless of tier (no suppression in output except Tier 3 feasibility check)
 - "Violation" replaced with "alert" (Tier 1-2) and "flag" (Tier 3-5) in all user-facing text
 - Equipment accessories must NOT be used as robot triggers (Tower Robot, daVinci Surgeon Chair, Table Trumpf 7000dV)
 - Explanation text in equipment audit: "[keyword] was listed in Special Needs but not added to Equipment"
+- `describeMatch` for equipment rules: always lists all items in full ("Equipment (any of N): item1, item2, ...") with no truncation
+- Snake easter egg: typing "worm" anywhere (not in an input) opens a Snake game modal; Escape or click-outside closes it
