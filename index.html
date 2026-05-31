@@ -1226,7 +1226,7 @@
 
         <div class="page-heading">
           <h1 id="auditTitle">CPT Audit Tool</h1>
-          <p class="lede">The audit runs locally in this browser tab — no file is uploaded or stored.</p>
+          <p class="lede">The audit runs locally in this browser tab. No file is uploaded or stored.</p>
         </div>
 
         <div class="workspace">
@@ -1320,7 +1320,7 @@
 
         <div class="page-heading">
           <h1 id="equipmentTitle">Equipment Request Audit</h1>
-          <p class="lede">The audit runs locally in this browser tab — no file is uploaded or stored.</p>
+          <p class="lede">The audit runs locally in this browser tab. No file is uploaded or stored.</p>
         </div>
 
         <div class="workspace">
@@ -1400,7 +1400,7 @@
         <div class="page-heading">
           <h1 id="roomRulesTitle">OR Schedule and Room Assignment Audit</h1>
           <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
-          <p class="lede">The audit runs locally in this browser tab — no file is uploaded or stored.</p>
+          <p class="lede">The audit runs locally in this browser tab. No file is uploaded or stored.</p>
         </div>
 
         <div class="workspace">
@@ -1527,7 +1527,10 @@
           </button>
         </div>
         <div class="page-heading">
-          <h1 id="equipmentTermsTitle">Terms Being Checked</h1>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px;">
+            <h1 id="equipmentTermsTitle" style="margin: 0;">Terms Being Checked</h1>
+            <button type="button" class="ghost-button" id="suggestEquipmentBtn" style="padding: 5px 10px; flex-shrink: 0;">Suggest equipment to check</button>
+          </div>
           <p class="lede">The audit flags cases where any of these terms appear in Special Needs but are not present in the Equipment field.</p>
         </div>
         <div id="equipmentTermsContent"></div>
@@ -1555,23 +1558,23 @@
             <p>Confidence reflects how consistently the historical data supports the rule, and how much operational flexibility exists. High confidence rules are either physically constrained (the equipment cannot move) or backed by a very strong historical pattern with little variation. You can treat these as reliable. Medium confidence rules are based on clear surgeon or service preferences that hold most of the time, but may have legitimate exceptions. Low confidence rules are based on weaker historical patterns. They are included as suggestions but should be interpreted cautiously.</p>
           </div>
           <div class="rule-info-section">
-            <h3>Tier 1 — Physical Absolute</h3>
+            <h3>Tier 1: Physical Absolute</h3>
             <p>These rules exist because certain equipment cannot be moved, or because of other physical constraints of the room. The DaVinci DV5 robot lives permanently in OR 2 and OR 3. The DaVinci SP robot lives in OR 5. Cardiac bypass equipment is fixed to OR 7. Free flap procedures require a room with three overhead surgical lights, which limits them to OR 6, OR 7, OR 8, and OR 9. If a case meets one of these criteria, it must be in the designated room and there is no flexibility.</p>
           </div>
           <div class="rule-info-section">
-            <h3>Tier 2 — Strong Operational</h3>
+            <h3>Tier 2: Strong Operational</h3>
             <p>These rooms are set up specifically for certain case types. OR 4 is the designated pediatric room. OR 5 and OR 10 are set up for ophthalmology. Cases flagged at this tier should be moved if possible, but there may be legitimate reasons they cannot be.</p>
           </div>
           <div class="rule-info-section">
-            <h3>Tier 3 — Service Preference</h3>
+            <h3>Tier 3: Service Preference</h3>
             <p>Certain services tend to cluster in specific rooms because of setup familiarity, equipment proximity, and turnover efficiency. For example, neurosurgery cases typically run in OR 11 or OR 12. These flags are worth reviewing but are not always actionable. If the preferred room is full, the flag will be suppressed automatically.</p>
           </div>
           <div class="rule-info-section">
-            <h3>Tier 4 — Surgeon Preference</h3>
+            <h3>Tier 4: Surgeon Preference</h3>
             <p>Some surgeons have a strong preference for a specific room based on familiarity or workflow. These are the lowest-priority flags and are purely informational.</p>
           </div>
           <div class="rule-info-section">
-            <h3>Tier 5 — Suggestion</h3>
+            <h3>Tier 5: Suggestion</h3>
             <p>Low-confidence patterns based on historical data. For example, right-sided PCNL cases have historically been performed in OR 2, OR 8, or OR 12 due to positioning convenience.</p>
           </div>
           <div class="rule-info-section">
@@ -1583,7 +1586,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.52 · 2026-05-31</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.54 · 2026-05-31</p>
     </footer>
   </div>
 
@@ -1997,7 +2000,7 @@
           if (row.keyword) {
             const missingTag = document.createElement("span");
             missingTag.style.cssText = "margin-left: 6px; font-size: 0.68rem; font-weight: 700; color: #b91c1c; text-transform: none; letter-spacing: 0;";
-            missingTag.textContent = `— ${row.keyword} not found`;
+            missingTag.textContent = `(${row.keyword} not found)`;
             eqLabel.append(missingTag);
           }
           const eqValue = document.createElement("div");
@@ -2642,7 +2645,7 @@
         id: "hard-1",
         tier: 1,
         label: "DaVinci DV5 Robot",
-        description: "DaVinci DV5 robot is immovable — cases must be in OR 2 or OR 3.",
+        description: "DaVinci DV5 robot is immovable. Cases must be in OR 2 or OR 3.",
         match: { equipmentContainsAny: ["Robot DaVinci DV5", "Davinci Robot Xi"] },
         allowedRooms: ["OR 2", "OR 3"]
       },
@@ -2650,7 +2653,7 @@
         id: "hard-2",
         tier: 1,
         label: "DaVinci SP Robot",
-        description: "DaVinci SP robot is immovable — cases must be in OR 5.",
+        description: "DaVinci SP robot is immovable. Cases must be in OR 5.",
         match: { equipmentContainsAny: ["DaVinci Robot SP"] },
         allowedRooms: ["OR 5"],
         suppressesWhenCompliant: ["hard-1"]
@@ -2766,7 +2769,7 @@
         id: "svc-8",
         tier: 3,
         label: "Bronchoscopy Room",
-        description: "Bronchoscopy cases are generally scheduled in OR 8 — please verify room assignment.",
+        description: "Bronchoscopy cases are generally scheduled in OR 8. Please verify room assignment.",
         match: { procedureTextContains: "bronch" },
         allowedRooms: ["OR 8"]
       },
@@ -2774,7 +2777,7 @@
         id: "svc-9",
         tier: 3,
         label: "Gynecology Room",
-        description: "Gynecology cases are generally assigned to OR 1 — please verify this room assignment.",
+        description: "Gynecology cases are generally assigned to OR 1. Please verify this room assignment.",
         match: { service: "Gynecology" },
         allowedRooms: ["OR 1"]
       },
@@ -2882,6 +2885,9 @@
     });
     document.getElementById("viewEquipmentTermsBtn").addEventListener("click", () => showView("equipmentTerms"));
     document.getElementById("equipmentTermsBack").addEventListener("click", () => showView("equipment"));
+    document.getElementById("suggestEquipmentBtn").addEventListener("click", () => {
+      window.location.href = "mailto:Thomas.Boone@SutterHealth.org?subject=Equipment%20Term%20Suggestion&body=SUGGESTED%20TERM%3A%20%0A%0AThis%20is%20a%20suggestion%20to%20add%20a%20new%20equipment%20term%20to%20the%20audit%20keyword%20list.";
+    });
 
 
 
@@ -2980,12 +2986,12 @@
         case 3: {
           const list = formatRoomList(rooms, "and");
           const subject = rule.match.service || rule.label.replace(/ Room$| Service$/, "");
-          return `${subject} cases are generally assigned to ${list} — please verify this room assignment.`;
+          return `${subject} cases are generally assigned to ${list}. Please verify this room assignment.`;
         }
         case 4: {
           const surgeonName = rule.label.replace(/ Preference$/, "");
           const list = formatRoomList(rooms, "or");
-          return `${surgeonName} typically operates in ${list} — consider reassigning if possible.`;
+          return `${surgeonName} typically operates in ${list}. Consider reassigning if possible.`;
         }
         case 5: {
           const list = formatRoomList(rooms, "or");
@@ -3018,11 +3024,11 @@
 
     const TIER_META = [
       null,
-      { label: "Tier 1 — Physical Absolute", desc: "Immovable equipment or other physical constraint" },
-      { label: "Tier 2 — Strong Operational", desc: "Designated room assignments" },
-      { label: "Tier 3 — Service Preference", desc: "Service line clustering, strong but flexible" },
-      { label: "Tier 4 — Surgeon Preference", desc: "Behavioral patterns, no hard clinical reason" },
-      { label: "Tier 5 — Suggestion", desc: "Low-confidence patterns, convenience preferences" }
+      { label: "Tier 1: Physical Absolute", desc: "Immovable equipment or other physical constraint" },
+      { label: "Tier 2: Strong Operational", desc: "Designated room assignments" },
+      { label: "Tier 3: Service Preference", desc: "Service line clustering, strong but flexible" },
+      { label: "Tier 4: Surgeon Preference", desc: "Behavioral patterns, no hard clinical reason" },
+      { label: "Tier 5: Suggestion", desc: "Low-confidence patterns, convenience preferences" }
     ];
 
     function buildRuleManagementView() {
