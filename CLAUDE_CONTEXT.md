@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-05-31 (v1.3.45)
+## Last updated: 2026-05-31 (v1.3.46)
 
 ---
 
@@ -28,7 +28,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.45**
+- Current version: **v1.3.46**
 - Repo: github.com/tombooone/tomboone-website
 - Deploy: `git add index.html && git commit -m "message" && git push`
 - Cloudflare Pages auto-deploys on push to main
@@ -293,4 +293,4 @@ Accessed via "View active rules" link on OR Schedule Audit instructions panel.
 - Show all alerts and flags regardless of tier (no suppression in output except SVC-9 feasibility check)
 - "Violation" replaced with "alert" (Tier 1-2) and "flag" (Tier 3-5) in all user-facing text
 - Equipment accessories must NOT be used as robot triggers (Tower Robot, daVinci Surgeon Chair, Table Trumpf 7000dV)
-- Explanation text in equipment audit: "[keyword] was listed in Special Needs but not added to Equipment TB [date]"
+- Explanation text in equipment audit: "[keyword] was listed in Special Needs but not added to Equipment"
