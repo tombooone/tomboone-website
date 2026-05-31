@@ -1,11 +1,11 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-05-28 (v1.3.4 in progress)
+## Last updated: 2026-05-31 (v1.3.45)
 
 ---
 
 ## CRITICAL RULES — READ FIRST
 
-- This is a **single HTML file** (`index.html`) deployed on **GitHub Pages**
+- This is a **single HTML file** (`index.html`) deployed via **Cloudflare Pages**
 - **NEVER touch the existing CPT audit or equipment audit code** — those tools are live and working
 - All processing is **local browser only** — no server, no uploads, no external data storage
 - PHI-safe by design — the only unique identifier in schedule data is Case #
@@ -16,22 +16,48 @@
 
 ## Project Overview
 
-A PHI-safe OR scheduling audit web tool at **tomboone.io** (custom domain → tombooone.github.io/tomboone-website).
+A PHI-safe OR scheduling audit web tool at **tomboone.io** (primary, live) and **tomboonern.com** (configured, but blocked on the work network).
 
-Four tools on the home screen:
+All four tools on the home screen are **live and complete**:
 1. **CPT Audit Tool** ✅ complete, do not touch
 2. **Equipment Request Audit** ✅ complete, do not touch
-3. **Room Rules Audit** 🔧 active development — see below
-4. **Rule Management** 🔧 planned — read-only view of active rules by tier
+3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag system)
+4. **Rule Management** ✅ complete (read-only rule cards by tier, flag-for-review mailto flow, request-new-rule mailto)
 
 ---
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.4** (in progress)
+- Current version: **v1.3.45**
 - Repo: github.com/tombooone/tomboone-website
 - Deploy: `git add index.html && git commit -m "message" && git push`
-- GitHub Pages auto-deploys on push
+- Cloudflare Pages auto-deploys on push to main
+
+---
+
+## Epic Report IDs
+
+| Tool | Report Name | Report ID |
+|------|-------------|-----------|
+| CPT Audit | CPMC CPT Audit | 51177697 |
+| Equipment Request Audit | CPMC Equipment Request Audit | 59040819 |
+| OR Schedule Audit | WBVC OR Schedule and Room Assignment Audit | 51512750 |
+
+---
+
+## Equipment Request Audit — Keywords
+
+The tool flags cases where any of these terms appear in Special Needs but are NOT in the Equipment field:
+
+`C-arm`, `Airo`, `Myosure fluid management`, `Fluid management system`, `Fluent`, `Myosure`, `NIM`, `Microscope`, `Gamma`, `Neoprobe`, `Geiger`, `Trunode`, `Sonopet`
+
+**Matching logic (in order):**
+1. Exact substring (case-insensitive)
+2. Prefix-token match — source word starts with keyword token (e.g., "NIMS" matches "NIM")
+3. Token-bag match — all keyword tokens ≥3 chars appear somewhere in source (e.g., "Monitor NIM Facial Nerve" matches "NIM")
+4. Fuzzy/Levenshtein window match
+
+**Expand/collapse rows:** Clicking a result row reveals Special Needs (with matched term highlighted amber) and Equipment List (with "— [keyword] not found" label in red).
 
 ---
 
@@ -55,8 +81,8 @@ Both historical and prospective Epic reports share the same columns:
 | Status | Filter: keep Completed + Scheduled | Exclude Canceled, Voided |
 | Clinician Reviewed? | "YES" or blank | Small weight multiplier for rule discovery |
 | Notes for Service Lead | Ignore | Free text, not structured |
-| Special Needs | Ignore for room rules | Handled by existing equipment audit tool |
-| Equipment | Newline-separated list, "W " prefix | Strip prefix for matching; exact substring; controlled vocabulary |
+| Special Needs | Ignore for room rules | Handled by Equipment Request Audit tool |
+| Equipment | Newline-separated list, "W " prefix | Strip prefix for matching; controlled vocabulary |
 | OR Ready to Schedule | Ignore | |
 | Patient Age | e.g. "62 yrs" | Parse leading integer; under 18 = peds rule |
 | Base Patient Class | Ignore for rules | IP/OP/ED |
@@ -81,7 +107,7 @@ Both historical and prospective Epic reports share the same columns:
 | 5 | Suggestion | Grey | Flag |
 
 **Language rules:**
-- Tier 1-2 issues = "alerts" 
+- Tier 1-2 issues = "alerts"
 - Tier 3-5 issues = "flags"
 - Metric label: "Tier 1-2 alerts" and "Tier 3-5 flags"
 - Table header: "Room rule alerts and flags"
@@ -136,8 +162,8 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 
 ### Tier 3 — Service Preference (Flag)
 
-| ID | Service | Rooms |
-|----|---------|-------|
+| ID | Service / Trigger | Rooms |
+|----|-------------------|-------|
 | SVC-1 | Cardiac | OR7, OR8, OR14 |
 | SVC-2 | Neurosurgery | OR11, OR12 |
 | SVC-3 | Ophthalmology | OR5, OR10 |
@@ -145,6 +171,8 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 | SVC-5 | Orthopedics | OR11, OR12 |
 | SVC-6 | Cardiology | OR14 |
 | SVC-7 | Pain Management | OR11, OR12, OR4 |
+| SVC-8 | Bronchoscopy (procedureTextContains: "bronch") | OR8 |
+| SVC-9 | Gynecology | OR1 — suppressed if no feasible OR1 slot for case duration |
 
 ### Tier 4 — Surgeon Preference (Flag)
 
@@ -201,7 +229,7 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 
 ## Gantt Chart
 
-- Integrated into Room Rules Audit view — above violations table
+- Integrated into OR Schedule Audit view — above violations table
 - X axis: 06:30 to 19:00
 - Y axis: OR1 through OR14, all 14 always shown
 - Case blocks: Proj Start Time (left edge) to Proj End Time (right edge)
@@ -209,13 +237,24 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 - Lighter beige for procedure time (Proc Start to Proc End)
 - Case tile text: surgeon last name bold, procedure name, case number bold — left-aligned to full tile edge
 - Case tile color: entire tile takes color of highest severity alert/flag (red=T1, orange=T2, amber=T3, blue=T4, grey=T5). Clean cases = beige.
-- Both left and right corners of tiles are rounded
 - Reference line: dashed vertical at 07:30. Every other Friday starting 5/29/2026, line moves to 09:00 (biweekly: 5/29, 6/12, 6/26, 7/10...)
-- Hover tooltip: shows surgeon, procedure, room, lists each alert/flag with rule label and explanation
+- Hover tooltip: shows surgeon, time range, lists each alert/flag with rule label and explanation
 - Click tile: opens right sidebar with full case details and per-violation tier badges. Clicking outside sidebar closes it (except clicking another tile opens that tile's sidebar instead)
 - Calendar: single month view with prev/next month arrows AND prev/next day arrows. Fixed height regardless of week count. Positioned to LEFT of metric stack. Days color-coded: red=Tier 1-2 alert, amber=Tier 3-5 flag, green=clean, no style=no cases.
 - Metrics (Cases reviewed, Tier 1-2 alerts, Tier 3-5 flags): stacked vertically to RIGHT of calendar
 - Clicking a row in violations table scrolls to and highlights that case tile in Gantt, opens sidebar
+
+---
+
+## Rule Management View
+
+Accessed via "View active rules" link on OR Schedule Audit instructions panel.
+
+- Shows all rules organized by tier (Tier 1–5)
+- Each rule card: Tier badge | Label, Trigger, Rooms, Confidence, Cases matched | Actions
+- **Flag for review:** Button on each card → textarea + Send → opens `mailto:Thomas.Boone@SutterHealth.org` with subject "Rule Review Request: [label]" and body "COMMENT: [user text]\n\nRule: [label] (Tier N)"
+- **Request new rule:** Button right-aligned next to "Rule Management" h1 → opens `mailto:Thomas.Boone@SutterHealth.org` with subject "New Rule Request" and blank COMMENT field
+- No localStorage — email is the record
 
 ---
 
@@ -233,9 +272,6 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 
 ## Phases Remaining
 
-### In Progress
-- Rule Management UI — new home screen tile, read-only view of all rules by tier, confidence, case count, service lead can add notes and flag rules for review
-
 ### Deferred
 - Case duration audit / PTA comparison
 - Block scheduling constraints
@@ -246,14 +282,15 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 
 ## Key Decisions
 
-- No fuzzy matching for equipment — exact substring only
-- Procedure matching keys off bracketed Epic ID, not name
+- Equipment matching: exact substring first, then prefix-token (source word starts with keyword token), then token-bag (all keyword tokens present anywhere), then fuzzy Levenshtein — "NIM" matches "NIMS tube", "Monitor NIM Facial Nerve", etc.
+- Procedure matching keys off free text in Case Procedures, not bracketed Epic IDs
 - Laterality parsed from Case Procedures free text
 - Service = "Robotics" ignored — use equipment field for robot cases
 - Add-on and urgent/emergent cases weighted near zero for rule discovery
 - Peds rule is Tier 2 — OR4 preferred but not always possible
 - Laterality rules not statistically significant at WBVC — only PCNL confirmed
 - All alert/flag language should be suggestive not punitive — brief, explain the reason
-- Show all alerts and flags regardless of tier (no suppression in output)
+- Show all alerts and flags regardless of tier (no suppression in output except SVC-9 feasibility check)
 - "Violation" replaced with "alert" (Tier 1-2) and "flag" (Tier 3-5) in all user-facing text
 - Equipment accessories must NOT be used as robot triggers (Tower Robot, daVinci Surgeon Chair, Table Trumpf 7000dV)
+- Explanation text in equipment audit: "[keyword] was listed in Special Needs but not added to Equipment TB [date]"
