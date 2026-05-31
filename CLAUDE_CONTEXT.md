@@ -16,13 +16,13 @@
 
 ## Project Overview
 
-A PHI-safe OR scheduling audit web tool at **tomboone.io** (primary, live) and **tomboonern.com** (configured, but blocked on the work network).
+A PHI-safe OR scheduling audit web tool at **tomboone.io** (primary, live) and **tomboonern.com** (configured via Cloudflare Pages, but blocked on the work network).
 
 All four tools on the home screen are **live and complete**:
 1. **CPT Audit Tool** ✅ complete, do not touch
-2. **Equipment Request Audit** ✅ complete, do not touch
-3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag system)
-4. **Rule Management** ✅ complete (read-only rule cards by tier, flag-for-review mailto flow, request-new-rule mailto)
+2. **Equipment Request Audit** ✅ complete (expand/collapse detail rows, amber keyword highlight, 13 keywords including NIM and Sonopet), do not touch
+3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag tier system; includes **Rule Management** sub-view with read-only rule cards, mailto flag-for-review, and mailto request-new-rule flows)
+4. **Equipment Terms view** ✅ complete (accessible via "View terms being checked" link in Equipment Request Audit; shows keyword pills)
 
 ---
 
@@ -98,13 +98,13 @@ Both historical and prospective Epic reports share the same columns:
 
 ### Tier System
 
-| Tier | Name | Color | Term to use |
-|------|------|-------|-------------|
-| 1 | Physical Absolute | Red | Alert |
-| 2 | Strong Operational | Orange | Alert |
-| 3 | Service Preference | Amber | Flag |
-| 4 | Surgeon Preference | Blue | Flag |
-| 5 | Suggestion | Grey | Flag |
+| Tier | Name | Color | Term to use | Active rules |
+|------|------|-------|-------------|--------------|
+| 1 | Physical Absolute | Red | Alert | 6 |
+| 2 | Strong Operational | Orange | Alert | 2 |
+| 3 | Service Preference | Amber | Flag | 9 |
+| 4 | Surgeon Preference | Blue | Flag | 39 |
+| 5 | Suggestion | Grey | Flag | 2 |
 
 **Language rules:**
 - Tier 1-2 issues = "alerts"
@@ -140,7 +140,7 @@ Both historical and prospective Epic reports share the same columns:
 
 ## Active Rule Set
 
-### Tier 1 — Physical Absolute (Alert)
+### Tier 1 — Physical Absolute (Alert) — 6 rules
 
 | ID | Label | Trigger | Rooms |
 |----|-------|---------|-------|
@@ -151,7 +151,7 @@ Both historical and prospective Epic reports share the same columns:
 | HARD-5 | Transplant Room | equipmentContainsAny: ["Table Back w/o shelf (Transplant)", "Table Small w/o shelf (Transplant)", "Cooler Donor", "Cart Renal Transplant", "ORGANOX"] | OR6, OR9 |
 | HARD-6 | Hybrid/Cath Lab | equipmentContainsAny: ["CV ACCESSION EQ"] | OR14 |
 
-### Tier 2 — Strong Operational (Alert)
+### Tier 2 — Strong Operational (Alert) — 2 rules
 
 | ID | Label | Trigger | Rooms |
 |----|-------|---------|-------|
@@ -160,7 +160,7 @@ Both historical and prospective Epic reports share the same columns:
 
 Peds explanation: "OR4 is the designated pediatric room. Please move this case to OR4 if available."
 
-### Tier 3 — Service Preference (Flag)
+### Tier 3 — Service Preference (Flag) — 9 rules
 
 | ID | Service / Trigger | Rooms |
 |----|-------------------|-------|
@@ -174,7 +174,7 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 | SVC-8 | Bronchoscopy (procedureTextContains: "bronch") | OR8 |
 | SVC-9 | Gynecology | OR1 — suppressed if no feasible OR1 slot for case duration |
 
-### Tier 4 — Surgeon Preference (Flag)
+### Tier 4 — Surgeon Preference (Flag) — 39 rules
 
 | Surgeon | ID | Rooms |
 |---------|----|-------|
@@ -218,7 +218,7 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 | Lu | 10101593 | OR5 |
 | Chen | 30233068 | OR12, OR5 |
 
-### Tier 5 — Laterality Suggestion (Flag)
+### Tier 5 — Laterality Suggestion (Flag) — 2 rules
 
 | ID | Label | Trigger | Rooms |
 |----|-------|---------|-------|
