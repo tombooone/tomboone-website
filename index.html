@@ -1013,6 +1013,9 @@
       white-space: nowrap;
     }
     .rule-flag-btn:hover { background: var(--soft); }
+    .rule-info-section { margin-bottom: 22px; }
+    .rule-info-section h3 { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin: 0 0 5px; }
+    .rule-info-section p { font-size: 0.875rem; color: var(--muted); line-height: 1.65; margin: 0; }
     .rule-note-input {
       width: 100%;
       box-sizing: border-box;
@@ -1091,6 +1094,56 @@
         grid-template-columns: 1fr;
       }
     }
+    #wormModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.88);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    #wormModal.active { display: flex; }
+    #wormGame {
+      background: #111;
+      border-radius: 10px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+    }
+    #wormCanvas { display: block; background: #000; border-radius: 4px; }
+    #wormScore { color: #4ade80; font-family: monospace; font-size: 1rem; letter-spacing: 0.05em; }
+    #wormGameOver {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      border-radius: 10px;
+      justify-content: center;
+      color: #fff;
+      font-family: monospace;
+    }
+    #wormGameOver p { margin: 0; font-size: 1.1rem; }
+    #wormFinalScore { color: #4ade80; font-size: 0.9rem; }
+    #wormRestartBtn {
+      margin-top: 4px;
+      background: #4ade80;
+      color: #000;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 18px;
+      font-size: 0.85rem;
+      font-family: monospace;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    #wormRestartBtn:hover { background: #86efac; }
   </style>
 </head>
 <body>
@@ -1317,7 +1370,7 @@
           </div>
 
           <div class="table-section">
-            <h2>Equipment terms listed in Special Needs but missing from Equipment</h2>
+            <h2>Equipment terms listed in Surgery Order Special Needs but missing from Case Equipment</h2>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -1451,9 +1504,12 @@
         </div>
 
         <div class="page-heading">
-          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 8px; padding-right: 14px;">
             <h1 id="ruleManagementTitle" style="margin: 0;">Rule Management</h1>
-            <button type="button" class="rule-flag-btn" id="requestNewRuleBtn" style="flex-shrink: 0;">Request new rule</button>
+            <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+              <button type="button" class="ghost-button" id="howThisWorksBtn" style="padding: 5px 10px;">How this works</button>
+              <button type="button" class="rule-flag-btn" id="requestNewRuleBtn" style="background: var(--panel);">Request new rule</button>
+            </div>
           </div>
           <p class="lede">Active room assignment rules organized by tier. Flag any rule to send a review request by email.</p>
         </div>
@@ -1476,10 +1532,58 @@
         </div>
         <div id="equipmentTermsContent"></div>
       </section>
+
+      <section id="ruleInfoView" class="view" aria-labelledby="ruleInfoTitle">
+        <div class="back-row">
+          <button class="ghost-button" type="button" id="ruleInfoBackBtn">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Back to rules</span>
+          </button>
+        </div>
+        <div class="page-heading">
+          <h1 id="ruleInfoTitle">How Room Assignment Rules Work</h1>
+        </div>
+        <div style="max-width: 680px;">
+          <div class="rule-info-section">
+            <h3>How these rules were developed</h3>
+            <p>The rules in this tool were derived from three years of completed OR case data from CPMC Van Ness. Cases that were marked as completed and signed off by clinical staff were used as the ground truth. The assumption is that if a case ran in a particular room repeatedly over time, there was a reason for it. Statistical patterns were identified across equipment, service line, surgeon, patient age, and procedure type. Rules with strong, consistent patterns were validated and added to the tool. Rules are reviewed and updated periodically as OR operations evolve.</p>
+          </div>
+          <div class="rule-info-section">
+            <h3>What Confidence means</h3>
+            <p>Confidence reflects how consistently the historical data supports the rule, and how much operational flexibility exists. High confidence rules are either physically constrained (the equipment cannot move) or backed by a very strong historical pattern with little variation. You can treat these as reliable. Medium confidence rules are based on clear surgeon or service preferences that hold most of the time, but may have legitimate exceptions. Low confidence rules are based on weaker historical patterns. They are included as suggestions but should be interpreted cautiously.</p>
+          </div>
+          <div class="rule-info-section">
+            <h3>Tier 1 — Physical Absolute</h3>
+            <p>These rules exist because certain equipment cannot be moved, or because of other physical constraints of the room. The DaVinci DV5 robot lives permanently in OR 2 and OR 3. The DaVinci SP robot lives in OR 5. Cardiac bypass equipment is fixed to OR 7. Free flap procedures require a room with three overhead surgical lights, which limits them to OR 6, OR 7, OR 8, and OR 9. If a case meets one of these criteria, it must be in the designated room and there is no flexibility.</p>
+          </div>
+          <div class="rule-info-section">
+            <h3>Tier 2 — Strong Operational</h3>
+            <p>These rooms are set up specifically for certain case types. OR 4 is the designated pediatric room. OR 5 and OR 10 are set up for ophthalmology. Cases flagged at this tier should be moved if possible, but there may be legitimate reasons they cannot be.</p>
+          </div>
+          <div class="rule-info-section">
+            <h3>Tier 3 — Service Preference</h3>
+            <p>Certain services tend to cluster in specific rooms because of setup familiarity, equipment proximity, and turnover efficiency. For example, neurosurgery cases typically run in OR 11 or OR 12. These flags are worth reviewing but are not always actionable. If the preferred room is full, the flag will be suppressed automatically.</p>
+          </div>
+          <div class="rule-info-section">
+            <h3>Tier 4 — Surgeon Preference</h3>
+            <p>Some surgeons have a strong preference for a specific room based on familiarity or workflow. These are the lowest-priority flags and are purely informational.</p>
+          </div>
+          <div class="rule-info-section">
+            <h3>Tier 5 — Suggestion</h3>
+            <p>Low-confidence patterns based on historical data. For example, right-sided PCNL cases have historically been performed in OR 2, OR 8, or OR 12 due to positioning convenience.</p>
+          </div>
+          <div class="rule-info-section">
+            <h3>How flags are suppressed</h3>
+            <p>The tool is designed to only flag cases where a move is actually feasible. For Tier 3 service flags, the tool checks whether the preferred room has enough open time to accommodate the case, or the full back-to-back block of same-service or same-surgeon cases, before flagging. If the preferred room is already full, the flag is suppressed.</p>
+          </div>
+        </div>
+      </section>
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.46 · 2026-05-31</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.50 · 2026-05-31</p>
     </footer>
   </div>
 
@@ -1618,6 +1722,7 @@
       document.getElementById("roomRulesView").classList.toggle("active", viewName === "roomRules");
       document.getElementById("ruleManagementView").classList.toggle("active", viewName === "ruleManagement");
       document.getElementById("equipmentTermsView").classList.toggle("active", viewName === "equipmentTerms");
+      document.getElementById("ruleInfoView").classList.toggle("active", viewName === "ruleInfo");
       if (viewName === "ruleManagement") buildRuleManagementView();
       if (viewName === "equipmentTerms") buildEquipmentTermsView();
     }
@@ -2745,6 +2850,8 @@
     document.getElementById("openRoomRulesTool").addEventListener("click", () => showView("roomRules"));
     document.getElementById("roomRulesBackHome").addEventListener("click", () => showView("home"));
     document.getElementById("ruleManagementBackHome").addEventListener("click", () => showView("home"));
+    document.getElementById("ruleInfoBackBtn").addEventListener("click", () => showView("ruleManagement"));
+    document.getElementById("howThisWorksBtn").addEventListener("click", () => showView("ruleInfo"));
 
     wireAuditTool({
       fileInput: document.getElementById("roomRulesFileInput"),
@@ -2898,7 +3005,7 @@
       if (m.equipmentContainsAny) {
         const n = m.equipmentContainsAny.length;
         if (n <= 2) return "Equipment: " + m.equipmentContainsAny.join(", ");
-        return `Equipment (any of ${n}): ${m.equipmentContainsAny.slice(0, 2).join(", ")}…`;
+        return `Equipment (any of ${n}): ${m.equipmentContainsAny.join(", ")}`;
       }
       if (m.service !== undefined) return "Service: " + m.service;
       if (m.surgeonId !== undefined) return "Surgeon ID: " + m.surgeonId;
@@ -2951,7 +3058,6 @@
         cards.className = "rule-cards";
 
         rules.forEach((rule) => {
-          const caseCount = _lastRuleMatchCounts.get(rule.id);
           const tierConf = ["High", "High", "High", "Medium", "Low"][tier - 1];
 
           const card = document.createElement("div");
@@ -2985,10 +3091,7 @@
           meta2.className = "rule-card-meta";
           const confSpan = document.createElement("span");
           confSpan.textContent = "Confidence: " + tierConf;
-          const countSpan = document.createElement("span");
-          countSpan.textContent = "Cases matched: " +
-            (caseCount !== undefined ? String(caseCount) : "–");
-          meta2.append(confSpan, countSpan);
+          meta2.append(confSpan);
 
           main.append(labelRow, matchRow, roomsRow, meta2);
 
@@ -3220,37 +3323,87 @@
         });
       });
 
-      // Post-process svc-9: suppress flag when OR 1 has no feasible prime-time slot
-      // that day long enough to hold the gyn case's full projected duration.
-      const SVC9_PRIME_END = 930; // 15:30
-      const svc9DayMs = 86400000;
-      const svc9Suppressed = new Set();
+      // Post-process Tier 3: suppress flags when no allowed room has a prime-time gap
+      // large enough to fit the contiguous block of related cases for that rule.
+      const T3_PRIME_END = 930; // 15:30
+      const t3DayMs = 86400000;
+      const t3Suppressed = new Set(); // "caseNumber:ruleId"
+      const t3ProcessedBlocks = new Set(); // "sortDate:room:ruleId:blockStart"
       violations.forEach((v) => {
-        if (v.ruleId !== "svc-9") return;
-        const gynCase = cases.find((c) => c.caseNumber === v.caseNumber);
-        if (!gynCase || gynCase.startMin === null || gynCase.endMin === null) return;
-        const duration = gynCase.endMin - gynCase.startMin;
-        if (duration <= 0) return;
-        // Biweekly inservice Fridays start at 09:00; all other days start at 07:30
-        const diffDays = Math.round((v.sortDate - BIWEEKLY_FRI_ANCHOR_MS) / svc9DayMs);
-        const isInserviceFriday = new Date(v.sortDate).getDay() === 5
-          && diffDays >= 0 && diffDays % 14 === 0;
-        const primeStart = isInserviceFriday ? 540 : 450; // 09:00 or 07:30
-        const or1Occupied = cases
-          .filter((c) => c.room === "OR 1" && c.sortDate === v.sortDate && c.startMin !== null && c.endMin !== null)
-          .map((c) => [c.startMin, c.endMin])
-          .sort((a, b) => a[0] - b[0]);
-        let cursor = primeStart;
-        let feasible = false;
-        for (const [s, e] of or1Occupied) {
-          if (s > cursor && s - cursor >= duration) { feasible = true; break; }
-          if (e > cursor) cursor = e;
+        if (v.ruleTier !== 3) return;
+        const suppressKey = `${v.caseNumber}:${v.ruleId}`;
+        if (t3Suppressed.has(suppressKey)) return;
+
+        const rule = ROOM_RULES.find((r) => r.id === v.ruleId);
+        if (!rule) return;
+
+        const ac = cases.find((c) => c.caseNumber === v.caseNumber);
+        if (!ac || ac.startMin === null || ac.endMin === null) return;
+
+        // Related cases: same day, same room, matching service or surgeon
+        const related = cases
+          .filter((c) =>
+            c.sortDate === v.sortDate &&
+            c.room === v.room &&
+            c.startMin !== null &&
+            c.endMin !== null &&
+            (c.service === ac.service || c.surgeon === ac.surgeon)
+          )
+          .sort((a, b) => a.startMin - b.startMin);
+
+        // Group into contiguous blocks (gap ≤ 30 min)
+        const blocks = [];
+        let cur = [related[0]];
+        for (let i = 1; i < related.length; i++) {
+          if (related[i].startMin - cur[cur.length - 1].endMin <= 30) {
+            cur.push(related[i]);
+          } else {
+            blocks.push(cur);
+            cur = [related[i]];
+          }
         }
-        if (!feasible && SVC9_PRIME_END - cursor >= duration) feasible = true;
-        if (!feasible) svc9Suppressed.add(v.caseNumber);
+        blocks.push(cur);
+
+        // Find the block containing the anchor case
+        const block = blocks.find((b) => b.some((c) => c.caseNumber === ac.caseNumber));
+        if (!block) return;
+
+        const blockStart = Math.min(...block.map((c) => c.startMin));
+        const blockEnd   = Math.max(...block.map((c) => c.endMin));
+        const blockDur   = blockEnd - blockStart;
+        if (blockDur <= 0) return;
+
+        const blockKey = `${v.sortDate}:${v.room}:${v.ruleId}:${blockStart}`;
+        if (t3ProcessedBlocks.has(blockKey)) return;
+        t3ProcessedBlocks.add(blockKey);
+
+        // Biweekly inservice Friday: OR start shifts 07:30 → 09:00
+        const diffDays = Math.round((v.sortDate - BIWEEKLY_FRI_ANCHOR_MS) / t3DayMs);
+        const isInserviceFri = new Date(v.sortDate).getDay() === 5 && diffDays >= 0 && diffDays % 14 === 0;
+        const primeStart = isInserviceFri ? 540 : 450; // 09:00 or 07:30
+
+        // Feasibility: does any allowed room have a prime-time gap ≥ blockDur?
+        let feasible = false;
+        for (const allowedRoom of rule.allowedRooms) {
+          if (feasible) break;
+          const occ = cases
+            .filter((c) => c.room === allowedRoom && c.sortDate === v.sortDate && c.startMin !== null && c.endMin !== null)
+            .map((c) => [c.startMin, c.endMin])
+            .sort((a, b) => a[0] - b[0]);
+          let cursor = primeStart;
+          for (const [s, e] of occ) {
+            if (s > cursor && s - cursor >= blockDur) { feasible = true; break; }
+            if (e > cursor) cursor = e;
+          }
+          if (!feasible && T3_PRIME_END - cursor >= blockDur) feasible = true;
+        }
+
+        if (!feasible) {
+          block.forEach((c) => t3Suppressed.add(`${c.caseNumber}:${v.ruleId}`));
+        }
       });
-      const finalViolations = svc9Suppressed.size > 0
-        ? violations.filter((v) => !(v.ruleId === "svc-9" && svc9Suppressed.has(v.caseNumber)))
+      const finalViolations = t3Suppressed.size > 0
+        ? violations.filter((v) => !(v.ruleTier === 3 && t3Suppressed.has(`${v.caseNumber}:${v.ruleId}`)))
         : violations;
 
       const tier12Count  = finalViolations.filter((v) => v.ruleTier <= 2).length;
@@ -3880,6 +4033,146 @@
       document.getElementById("ganttSidebar").hidden = true;
       hideGanttTooltip();
     });
+  </script>
+  <div id="wormModal" role="dialog" aria-modal="true">
+    <div id="wormGame">
+      <div id="wormScore">Score: 0</div>
+      <canvas id="wormCanvas"></canvas>
+      <div id="wormGameOver">
+        <p>Game over</p>
+        <span id="wormFinalScore"></span>
+        <button id="wormRestartBtn" type="button">Play again</button>
+      </div>
+    </div>
+  </div>
+  <script>
+  (function() {
+    const TARGET = "worm";
+    let buf = "";
+    const modal = document.getElementById("wormModal");
+    const canvas = document.getElementById("wormCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("wormScore");
+    const gameOverEl = document.getElementById("wormGameOver");
+    const finalScoreEl = document.getElementById("wormFinalScore");
+    const restartBtn = document.getElementById("wormRestartBtn");
+
+    const CELL = 20, COLS = 20, ROWS = 20, SPEED = 140;
+    canvas.width = COLS * CELL;
+    canvas.height = ROWS * CELL;
+
+    let snake, dir, nextDir, food, score, running, animId, lastTs;
+
+    function openGame() {
+      modal.classList.add("active");
+      startGame();
+    }
+
+    function closeGame() {
+      modal.classList.remove("active");
+      cancelAnimationFrame(animId);
+      running = false;
+    }
+
+    function startGame() {
+      snake = [{x: 10, y: 10}, {x: 9, y: 10}];
+      dir = {x: 1, y: 0};
+      nextDir = {x: 1, y: 0};
+      score = 0;
+      running = true;
+      lastTs = null;
+      gameOverEl.style.display = "none";
+      spawnFood();
+      updateScore();
+      cancelAnimationFrame(animId);
+      animId = requestAnimationFrame(loop);
+    }
+
+    function spawnFood() {
+      let pos;
+      do {
+        pos = {x: Math.floor(Math.random() * COLS), y: Math.floor(Math.random() * ROWS)};
+      } while (snake.some(s => s.x === pos.x && s.y === pos.y));
+      food = pos;
+    }
+
+    function updateScore() { scoreEl.textContent = "Score: " + score; }
+
+    function loop(ts) {
+      if (!running) return;
+      animId = requestAnimationFrame(loop);
+      if (lastTs === null) lastTs = ts;
+      if (ts - lastTs < SPEED) return;
+      lastTs = ts;
+      dir = nextDir;
+      step();
+    }
+
+    function step() {
+      const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+      if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS
+          || snake.some(s => s.x === head.x && s.y === head.y)) {
+        endGame(); return;
+      }
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) { score++; updateScore(); spawnFood(); }
+      else snake.pop();
+      draw();
+    }
+
+    function draw() {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "#1a1a1a";
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= COLS; i++) {
+        ctx.beginPath(); ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, canvas.height); ctx.stroke();
+      }
+      for (let j = 0; j <= ROWS; j++) {
+        ctx.beginPath(); ctx.moveTo(0, j * CELL); ctx.lineTo(canvas.width, j * CELL); ctx.stroke();
+      }
+      ctx.fillStyle = "#f87171";
+      ctx.beginPath();
+      ctx.arc(food.x * CELL + CELL / 2, food.y * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
+      ctx.fill();
+      snake.forEach((s, i) => {
+        ctx.fillStyle = i === 0 ? "#4ade80" : "#16a34a";
+        ctx.beginPath();
+        ctx.roundRect(s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2, 3);
+        ctx.fill();
+      });
+    }
+
+    function endGame() {
+      running = false;
+      cancelAnimationFrame(animId);
+      finalScoreEl.textContent = "Score: " + score;
+      gameOverEl.style.display = "flex";
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea") { buf = ""; return; }
+      if (modal.classList.contains("active")) {
+        if (e.key === "Escape") { closeGame(); return; }
+        const map = {ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0}};
+        if (map[e.key]) {
+          const d = map[e.key];
+          if (d.x !== -dir.x || d.y !== -dir.y) nextDir = d;
+          e.preventDefault();
+        }
+        return;
+      }
+      if (e.key.length === 1) {
+        buf += e.key.toLowerCase();
+        if (buf.length > TARGET.length) buf = buf.slice(-TARGET.length);
+        if (buf === TARGET) { buf = ""; openGame(); }
+      }
+    });
+
+    modal.addEventListener("click", (e) => { if (e.target === modal) closeGame(); });
+    restartBtn.addEventListener("click", startGame);
+  })();
   </script>
 </body>
 </html>
