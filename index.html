@@ -1583,7 +1583,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.50 · 2026-05-31</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.52 · 2026-05-31</p>
     </footer>
   </div>
 
@@ -4061,7 +4061,7 @@
     canvas.width = COLS * CELL;
     canvas.height = ROWS * CELL;
 
-    let snake, dir, nextDir, food, score, running, animId, lastTs;
+    let snake, dir, dirQueue, food, score, running, animId, lastTs;
 
     function openGame() {
       modal.classList.add("active");
@@ -4077,7 +4077,7 @@
     function startGame() {
       snake = [{x: 10, y: 10}, {x: 9, y: 10}];
       dir = {x: 1, y: 0};
-      nextDir = {x: 1, y: 0};
+      dirQueue = [];
       score = 0;
       running = true;
       lastTs = null;
@@ -4104,7 +4104,7 @@
       if (lastTs === null) lastTs = ts;
       if (ts - lastTs < SPEED) return;
       lastTs = ts;
-      dir = nextDir;
+      if (dirQueue.length) dir = dirQueue.shift();
       step();
     }
 
@@ -4158,7 +4158,8 @@
         const map = {ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0}};
         if (map[e.key]) {
           const d = map[e.key];
-          if (d.x !== -dir.x || d.y !== -dir.y) nextDir = d;
+          const last = dirQueue.length ? dirQueue[dirQueue.length - 1] : dir;
+          if ((d.x !== -last.x || d.y !== -last.y) && dirQueue.length < 2) dirQueue.push(d);
           e.preventDefault();
         }
         return;
