@@ -1033,6 +1033,7 @@
     .equip-row-main:hover td { filter: brightness(0.96); }
     .equip-toggle-icon {
       display: block;
+      width: fit-content;
       font-size: 0.6rem;
       color: var(--muted);
       margin-top: 4px;
@@ -1478,7 +1479,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.45 · 2026-05-31</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.46 · 2026-05-31</p>
     </footer>
   </div>
 
@@ -1760,8 +1761,6 @@
       const { indexes, headerRowIndex } = headerInfo;
       const dataRows = populatedRows.slice(headerRowIndex + 1);
       const includedRows = [];
-      const today = currentDateStamp();
-
       dataRows.forEach((row) => {
         const caseNumber = cell(row, indexes.caseNumber);
         const specialNeeds = cell(row, indexes.specialNeeds);
@@ -1780,7 +1779,7 @@
           keyword: missingTerm.keyword,
           matchStart: missingTerm.startIndex,
           matchEnd: missingTerm.startIndex + missingTerm.matchedText.length,
-          explanation: `${missingTerm.keyword} was listed in Special Needs but not added to Equipment TB ${today}`
+          explanation: `${missingTerm.keyword} was listed in Special Needs but not added to Equipment`
         });
       });
 
@@ -2082,13 +2081,6 @@
       }
 
       return prev[target.length];
-    }
-
-    function currentDateStamp() {
-      const now = new Date();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const day = String(now.getDate()).padStart(2, "0");
-      return `${month}/${day}/${now.getFullYear()}`;
     }
 
     function td(text, className = "") {
