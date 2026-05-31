@@ -1450,7 +1450,10 @@
         </div>
 
         <div class="page-heading">
-          <h1 id="ruleManagementTitle">Rule Management</h1>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 8px;">
+            <h1 id="ruleManagementTitle" style="margin: 0;">Rule Management</h1>
+            <button type="button" class="rule-flag-btn" id="requestNewRuleBtn" style="flex-shrink: 0;">Request new rule</button>
+          </div>
           <p class="lede">Active room assignment rules organized by tier. Flag any rule to send a review request by email.</p>
         </div>
 
@@ -1475,7 +1478,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.44 · 2026-05-31</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.45 · 2026-05-31</p>
     </footer>
   </div>
 
@@ -2773,6 +2776,11 @@
     });
 
     document.getElementById("viewActiveRulesBtn").addEventListener("click", () => showView("ruleManagement"));
+    document.getElementById("requestNewRuleBtn").addEventListener("click", () => {
+      const subject = encodeURIComponent("New Rule Request");
+      const body = encodeURIComponent("COMMENT: \n\nThis is a request for a new room assignment rule.");
+      window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
+    });
     document.getElementById("viewEquipmentTermsBtn").addEventListener("click", () => showView("equipmentTerms"));
     document.getElementById("equipmentTermsBack").addEventListener("click", () => showView("equipment"));
 
@@ -3146,7 +3154,6 @@
       const cases = [];
       const ruleMatchCounts = new Map();
       ROOM_RULES.forEach((rule) => ruleMatchCounts.set(rule.id, 0));
-      let _debugCount = 0;
 
       dataRows.forEach((row) => {
         const caseNumber     = cell(row, indexes.caseNumber);
@@ -3167,14 +3174,6 @@
         const endMin         = parseTimeToMinutes(rawEnd);
         const procStartMin   = parseTimeToMinutes(cell(row, indexes.procStart));
         const procEndMin     = parseTimeToMinutes(cell(row, indexes.procEnd));
-
-        if (_debugCount < 5) {
-          console.log(`[Gantt debug] case=${caseNumber} room=${normalizedRoom} ` +
-            `projStart=${JSON.stringify(rawStart)} → ${startMin}  ` +
-            `procStart → ${procStartMin}  procEnd → ${procEndMin}  ` +
-            `projEnd=${JSON.stringify(rawEnd)} → ${endMin}`);
-          _debugCount++;
-        }
 
         cases.push({
           caseNumber,
