@@ -1181,7 +1181,6 @@
 
         <div class="page-heading">
           <h1 id="auditTitle">CPT Audit Tool</h1>
-          <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
           <p class="lede">The audit runs locally in this browser tab — no file is uploaded or stored.</p>
         </div>
 
@@ -1356,6 +1355,7 @@
         <div class="page-heading">
           <h1 id="roomRulesTitle">OR Schedule and Room Assignment Audit</h1>
           <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
+          <p class="lede">The audit runs locally in this browser tab — no file is uploaded or stored.</p>
         </div>
 
         <div class="workspace">
@@ -1484,7 +1484,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.41 · 2026-05-29</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.42 · 2026-05-31</p>
     </footer>
   </div>
 
@@ -2920,7 +2920,7 @@
 
     const TIER_META = [
       null,
-      { label: "Tier 1 — Physical Absolute", desc: "Immovable equipment — cannot be overridden" },
+      { label: "Tier 1 — Physical Absolute", desc: "Immovable equipment or other physical constraint" },
       { label: "Tier 2 — Strong Operational", desc: "Designated room assignments" },
       { label: "Tier 3 — Service Preference", desc: "Service line clustering, strong but flexible" },
       { label: "Tier 4 — Surgeon Preference", desc: "Behavioral patterns, no hard clinical reason" },
