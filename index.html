@@ -970,7 +970,6 @@
       gap: 8px 14px;
       align-items: start;
     }
-    .rule-card.rule-flagged { border-color: #f59e0b; background: #fffbeb; }
     .rule-card-badge { padding-top: 1px; }
     .rule-card-main { min-width: 0; }
     .rule-card-label {
@@ -981,13 +980,6 @@
       display: flex;
       align-items: center;
       gap: 6px;
-    }
-    .rule-flagged-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #f59e0b;
-      flex-shrink: 0;
-      display: inline-block;
     }
     .rule-card-match {
       font-size: 0.75rem;
@@ -1020,7 +1012,6 @@
       color: var(--muted);
       white-space: nowrap;
     }
-    .rule-flag-btn.flagged { border-color: #f59e0b; color: #92400e; background: #fff8e1; }
     .rule-flag-btn:hover { background: var(--soft); }
     .rule-note-input {
       width: 100%;
@@ -1460,7 +1451,7 @@
 
         <div class="page-heading">
           <h1 id="ruleManagementTitle">Rule Management</h1>
-          <p class="lede">Active room assignment rules organized by tier. Add a note or flag any rule for review — changes are saved locally in this browser.</p>
+          <p class="lede">Active room assignment rules organized by tier. Flag any rule to send a review request by email.</p>
         </div>
 
         <div id="ruleManagementContent"></div>
@@ -1484,7 +1475,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.42 · 2026-05-31</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.43 · 2026-05-31</p>
     </footer>
   </div>
 
@@ -2960,15 +2951,11 @@
         cards.className = "rule-cards";
 
         rules.forEach((rule) => {
-          const flagKey = `ruleFlagged_${rule.id}`;
-          const noteKey = `ruleNote_${rule.id}`;
-          const isFlagged = localStorage.getItem(flagKey) === "1";
-          const savedNote = localStorage.getItem(noteKey) || "";
           const caseCount = _lastRuleMatchCounts.get(rule.id);
           const tierConf = ["High", "High", "High", "Medium", "Low"][tier - 1];
 
           const card = document.createElement("div");
-          card.className = "rule-card" + (isFlagged ? " rule-flagged" : "");
+          card.className = "rule-card";
 
           // Badge column
           const badgeWrap = document.createElement("div");
@@ -2985,12 +2972,6 @@
           const labelRow = document.createElement("div");
           labelRow.className = "rule-card-label";
           labelRow.textContent = rule.label;
-          if (isFlagged) {
-            const dot = document.createElement("span");
-            dot.className = "rule-flagged-dot";
-            dot.title = "Flagged for review";
-            labelRow.append(dot);
-          }
 
           const matchRow = document.createElement("div");
           matchRow.className = "rule-card-match";
@@ -3017,33 +2998,63 @@
 
           const flagBtn = document.createElement("button");
           flagBtn.type = "button";
-          flagBtn.className = "rule-flag-btn" + (isFlagged ? " flagged" : "");
-          flagBtn.textContent = isFlagged ? "⚑ Flagged" : "Flag for review";
+          flagBtn.className = "rule-flag-btn";
+          flagBtn.textContent = "Flag for review";
+
+          const reviewPanel = document.createElement("div");
+          reviewPanel.style.cssText = "flex-direction: column; gap: 5px; min-width: 190px; display: none;";
+
+          const commentInput = document.createElement("textarea");
+          commentInput.className = "rule-note-input";
+          commentInput.placeholder = "Describe the issue with this rule...";
+          commentInput.rows = 3;
+
+          const errorMsg = document.createElement("p");
+          errorMsg.style.cssText = "color: var(--warn); font-size: 0.72rem; margin: 0; display: none;";
+          errorMsg.textContent = "Please add a comment before sending.";
+
+          const sendBtn = document.createElement("button");
+          sendBtn.type = "button";
+          sendBtn.className = "primary-button";
+          sendBtn.style.cssText = "font-size: 0.75rem; min-height: 30px; padding: 4px 12px;";
+          sendBtn.textContent = "Send";
+
+          reviewPanel.append(commentInput, errorMsg, sendBtn);
+          actions.append(flagBtn, reviewPanel);
+
           flagBtn.addEventListener("click", () => {
-            const nowFlagged = localStorage.getItem(flagKey) === "1";
-            if (nowFlagged) {
-              localStorage.removeItem(flagKey);
-            } else {
-              localStorage.setItem(flagKey, "1");
-            }
-            buildRuleManagementView();
+            flagBtn.style.display = "none";
+            reviewPanel.style.display = "flex";
+            commentInput.focus();
           });
 
-          const noteInput = document.createElement("textarea");
-          noteInput.className = "rule-note-input";
-          noteInput.placeholder = "Add a note…";
-          noteInput.rows = 2;
-          noteInput.value = savedNote;
-          noteInput.addEventListener("change", () => {
-            const val = noteInput.value.trim();
-            if (val) {
-              localStorage.setItem(noteKey, val);
-            } else {
-              localStorage.removeItem(noteKey);
+          sendBtn.addEventListener("click", () => {
+            const comment = commentInput.value.trim();
+            if (!comment) {
+              errorMsg.style.display = "block";
+              return;
             }
+            errorMsg.style.display = "none";
+            const tierName = (TIER_META[rule.tier]?.label || "").replace(/^Tier \d+ — /, "");
+            const subject = encodeURIComponent(`Rule Review Request: ${rule.label}`);
+            const body = encodeURIComponent([
+              "The following room assignment rule has been flagged for review:",
+              "",
+              `Rule: ${rule.label}`,
+              `Tier: ${rule.tier} — ${tierName}`,
+              `Trigger: ${describeMatch(rule)}`,
+              `Allowed rooms: ${rule.allowedRooms.join(", ")}`,
+              "",
+              `Comment: ${comment}`,
+              "",
+              "— Sent from CPMC Scheduling Tools"
+            ].join("\n"));
+            window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
+            commentInput.value = "";
+            reviewPanel.style.display = "none";
+            flagBtn.style.display = "";
           });
 
-          actions.append(flagBtn, noteInput);
           card.append(badgeWrap, main, actions);
           cards.append(card);
         });
