@@ -1475,7 +1475,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.43 · 2026-05-31</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.44 · 2026-05-31</p>
     </footer>
   </div>
 
@@ -3035,19 +3035,11 @@
               return;
             }
             errorMsg.style.display = "none";
-            const tierName = (TIER_META[rule.tier]?.label || "").replace(/^Tier \d+ — /, "");
             const subject = encodeURIComponent(`Rule Review Request: ${rule.label}`);
             const body = encodeURIComponent([
-              "The following room assignment rule has been flagged for review:",
+              `COMMENT: ${comment}`,
               "",
-              `Rule: ${rule.label}`,
-              `Tier: ${rule.tier} — ${tierName}`,
-              `Trigger: ${describeMatch(rule)}`,
-              `Allowed rooms: ${rule.allowedRooms.join(", ")}`,
-              "",
-              `Comment: ${comment}`,
-              "",
-              "— Sent from CPMC Scheduling Tools"
+              `Rule: ${rule.label} (Tier ${rule.tier})`
             ].join("\n"));
             window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
             commentInput.value = "";
