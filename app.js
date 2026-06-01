@@ -1351,9 +1351,6 @@
       const grp = _violGroupDataMap.get(`${sortDate}:${caseNumber}`);
       if (!grp) return;
       const first = grp.viols[0];
-      if (e.target.closest(".copy-case")) {
-        navigator.clipboard.writeText(caseNumber).then(() => showCopyToast(caseNumber));
-      }
       const casesForDay = _ganttByDate.get(sortDate) || [];
       const caseObj = casesForDay.find((c) => String(c.caseNumber) === caseNumber)
         || { caseNumber, date: first.date, sortDate, room: first.room, surgeon: first.surgeon,
@@ -2071,7 +2068,6 @@
         tr.dataset.caseNum = String(grp.caseNumber);
         const violCaseCell = td(first.caseNumber);
         violCaseCell.style.fontWeight = "700";
-        violCaseCell.classList.add("copy-case");
         tr.append(violCaseCell);
         tr.append(td(first.date));
         tr.append(td(first.surgeon));
