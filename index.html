@@ -1013,6 +1013,8 @@
       white-space: nowrap;
     }
     .rule-flag-btn:hover { background: var(--soft); }
+    .copy-case { cursor: pointer; user-select: none; }
+    .copy-case:hover { opacity: 0.7; }
     .rule-info-section { margin-bottom: 22px; }
     .rule-info-section h3 { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin: 0 0 5px; }
     .rule-info-section p { font-size: 0.875rem; color: var(--muted); line-height: 1.65; margin: 0; }
@@ -1034,16 +1036,45 @@
     /* ── Equipment audit expand/collapse ────────────────────────── */
     .equip-row-main { cursor: pointer; user-select: none; }
     .equip-row-main:hover td { filter: brightness(0.96); }
-    .equip-toggle-icon {
-      display: block;
+    .equip-toggle-affordance {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 6px;
       width: fit-content;
+      cursor: pointer;
+    }
+    .equip-toggle-icon {
       font-size: 0.6rem;
       color: var(--muted);
-      margin-top: 4px;
       transition: transform 120ms ease;
       transform-origin: center;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .equip-toggle-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      line-height: 1;
     }
     .equip-row-main.expanded .equip-toggle-icon { transform: rotate(90deg); }
+    #copyToast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(30,30,30,0.88);
+      color: #fff;
+      font-size: 0.78rem;
+      padding: 7px 16px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 180ms ease;
+      z-index: 9998;
+      white-space: nowrap;
+    }
+    #copyToast.visible { opacity: 1; }
     .equip-detail-row td {
       background: #f4f9fb;
       padding: 0;
@@ -1586,7 +1617,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.55 · 2026-05-31</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.57 · 2026-06-01</p>
     </footer>
   </div>
 
@@ -1955,10 +1986,19 @@
           tr.className = "equip-row-main";
 
           const caseCell = document.createElement("td");
+          const equipCaseSpan = document.createElement("span");
+          equipCaseSpan.textContent = row.caseNumber || "";
+          equipCaseSpan.style.fontWeight = "700";
+          const toggleAffordance = document.createElement("div");
+          toggleAffordance.className = "equip-toggle-affordance";
           const icon = document.createElement("span");
           icon.className = "equip-toggle-icon";
           icon.textContent = "▶";
-          caseCell.append(document.createTextNode(row.caseNumber || ""), icon);
+          const toggleLabel = document.createElement("span");
+          toggleLabel.className = "equip-toggle-label";
+          toggleLabel.textContent = "Details";
+          toggleAffordance.append(icon, toggleLabel);
+          caseCell.append(equipCaseSpan, toggleAffordance);
           tr.append(caseCell);
           tr.append(td(row.specialNeeds));
           tr.append(td(row.explanation));
@@ -2196,6 +2236,23 @@
       el.textContent = text || "";
       if (className) el.className = className;
       return el;
+    }
+
+    let _toastTimer;
+    function showCopyToast(caseNumber) {
+      const toast = document.getElementById("copyToast");
+      toast.textContent = "Case #" + caseNumber + " copied";
+      clearTimeout(_toastTimer);
+      toast.classList.add("visible");
+      _toastTimer = setTimeout(() => toast.classList.remove("visible"), 1500);
+    }
+
+    function makeCopyable(el, text) {
+      el.classList.add("copy-case");
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(String(text)).then(() => showCopyToast(text));
+      });
     }
 
     function codeListTd(codes) {
@@ -3454,7 +3511,9 @@
 
         const tr = document.createElement("tr");
         tr.className = `violation-tier-${v.ruleTier}`;
-        tr.append(td(v.caseNumber));
+        const violCaseCell = td(v.caseNumber);
+        violCaseCell.style.fontWeight = "700";
+        tr.append(violCaseCell);
         tr.append(td(v.date));
         tr.append(td(v.surgeon));
         tr.append(td(v.room));
@@ -3851,7 +3910,11 @@
             block.addEventListener("mouseenter", (e) => showGanttTooltip(e, c, viols));
             block.addEventListener("mousemove",  moveGanttTooltip);
             block.addEventListener("mouseleave", hideGanttTooltip);
-            block.addEventListener("click", () => showGanttSidebar(c, viols));
+            block.addEventListener("click", () => {
+              navigator.clipboard.writeText(String(c.caseNumber)).catch(() => {});
+              showCopyToast(c.caseNumber);
+              showGanttSidebar(c, viols);
+            });
 
             lane.append(block);
           });
@@ -3931,6 +3994,7 @@
 
       const h3 = document.createElement("h3");
       h3.textContent = "Case #" + c.caseNumber;
+      makeCopyable(h3, c.caseNumber);
       content.append(h3);
 
       const fmtMin = (m) => `${Math.floor(m / 60)}:${(m % 60).toString().padStart(2, "0")}`;
@@ -4040,6 +4104,7 @@
       hideGanttTooltip();
     });
   </script>
+  <div id="copyToast" aria-live="polite"></div>
   <div id="wormModal" role="dialog" aria-modal="true">
     <div id="wormGame">
       <div id="wormScore">Score: 0</div>
