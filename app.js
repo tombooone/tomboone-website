@@ -2042,6 +2042,9 @@
         const violCaseCell = td(first.caseNumber);
         violCaseCell.style.fontWeight = "700";
         violCaseCell.classList.add("copy-case");
+        violCaseCell.addEventListener("click", () => {
+          navigator.clipboard.writeText(String(first.caseNumber)).then(() => showCopyToast(first.caseNumber));
+        });
         tr.append(violCaseCell);
         tr.append(td(first.date));
         tr.append(td(first.surgeon));
@@ -2073,12 +2076,7 @@
         });
         tr.append(ruleCell, explCell);
 
-        tr.addEventListener("click", (e) => {
-          if (violCaseCell.contains(e.target)) {
-            navigator.clipboard.writeText(String(first.caseNumber)).then(() => showCopyToast(first.caseNumber));
-          }
-          jumpToCase(first.caseNumber, first.sortDate);
-        });
+        tr.addEventListener("click", () => jumpToCase(first.caseNumber, first.sortDate));
         roomRulesViolationsTable.append(tr);
       });
     }
@@ -2640,8 +2638,8 @@
       const sb = document.getElementById("ganttSidebar");
       if (sb.hidden) return;
       if (sb.contains(e.target)) return;
-      // Clicking a case block closes current sidebar; the block's own click handler re-opens it
       if (e.target.closest(".gantt-case-block")) return;
+      if (e.target.closest("#roomRulesViolationsTable")) return;
       sb.hidden = true;
     });
 
