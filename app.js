@@ -384,7 +384,13 @@
           caseCell.append(equipCaseSpan, toggleAffordance);
           tr.append(caseCell);
           tr.append(td(row.specialNeeds));
-          tr.append(td(row.explanation));
+          const explCell = td(row.explanation);
+          explCell.style.cursor = "pointer";
+          explCell.addEventListener("click", (e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(row.explanation || "").then(() => showToast("Copied"));
+          });
+          tr.append(explCell);
 
           // Detail row (hidden until expanded)
           const detailTr = document.createElement("tr");
@@ -409,6 +415,11 @@
             const mark = document.createElement("mark");
             mark.style.cssText = "background: #fef3c7; font-weight: 700; border-radius: 2px; padding: 0 2px; color: #92400e;";
             mark.textContent = snText.slice(row.matchStart, row.matchEnd);
+            mark.style.cursor = "pointer";
+            mark.addEventListener("click", (e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(mark.textContent).then(() => showToast("Copied: " + mark.textContent));
+            });
             snValue.append(mark);
             snValue.append(document.createTextNode(snText.slice(row.matchEnd)));
           } else {
@@ -622,12 +633,15 @@
     }
 
     let _toastTimer;
-    function showCopyToast(caseNumber) {
+    function showToast(message) {
       const toast = document.getElementById("copyToast");
-      toast.textContent = "Case #" + caseNumber + " copied";
+      toast.textContent = message;
       clearTimeout(_toastTimer);
       toast.classList.add("visible");
       _toastTimer = setTimeout(() => toast.classList.remove("visible"), 1500);
+    }
+    function showCopyToast(caseNumber) {
+      showToast("Case #" + caseNumber + " copied");
     }
 
     function makeCopyable(el, text) {
@@ -1872,45 +1886,79 @@
         return;
       }
 
-      const sorted = result.violations.slice().sort((a, b) => {
+      // Group violations by case, ordered by date → min tier → case number
+      const groupMap = new Map();
+      const groupOrder = [];
+      result.violations.forEach((v) => {
+        const key = `${v.sortDate}:${v.caseNumber}`;
+        if (!groupMap.has(key)) {
+          const grp = { sortDate: v.sortDate, date: v.date, caseNumber: v.caseNumber, minTier: v.ruleTier, viols: [v] };
+          groupMap.set(key, grp);
+          groupOrder.push(grp);
+        } else {
+          const grp = groupMap.get(key);
+          grp.viols.push(v);
+          if (v.ruleTier < grp.minTier) grp.minTier = v.ruleTier;
+        }
+      });
+      groupOrder.sort((a, b) => {
         if (a.sortDate !== b.sortDate) return a.sortDate - b.sortDate;
-        const tierDiff = a.ruleTier - b.ruleTier;
-        if (tierDiff !== 0) return tierDiff;
+        if (a.minTier !== b.minTier) return a.minTier - b.minTier;
         return String(a.caseNumber).localeCompare(String(b.caseNumber), undefined, { numeric: true });
       });
+      groupOrder.forEach((grp) => grp.viols.sort((a, b) => a.ruleTier - b.ruleTier));
 
       let lastDate = null;
-      sorted.forEach((v) => {
-        if (v.date !== lastDate) {
+      groupOrder.forEach((grp) => {
+        const first = grp.viols[0];
+        if (grp.date !== lastDate) {
           const sep = document.createElement("tr");
           sep.className = "date-separator";
           const sepCell = document.createElement("td");
           sepCell.colSpan = 8;
-          sepCell.textContent = v.date;
+          sepCell.textContent = grp.date;
           sep.append(sepCell);
           roomRulesViolationsTable.append(sep);
-          lastDate = v.date;
+          lastDate = grp.date;
         }
 
         const tr = document.createElement("tr");
-        tr.className = `violation-tier-${v.ruleTier}`;
-        const violCaseCell = td(v.caseNumber);
+        tr.className = `violation-tier-${grp.minTier}`;
+        const violCaseCell = td(first.caseNumber);
         violCaseCell.style.fontWeight = "700";
-        makeCopyable(violCaseCell, v.caseNumber);
+        makeCopyable(violCaseCell, first.caseNumber);
         tr.append(violCaseCell);
-        tr.append(td(v.date));
-        tr.append(td(v.surgeon));
-        tr.append(td(v.room));
-        tr.append(td(v.procedures));
+        tr.append(td(first.date));
+        tr.append(td(first.surgeon));
+        tr.append(td(first.room));
+        tr.append(td(first.procedures));
         const severityCell = document.createElement("td");
-        const badge = document.createElement("span");
-        badge.className = `badge badge-tier-${v.ruleTier}`;
-        badge.textContent = `Tier ${v.ruleTier}`;
-        severityCell.append(badge);
+        const topBadge = document.createElement("span");
+        topBadge.className = `badge badge-tier-${grp.minTier}`;
+        topBadge.textContent = `Tier ${grp.minTier}`;
+        severityCell.append(topBadge);
         tr.append(severityCell);
-        tr.append(td(v.ruleLabel));
-        tr.append(td(v.explanation));
-        tr.addEventListener("click", () => jumpToCase(v.caseNumber, v.sortDate));
+
+        const ruleCell = document.createElement("td");
+        const explCell = document.createElement("td");
+        grp.viols.forEach((v, i) => {
+          const ruleLine = document.createElement("div");
+          if (i > 0) ruleLine.style.marginTop = "5px";
+          const inlineBadge = document.createElement("span");
+          inlineBadge.className = `badge badge-tier-${v.ruleTier}`;
+          inlineBadge.style.cssText = "font-size:0.68rem;padding:1px 6px;margin-right:5px;vertical-align:middle;";
+          inlineBadge.textContent = `T${v.ruleTier}`;
+          ruleLine.append(inlineBadge, document.createTextNode(v.ruleLabel));
+          ruleCell.append(ruleLine);
+
+          const explLine = document.createElement("div");
+          if (i > 0) explLine.style.marginTop = "5px";
+          explLine.textContent = v.explanation;
+          explCell.append(explLine);
+        });
+        tr.append(ruleCell, explCell);
+
+        tr.addEventListener("click", () => jumpToCase(first.caseNumber, first.sortDate));
         roomRulesViolationsTable.append(tr);
       });
     }
