@@ -1024,7 +1024,7 @@
     .rule-note-input:focus { outline: none; border-color: var(--brand); }
 
     /* ── Equipment audit expand/collapse ────────────────────────── */
-    .equip-row-main { cursor: pointer; user-select: none; }
+    .equip-row-main { cursor: pointer; }
     .equip-row-main:hover td { filter: brightness(0.96); }
     .equip-toggle-affordance {
       display: flex;
@@ -1033,6 +1033,7 @@
       margin-top: 6px;
       width: fit-content;
       cursor: pointer;
+      user-select: none;
     }
     .equip-toggle-icon {
       font-size: 0.6rem;
