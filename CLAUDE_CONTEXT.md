@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-01 (v1.3.63)
+## Last updated: 2026-06-01 (v1.3.64)
 
 ---
 
@@ -28,7 +28,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.63**
+- Current version: **v1.3.64**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
