@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-01 (v1.3.60)
+## Last updated: 2026-06-01 (v1.3.63)
 
 ---
 
@@ -28,7 +28,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.60**
+- Current version: **v1.3.63**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
@@ -243,6 +243,7 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 - Click tile: opens right sidebar with full case details and per-violation tier badges. Clicking outside sidebar closes it (except clicking another tile opens that tile's sidebar instead)
 - Calendar: single month view with prev/next month arrows AND prev/next day arrows. Fixed height regardless of week count. Positioned to LEFT of metric stack. Days color-coded: red=Tier 1-2 alert, amber=Tier 3-5 flag, green=clean, no style=no cases.
 - Metrics (Cases reviewed, Tier 1-2 alerts, Tier 3-5 flags): stacked vertically to RIGHT of calendar
+- Legend panel: to the right of the metrics stack (`.panel.gantt-legend`, fixed 140px wide); 6 swatch+label entries: Tier 1–5 colors + "No violations" beige; uses `.gantt-legend-swatch` (18×12px rounded rect)
 - Clicking a row in violations table scrolls to and highlights that case tile in Gantt, opens sidebar
 
 ---
@@ -308,7 +309,11 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Snake easter egg: typing "worm" anywhere (not in an input) opens a Snake game modal; Escape or click-outside closes it; direction queue (max 2) buffers rapid consecutive turns so inputs are not lost
 - Gantt tile click: opens sidebar only (no clipboard copy; clicking the sidebar h3 copies)
 - Gantt sidebar h3: click-to-copy case number via toast; uses `makeCopyable(h3, caseNumber)` helper
-- Toast system: `#copyToast` fixed bottom-center, dark semi-transparent, fades in/out, 1.5s duration; used by sidebar h3, violations table case cell, equipment audit case span, CPT audit case cells
+- Toast system: `showToast(message)` is the generic function; `showCopyToast(caseNumber)` wraps it with "Case #N copied"; custom messages used for keyword mark ("Copied: [term]") and explanation cell ("Copied")
+- Equipment audit detail pane: amber `<mark>` keyword element is click-to-copy → `showToast("Copied: [term]")`
+- Equipment audit explanation cell: click-to-copy → `showToast("Copied")`; `cursor: pointer` inline
 - Equipment audit case cell: bold case number at top (copyable via `makeCopyable`); "▶ Details" affordance below (flex row, arrow rotates 90° when expanded via `.expanded` class on the row); clicking case number copies (stopPropagation prevents row toggle)
-- Violations table Case # column: bold + click-to-copy via `makeCopyable`; clicking case cell copies without triggering row jump-to-Gantt
+- Violations table: grouped by case number — one row per case, colored by highest severity (min tier); Severity column shows highest-tier badge; Rule column stacks `[T# badge] rule_label` per violation; Explanation column stacks explanation text; groups sorted by date → minTier → caseNumber; violations within each group sorted by tier ascending
+- Violations table Case # column: bold + click-to-copy via `makeCopyable`
 - CPT audit tables (Table 1 missingRows, Table 2 inpatientRows): case number cells bold + click-to-copy via `makeCopyable`
+- `.copy-case` CSS: `cursor: pointer` only (no `user-select: none`)
