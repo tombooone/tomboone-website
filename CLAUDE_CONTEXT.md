@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-01 (v1.3.68)
+## Last updated: 2026-06-01 (v1.3.69)
 
 ---
 
@@ -28,7 +28,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.68**
+- Current version: **v1.3.69**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
@@ -317,6 +317,6 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - C-arm false positive fix: `KEYWORD_OPTIONS` map adds `requiresPrefix: "c"` to "C-arm"; `matchSatisfiesPrefix` helper validates non-exact matches require the matched text or immediately preceding chars to start with "c"; `tokenBagMatch` is skipped for keywords with `requiresPrefix`
 - Equipment audit case cell: bold case number at top (copyable via `makeCopyable`); "▶ Details" affordance below (flex row, arrow rotates 90° when expanded via `.expanded` class on the row); clicking case number copies (stopPropagation prevents row toggle)
 - Violations table: grouped by case number — one row per case, colored by highest severity (min tier); Severity column shows highest-tier badge; Rule column stacks `[T# badge] rule_label` per violation; Explanation column stacks explanation text; groups sorted by date → minTier → caseNumber; violations within each group sorted by tier ascending
-- Violations table Case # column: bold; single `tr` click handler checks `violCaseCell.contains(e.target)` — if true, copies case number to clipboard and shows toast; then always calls `jumpToCase`. No separate listener on the cell itself.
+- Violations table Case # column: bold; two separate listeners — `violCaseCell` click copies to clipboard (no stopPropagation, bubbles up); `tr` click calls `jumpToCase`. Document `pointerdown` handler excludes `#roomRulesViolationsTable` so it never prematurely closes the sidebar before the row click fires.
 - CPT audit tables (Table 1 missingRows, Table 2 inpatientRows): case number cells bold + click-to-copy via `makeCopyable`
 - `.copy-case` CSS: `cursor: pointer` only (no `user-select: none`)
