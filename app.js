@@ -42,6 +42,14 @@
       "Sonopet"
     ];
 
+    // Optional per-keyword matching constraints.
+    // requiresPrefix: for non-exact matches, the matched text or the immediately
+    // preceding chars in the source must start with this prefix (case-insensitive).
+    // This prevents e.g. "arms" from fuzzy-matching "C-arm".
+    const KEYWORD_OPTIONS = {
+      "C-arm": { requiresPrefix: "c" }
+    };
+
     const equipmentRequiredColumns = [
       {
         key: "caseNumber",
@@ -447,7 +455,21 @@
           eqSection.append(eqLabel, eqValue);
 
           detailDiv.append(snSection, eqSection);
-          detailCell.append(detailDiv);
+
+          const reportBtnHeader = document.createElement("div");
+          reportBtnHeader.style.cssText = "display: flex; justify-content: flex-end; padding: 8px 12px 0;";
+          const reportBtn = document.createElement("button");
+          reportBtn.type = "button";
+          reportBtn.className = "rule-flag-btn";
+          reportBtn.textContent = "Report an issue";
+          reportBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const subject = encodeURIComponent("Equipment Audit Issue");
+            const body = encodeURIComponent("CASE: " + row.caseNumber + "\n\nISSUE: ");
+            window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
+          });
+          reportBtnHeader.append(reportBtn);
+          detailCell.append(reportBtnHeader, detailDiv);
           detailTr.append(detailCell);
 
           tr.addEventListener("click", () => {
@@ -486,12 +508,13 @@
         }
 
         if (!matches.some((match) => match.keywordIndex === keywordIndex)) {
+          const kwOpts = KEYWORD_OPTIONS[keyword];
           const prefixMatch = findPrefixTokenMatch(source, keyword);
-          if (prefixMatch) {
+          if (prefixMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, prefixMatch.startIndex, prefixMatch.matchedText, kwOpts.requiresPrefix))) {
             matches.push({ keyword, keywordIndex, startIndex: prefixMatch.startIndex, matchedText: prefixMatch.matchedText, matchType: "prefix" });
           } else {
             const fuzzyMatch = findBestFuzzyEquipmentMatch(source, keyword);
-            if (fuzzyMatch) {
+            if (fuzzyMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, fuzzyMatch.startIndex, fuzzyMatch.matchedText, kwOpts.requiresPrefix))) {
               matches.push({ keyword, keywordIndex, startIndex: fuzzyMatch.startIndex, matchedText: fuzzyMatch.matchedText, matchType: "fuzzy", score: fuzzyMatch.score });
             }
           }
@@ -507,9 +530,24 @@
     function containsEquipmentTerm(text, termMatch) {
       const source = String(text || "");
       if (source.toLowerCase().includes(termMatch.keyword.toLowerCase())) return true;
-      if (findPrefixTokenMatch(source, termMatch.keyword)) return true;
-      if (tokenBagMatch(source, termMatch.keyword)) return true;
-      return Boolean(findBestFuzzyEquipmentMatch(source, termMatch.keyword));
+      const kwOpts = KEYWORD_OPTIONS[termMatch.keyword];
+      const prefixResult = findPrefixTokenMatch(source, termMatch.keyword);
+      if (prefixResult) {
+        if (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, prefixResult.startIndex, prefixResult.matchedText, kwOpts.requiresPrefix)) return true;
+      }
+      if (!kwOpts?.requiresPrefix && tokenBagMatch(source, termMatch.keyword)) return true;
+      const fuzzyResult = findBestFuzzyEquipmentMatch(source, termMatch.keyword);
+      if (fuzzyResult) {
+        if (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, fuzzyResult.startIndex, fuzzyResult.matchedText, kwOpts.requiresPrefix)) return true;
+      }
+      return false;
+    }
+
+    function matchSatisfiesPrefix(sourceText, matchStart, matchedText, prefix) {
+      const p = prefix.toLowerCase();
+      if (matchedText.toLowerCase().startsWith(p)) return true;
+      const lookback = sourceText.slice(Math.max(0, matchStart - prefix.length - 1), matchStart).replace(/\s+$/, "");
+      return lookback.toLowerCase().endsWith(p);
     }
 
     function tokenBagMatch(sourceText, keyword) {
@@ -1738,6 +1776,8 @@
           procedures:   proceduresText,
           surgeon:      surgeonName,
           service:      serviceText,
+          patientAge,
+          equipmentText,
           startMin,
           endMin,
           procStartMin,
@@ -1862,8 +1902,83 @@
           block.forEach((c) => t3Suppressed.add(`${c.caseNumber}:${v.ruleId}`));
         }
       });
-      const finalViolations = t3Suppressed.size > 0
-        ? violations.filter((v) => !(v.ruleTier === 3 && t3Suppressed.has(`${v.caseNumber}:${v.ruleId}`)))
+      // Post-process ops-2 (Pediatric Room): suppress flags when OR 4 has no feasible slot
+      const ops2Suppressed = new Set(); // "caseNumber:ops-2"
+      const ops2ProcessedBlocks = new Set(); // "sortDate:room:blockStart"
+      violations.forEach((v) => {
+        if (v.ruleId !== "ops-2") return;
+        const suppressKey = `${v.caseNumber}:ops-2`;
+        if (ops2Suppressed.has(suppressKey)) return;
+
+        const ac = cases.find((c) => c.caseNumber === v.caseNumber);
+        if (!ac || ac.startMin === null || ac.endMin === null) return;
+
+        const isPeds = (c) => {
+          const eq = String(c.equipmentText || "").toLowerCase();
+          return (c.patientAge !== null && c.patientAge < 18) ||
+            eq.includes("cart pediatric") ||
+            eq.includes("warmer overhead (french fry)");
+        };
+
+        const related = cases
+          .filter((c) =>
+            c.sortDate === v.sortDate &&
+            c.room === v.room &&
+            c.startMin !== null &&
+            c.endMin !== null &&
+            isPeds(c)
+          )
+          .sort((a, b) => a.startMin - b.startMin);
+
+        if (!related.length) return;
+
+        const blocks = [];
+        let cur = [related[0]];
+        for (let i = 1; i < related.length; i++) {
+          if (related[i].startMin - cur[cur.length - 1].endMin <= 30) cur.push(related[i]);
+          else { blocks.push(cur); cur = [related[i]]; }
+        }
+        blocks.push(cur);
+
+        const block = blocks.find((b) => b.some((c) => c.caseNumber === ac.caseNumber));
+        if (!block) return;
+
+        const blockStart = Math.min(...block.map((c) => c.startMin));
+        const blockEnd   = Math.max(...block.map((c) => c.endMin));
+        const blockDur   = blockEnd - blockStart;
+        if (blockDur <= 0) return;
+
+        const blockKey = `${v.sortDate}:${v.room}:${blockStart}`;
+        if (ops2ProcessedBlocks.has(blockKey)) return;
+        ops2ProcessedBlocks.add(blockKey);
+
+        const diffDays = Math.round((v.sortDate - BIWEEKLY_FRI_ANCHOR_MS) / t3DayMs);
+        const isInserviceFri = new Date(v.sortDate).getDay() === 5 && diffDays >= 0 && diffDays % 14 === 0;
+        const primeStart = isInserviceFri ? 540 : 450;
+
+        const occ = cases
+          .filter((c) => c.room === "OR 4" && c.sortDate === v.sortDate && c.startMin !== null && c.endMin !== null)
+          .map((c) => [c.startMin, c.endMin])
+          .sort((a, b) => a[0] - b[0]);
+        let cursor = primeStart;
+        let feasible = false;
+        for (const [s, e] of occ) {
+          if (s > cursor && s - cursor >= blockDur) { feasible = true; break; }
+          if (e > cursor) cursor = e;
+        }
+        if (!feasible && T3_PRIME_END - cursor >= blockDur) feasible = true;
+
+        if (!feasible) {
+          block.forEach((c) => ops2Suppressed.add(`${c.caseNumber}:ops-2`));
+        }
+      });
+
+      const finalViolations = (t3Suppressed.size > 0 || ops2Suppressed.size > 0)
+        ? violations.filter((v) => {
+            if (v.ruleTier === 3 && t3Suppressed.has(`${v.caseNumber}:${v.ruleId}`)) return false;
+            if (v.ruleId === "ops-2" && ops2Suppressed.has(`${v.caseNumber}:ops-2`)) return false;
+            return true;
+          })
         : violations;
 
       const tier12Count  = finalViolations.filter((v) => v.ruleTier <= 2).length;
