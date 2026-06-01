@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-01 (v1.3.64)
+## Last updated: 2026-06-01 (v1.3.67)
 
 ---
 
@@ -28,7 +28,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.64**
+- Current version: **v1.3.67**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
@@ -301,7 +301,8 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Laterality rules not statistically significant at WBVC — only PCNL confirmed
 - All alert/flag language should be suggestive not punitive — brief, explain the reason
 - Tier 3 post-processing: group contiguous same-service-or-surgeon cases in same room (gap ≤ 30 min) into a block; suppress the flag for all cases in the block if no allowed room has a prime-time gap (07:30–15:30, or 09:00–15:30 on biweekly inservice Fridays) large enough to hold the entire block
-- Show all alerts and flags regardless of tier (no suppression in output except Tier 3 feasibility check)
+- ops-2 (Pediatric Room) post-processing: same block-feasibility approach applied to Tier 2 ops-2 violations; "pediatric" defined as age < 18 OR equipment contains "Cart Pediatric" or "Warmer Overhead (French Fry)"; checks OR 4 only; `cases` array stores `patientAge` and `equipmentText` to support this
+- Show all alerts and flags regardless of tier (no suppression in output except Tier 3 and ops-2 feasibility checks)
 - "Violation" replaced with "alert" (Tier 1-2) and "flag" (Tier 3-5) in all user-facing text
 - Equipment accessories must NOT be used as robot triggers (Tower Robot, daVinci Surgeon Chair, Table Trumpf 7000dV)
 - Explanation text in equipment audit: "[keyword] was listed in Special Needs but not added to Equipment"
@@ -312,8 +313,10 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Toast system: `showToast(message)` is the generic function; `showCopyToast(caseNumber)` wraps it with "Case #N copied"; custom messages used for keyword mark ("Copied: [term]") and explanation cell ("Copied")
 - Equipment audit detail pane: amber `<mark>` keyword element is click-to-copy → `showToast("Copied: [term]")`
 - Equipment audit explanation cell: click-to-copy → `showToast("Copied")`; `cursor: pointer` inline
+- Equipment audit detail pane: "Report an issue" button (`.rule-flag-btn`) in header row above the detail grid; opens mailto pre-filled with case number and blank ISSUE field
+- C-arm false positive fix: `KEYWORD_OPTIONS` map adds `requiresPrefix: "c"` to "C-arm"; `matchSatisfiesPrefix` helper validates non-exact matches require the matched text or immediately preceding chars to start with "c"; `tokenBagMatch` is skipped for keywords with `requiresPrefix`
 - Equipment audit case cell: bold case number at top (copyable via `makeCopyable`); "▶ Details" affordance below (flex row, arrow rotates 90° when expanded via `.expanded` class on the row); clicking case number copies (stopPropagation prevents row toggle)
 - Violations table: grouped by case number — one row per case, colored by highest severity (min tier); Severity column shows highest-tier badge; Rule column stacks `[T# badge] rule_label` per violation; Explanation column stacks explanation text; groups sorted by date → minTier → caseNumber; violations within each group sorted by tier ascending
-- Violations table Case # column: bold + click-to-copy via `makeCopyable`
+- Violations table Case # column: bold + click-to-copy WITHOUT stopPropagation (inline handler, not `makeCopyable`) so clicking case number both copies AND fires the row's jumpToCase to open the sidebar
 - CPT audit tables (Table 1 missingRows, Table 2 inpatientRows): case number cells bold + click-to-copy via `makeCopyable`
 - `.copy-case` CSS: `cursor: pointer` only (no `user-select: none`)

@@ -2041,7 +2041,10 @@
         tr.className = `violation-tier-${grp.minTier}`;
         const violCaseCell = td(first.caseNumber);
         violCaseCell.style.fontWeight = "700";
-        makeCopyable(violCaseCell, first.caseNumber);
+        violCaseCell.classList.add("copy-case");
+        violCaseCell.addEventListener("click", () => {
+          navigator.clipboard.writeText(String(first.caseNumber)).then(() => showCopyToast(first.caseNumber));
+        });
         tr.append(violCaseCell);
         tr.append(td(first.date));
         tr.append(td(first.surgeon));
