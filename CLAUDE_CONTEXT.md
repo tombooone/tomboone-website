@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-05-31 (v1.3.54)
+## Last updated: 2026-06-01 (v1.3.57)
 
 ---
 
@@ -28,7 +28,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.54**
+- Current version: **v1.3.57**
 - Repo: github.com/tombooone/tomboone-website
 - Deploy: `git add index.html && git commit -m "message" && git push`
 - Cloudflare Pages auto-deploys on push to main
@@ -305,3 +305,9 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Explanation text in equipment audit: "[keyword] was listed in Special Needs but not added to Equipment"
 - `describeMatch` for equipment rules: always lists all items in full ("Equipment (any of N): item1, item2, ...") with no truncation
 - Snake easter egg: typing "worm" anywhere (not in an input) opens a Snake game modal; Escape or click-outside closes it; direction queue (max 2) buffers rapid consecutive turns so inputs are not lost
+- Gantt tile click: silently copies case number to clipboard and shows toast ("Case #XXXXX copied")
+- Gantt sidebar h3: click-to-copy case number via same toast; uses `makeCopyable(h3, caseNumber)` helper
+- Toast system: `#copyToast` fixed bottom-center, dark semi-transparent, fades in/out, 1.5s duration; shared by tile click and sidebar click
+- Equipment audit case cell: bold case number at top; "▶ Details" affordance below (flex row, arrow rotates 90° when expanded via `.expanded` class on the row)
+- Violations table Case # column: bold (`fontWeight: 700`)
+- Case numbers in violations and equipment tables: bold display
