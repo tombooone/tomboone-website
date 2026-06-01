@@ -2076,7 +2076,20 @@
         });
         tr.append(ruleCell, explCell);
 
-        tr.addEventListener("click", () => jumpToCase(first.caseNumber, first.sortDate));
+        tr.addEventListener("click", () => {
+          const casesForDay = _ganttByDate.get(first.sortDate) || [];
+          const caseObj = casesForDay.find((c) => String(c.caseNumber) === String(first.caseNumber))
+            || { caseNumber: first.caseNumber, date: first.date, sortDate: first.sortDate,
+                 room: first.room, surgeon: first.surgeon, procedures: first.procedures,
+                 service: "", startMin: null, endMin: null };
+          const allViols = (_lastAuditResult ? _lastAuditResult.violations : []).filter(
+            (v) => String(v.caseNumber) === String(first.caseNumber) && v.sortDate === first.sortDate
+          );
+          if (_calActiveSd !== first.sortDate && typeof _calOnSelect === "function") {
+            try { navigateToDay(first.sortDate); } catch (_) {}
+          }
+          showGanttSidebar(caseObj, allViols);
+        });
         roomRulesViolationsTable.append(tr);
       });
     }
