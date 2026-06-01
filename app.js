@@ -1342,6 +1342,31 @@
     const roomRulesSoftCountEl = document.getElementById("roomRulesSoftCount");
     const roomRulesViolationsTable = document.getElementById("roomRulesViolationsTable");
 
+    let _violGroupDataMap = new Map();
+    roomRulesViolationsTable.addEventListener("click", (e) => {
+      const rowEl = e.target.closest("tr[data-sort-date]");
+      if (!rowEl) return;
+      const caseNumber = rowEl.dataset.caseNum;
+      const sortDate = Number(rowEl.dataset.sortDate);
+      const grp = _violGroupDataMap.get(`${sortDate}:${caseNumber}`);
+      if (!grp) return;
+      const first = grp.viols[0];
+      if (e.target.closest(".copy-case")) {
+        navigator.clipboard.writeText(caseNumber).then(() => showCopyToast(caseNumber));
+      }
+      const casesForDay = _ganttByDate.get(sortDate) || [];
+      const caseObj = casesForDay.find((c) => String(c.caseNumber) === caseNumber)
+        || { caseNumber, date: first.date, sortDate, room: first.room, surgeon: first.surgeon,
+             procedures: first.procedures, service: "", startMin: null, endMin: null };
+      const allViols = (_lastAuditResult ? _lastAuditResult.violations : []).filter(
+        (v) => String(v.caseNumber) === caseNumber && v.sortDate === sortDate
+      );
+      if (_calActiveSd !== sortDate && typeof _calOnSelect === "function") {
+        try { navigateToDay(sortDate); } catch (_) {}
+      }
+      showGanttSidebar(caseObj, allViols);
+    });
+
     document.getElementById("openRoomRulesTool").addEventListener("click", () => showView("roomRules"));
     document.getElementById("roomRulesBackHome").addEventListener("click", () => showView("home"));
     document.getElementById("ruleManagementBackHome").addEventListener("click", () => showView("home"));
@@ -2023,6 +2048,9 @@
       });
       groupOrder.forEach((grp) => grp.viols.sort((a, b) => a.ruleTier - b.ruleTier));
 
+      _violGroupDataMap = new Map();
+      groupOrder.forEach((grp) => _violGroupDataMap.set(`${grp.sortDate}:${grp.caseNumber}`, grp));
+
       let lastDate = null;
       groupOrder.forEach((grp) => {
         const first = grp.viols[0];
@@ -2039,12 +2067,11 @@
 
         const tr = document.createElement("tr");
         tr.className = `violation-tier-${grp.minTier}`;
+        tr.dataset.sortDate = String(grp.sortDate);
+        tr.dataset.caseNum = String(grp.caseNumber);
         const violCaseCell = td(first.caseNumber);
         violCaseCell.style.fontWeight = "700";
         violCaseCell.classList.add("copy-case");
-        violCaseCell.addEventListener("click", () => {
-          navigator.clipboard.writeText(String(first.caseNumber)).then(() => showCopyToast(first.caseNumber));
-        });
         tr.append(violCaseCell);
         tr.append(td(first.date));
         tr.append(td(first.surgeon));
@@ -2075,21 +2102,6 @@
           explCell.append(explLine);
         });
         tr.append(ruleCell, explCell);
-
-        tr.addEventListener("click", () => {
-          const casesForDay = _ganttByDate.get(first.sortDate) || [];
-          const caseObj = casesForDay.find((c) => String(c.caseNumber) === String(first.caseNumber))
-            || { caseNumber: first.caseNumber, date: first.date, sortDate: first.sortDate,
-                 room: first.room, surgeon: first.surgeon, procedures: first.procedures,
-                 service: "", startMin: null, endMin: null };
-          const allViols = (_lastAuditResult ? _lastAuditResult.violations : []).filter(
-            (v) => String(v.caseNumber) === String(first.caseNumber) && v.sortDate === first.sortDate
-          );
-          if (_calActiveSd !== first.sortDate && typeof _calOnSelect === "function") {
-            try { navigateToDay(first.sortDate); } catch (_) {}
-          }
-          showGanttSidebar(caseObj, allViols);
-        });
         roomRulesViolationsTable.append(tr);
       });
     }
