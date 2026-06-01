@@ -2042,9 +2042,6 @@
         const violCaseCell = td(first.caseNumber);
         violCaseCell.style.fontWeight = "700";
         violCaseCell.classList.add("copy-case");
-        violCaseCell.addEventListener("click", () => {
-          navigator.clipboard.writeText(String(first.caseNumber)).then(() => showCopyToast(first.caseNumber));
-        });
         tr.append(violCaseCell);
         tr.append(td(first.date));
         tr.append(td(first.surgeon));
@@ -2076,7 +2073,12 @@
         });
         tr.append(ruleCell, explCell);
 
-        tr.addEventListener("click", () => jumpToCase(first.caseNumber, first.sortDate));
+        tr.addEventListener("click", (e) => {
+          if (violCaseCell.contains(e.target)) {
+            navigator.clipboard.writeText(String(first.caseNumber)).then(() => showCopyToast(first.caseNumber));
+          }
+          jumpToCase(first.caseNumber, first.sortDate);
+        });
         roomRulesViolationsTable.append(tr);
       });
     }
