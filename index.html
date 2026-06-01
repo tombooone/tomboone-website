@@ -1617,7 +1617,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.57 · 2026-06-01</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.58 · 2026-06-01</p>
     </footer>
   </div>
 
@@ -1940,7 +1940,10 @@
         result.missingRows.forEach((row) => {
           const tr = document.createElement("tr");
           tr.append(td(row.date));
-          tr.append(td(row.caseNumber));
+          const missingCaseCell = td(row.caseNumber);
+          missingCaseCell.style.fontWeight = "700";
+          makeCopyable(missingCaseCell, row.caseNumber);
+          tr.append(missingCaseCell);
           tr.append(codeListTd(row.orderCodes));
           tr.append(codeListTd(row.caseCodes));
           tr.append(codeListTd(row.missingCodes));
@@ -1964,7 +1967,10 @@
         result.inpatientRows.forEach((row) => {
           const tr = document.createElement("tr");
           tr.append(td(row.date));
-          tr.append(td(row.caseNumber));
+          const inpatientCaseCell = td(row.caseNumber);
+          inpatientCaseCell.style.fontWeight = "700";
+          makeCopyable(inpatientCaseCell, row.caseNumber);
+          tr.append(inpatientCaseCell);
           tr.append(explanationTd(row.explanation, row.codes));
           inpatientTable.append(tr);
         });
@@ -1989,6 +1995,7 @@
           const equipCaseSpan = document.createElement("span");
           equipCaseSpan.textContent = row.caseNumber || "";
           equipCaseSpan.style.fontWeight = "700";
+          makeCopyable(equipCaseSpan, row.caseNumber);
           const toggleAffordance = document.createElement("div");
           toggleAffordance.className = "equip-toggle-affordance";
           const icon = document.createElement("span");
@@ -3513,6 +3520,7 @@
         tr.className = `violation-tier-${v.ruleTier}`;
         const violCaseCell = td(v.caseNumber);
         violCaseCell.style.fontWeight = "700";
+        makeCopyable(violCaseCell, v.caseNumber);
         tr.append(violCaseCell);
         tr.append(td(v.date));
         tr.append(td(v.surgeon));
@@ -3911,8 +3919,6 @@
             block.addEventListener("mousemove",  moveGanttTooltip);
             block.addEventListener("mouseleave", hideGanttTooltip);
             block.addEventListener("click", () => {
-              navigator.clipboard.writeText(String(c.caseNumber)).catch(() => {});
-              showCopyToast(c.caseNumber);
               showGanttSidebar(c, viols);
             });
 
