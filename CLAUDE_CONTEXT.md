@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-01 (v1.3.73)
+## Last updated: 2026-06-02 (v1.3.74)
 
 ---
 
@@ -24,15 +24,56 @@ All four tools on the home screen are **live and complete**:
 3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag tier system; includes **Rule Management** sub-view with read-only rule cards, mailto flag-for-review, and mailto request-new-rule flows)
 4. **Equipment Terms view** ✅ complete (accessible via "View terms being checked" link in Equipment Request Audit; shows keyword pills; "Suggest equipment to check" button opens mailto pre-filled with suggestion template)
 
+Hidden tool (not on home grid):
+- **MOR Automation** — triggered by typing "tom" anywhere; generates 11-sheet XLSX from S3 CSV + Epic XLSX; back button returns home
+
 ---
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.73**
+- Current version: **v1.3.74**
 - Repo: github.com/tombooone/tomboone-website
-- File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
+- File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second, tom IIFE last)
+- SheetJS 0.18.5 loaded from CDN in index.html (required by MOR Automation)
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
 - Cloudflare Pages auto-deploys on push to main
+
+---
+
+## MOR Automation — Hidden Tool
+
+Accessed by typing "tom" anywhere on the page (not in an input/textarea, not while worm modal is active). View ID: `morView`.
+
+**Inputs:** S3 CSV Export + Epic XLSX Export. Run button enabled only when both files selected.
+
+**S3 CSV columns used:** LogID, SurgeryDate (Excel serial), SurgeryMonthKey (YYYYMM), AccountingUnitFacilityCode (10=VNC, 13=DAV, 30=MBC), DepartmentName, AcctBasecls_HA_C_Name (Inpatient/Outpatient).
+**Filter:** keep rows where DepartmentName contains 'OR' AND does NOT contain 'LD'.
+**Epic XLSX columns:** Case #, Lead Surgeon, Service. Surgeon name cleanup: strip from ', Md' onward.
+**Join:** left join S3→Epic on LogID === Case # (strings). Unmatched rows have null surgeon/service.
+
+**Date logic:** derived from max(SurgeryDate) in filtered S3 data.
+- PM_NUM = ANALYSIS_MONTH - 1 (prior month); wraps Dec→Jan
+- CYM = PM_YEAR * 100 + PM_NUM; PYM = PRIOR_YEAR * 100 + PM_NUM
+- CY YTD: monthKey >= PM_YEAR*100+1 && <= CYM; PY YTD: >= PRIOR_YEAR*100+1 && <= PYM
+- Rolling 12M: 12 complete months ending at CYM
+
+**Budget:** hardcoded in `MOR_BUDGET` constant (DAV/MBC/VNC × IP/OP × 12 months, Jan=index 0).
+**YTD budget:** sum indices 0..PM_NUM-1 (PM_NUM months, Jan through PM_NUM inclusive).
+
+**Output:** 11-sheet XLSX downloaded as `CPMC_MOR_[YEAR]_[MM].xlsx`
+1. Surg Vol Overall Table — campus×type matrix with PM and YTD columns + budget
+2. Surg Vol Summary — totals across all campuses IP/OP
+3. Top 50 Surgeons — all cases, side-by-side ranks 1-25 / 26-50
+4. Top 50 Surgeons - IP — inpatient only
+5. Top 50 Surgeons - OP — outpatient only
+6. Inpatient Service Focus — top 5 surgeons per 8 fixed services (GENERAL/NEUROSURGERY/CARDIAC/TRANSPLANT left; ORTHOPEDICS/PLASTICS/ENT/GYNECOLOGY right)
+7. Outpatient Service Focus — top 5 per 8 services (GYNECOLOGY/GENERAL/PLASTICS/UROLOGY left; OPHTHALMOLOGY/ENT/ORTHOPEDICS/NEUROSURGERY right)
+8. IP Decline vs OP Comparison — Orthopedics/General/Plastics/Gynecology; 3 sections (IP/OP/TOTAL)
+9. All Services - Total — all Epic service names, alphabetical
+10. All Services - IP — inpatient only
+11. All Services - OP — outpatient only
+
+**JS functions:** all prefixed `_mor`. `_morRunPipeline`, `_morParseS3Csv`, `_morParseEpicXlsx`, `_morComputeDates`, `_morCount`, `_morTopSurgeons`, `_morSheet1`-`_morSheet2`, `_morTop50`, `_morSvcFocus`, `_morSheet8`, `_morAllSvc`. Constants: `MOR_BUDGET`, `MOR_CAMPUS_MAP`, `MOR_CAMPUSES`, `MOR_MONTH_NAMES`, `morMN()`.
 
 ---
 
@@ -308,6 +349,7 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Explanation text in equipment audit: "[keyword] was listed in Special Needs but not added to Equipment"
 - `describeMatch` for equipment rules: always lists all items in full ("Equipment (any of N): item1, item2, ...") with no truncation
 - Snake easter egg: typing "worm" anywhere (not in an input) opens a Snake game modal; Escape or click-outside closes it; direction queue (max 2) buffers rapid consecutive turns so inputs are not lost
+- MOR Automation: hidden tool, triggered by typing "tom" anywhere (not in an input, not while worm modal is active); navigates to `morView` via `showView("mor")`; back button returns home; NOT in home tool grid; 'tom' buffer is a separate IIFE at end of app.js
 - Gantt tile click: opens sidebar only (no clipboard copy; clicking the sidebar h3 copies)
 - Gantt sidebar h3: click-to-copy case number via toast; uses `makeCopyable(h3, caseNumber)` helper
 - Toast system: `showToast(message)` is the generic function; `showCopyToast(caseNumber)` wraps it with "Case #N copied"; custom messages used for keyword mark ("Copied: [term]") and explanation cell ("Copied")
