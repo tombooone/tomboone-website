@@ -1492,7 +1492,7 @@
         }
         case 2: {
           if (rule.id === "ops-2") {
-            return "OR 4 is the designated pediatric room. Please move this case to OR 4 if available.";
+            return "OR 4 is the designated pediatric room. If OR 4 is unavailable, consider OR 3 or OR 5. Please move this case if any of these rooms are available.";
           }
           const list = formatRoomList(rooms, "and");
           return `${rule.label} equipment is designated for ${list}. Please move this case if available.`;
@@ -1978,17 +1978,20 @@
         const isInserviceFri = new Date(v.sortDate).getDay() === 5 && diffDays >= 0 && diffDays % 14 === 0;
         const primeStart = isInserviceFri ? 540 : 450;
 
-        const occ = cases
-          .filter((c) => c.room === "OR 4" && c.sortDate === v.sortDate && c.startMin !== null && c.endMin !== null)
-          .map((c) => [c.startMin, c.endMin])
-          .sort((a, b) => a[0] - b[0]);
-        let cursor = primeStart;
         let feasible = false;
-        for (const [s, e] of occ) {
-          if (s > cursor && s - cursor >= blockDur) { feasible = true; break; }
-          if (e > cursor) cursor = e;
+        for (const checkRoom of ["OR 4", "OR 3", "OR 5"]) {
+          if (feasible) break;
+          const occ = cases
+            .filter((c) => c.room === checkRoom && c.sortDate === v.sortDate && c.startMin !== null && c.endMin !== null)
+            .map((c) => [c.startMin, c.endMin])
+            .sort((a, b) => a[0] - b[0]);
+          let cursor = primeStart;
+          for (const [s, e] of occ) {
+            if (s > cursor && s - cursor >= blockDur) { feasible = true; break; }
+            if (e > cursor) cursor = e;
+          }
+          if (!feasible && T3_PRIME_END - cursor >= blockDur) feasible = true;
         }
-        if (!feasible && T3_PRIME_END - cursor >= blockDur) feasible = true;
 
         if (!feasible) {
           block.forEach((c) => ops2Suppressed.add(`${c.caseNumber}:ops-2`));
