@@ -425,42 +425,6 @@
         <div id="equipmentTermsContent"></div>
       </section>
 
-      <section id="morView" class="view" aria-labelledby="morTitle">
-        <div class="back-row">
-          <button class="ghost-button" type="button" id="morBackHome">
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>Back to tools</span>
-          </button>
-        </div>
-        <div class="page-heading">
-          <h1 id="morTitle">MOR Automation</h1>
-        </div>
-        <div class="workspace">
-          <section class="panel">
-            <div class="upload-box">
-              <label class="file-input">
-                <span>
-                  <strong>S3 CSV Export</strong><br>
-                  <input id="morS3Input" type="file" accept=".csv,.txt">
-                </span>
-              </label>
-              <label class="file-input">
-                <span>
-                  <strong>Epic XLSX Export</strong><br>
-                  <input id="morEpicInput" type="file" accept=".xlsx,.xls">
-                </span>
-              </label>
-              <div class="actions">
-                <button class="primary-button" type="button" id="morRunBtn" disabled>Run</button>
-              </div>
-              <p id="morStatus" class="status" role="status">Select both files to continue.</p>
-            </div>
-          </section>
-        </div>
-      </section>
-
       <section id="ruleInfoView" class="view" aria-labelledby="ruleInfoTitle">
         <div class="back-row">
           <button class="ghost-button" type="button" id="ruleInfoBackBtn">
@@ -511,7 +475,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.74 · 2026-06-02</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.75 · 2026-06-03</p>
     </footer>
   </div>
 
@@ -527,7 +491,6 @@
       </div>
     </div>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
