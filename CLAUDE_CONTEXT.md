@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-04 (v1.3.84)
+## Last updated: 2026-06-04 (v1.3.85)
 
 ---
 
@@ -20,7 +20,7 @@ A PHI-safe OR scheduling audit web tool at **tomboone.io** (primary, live) and *
 
 All four tools on the home screen are **live and complete**:
 1. **CPT Audit Tool** ✅ complete, do not touch
-2. **Equipment Request Audit** ✅ complete (expand/collapse detail rows, amber keyword highlight, 13 keywords including NIM and Sonopet), do not touch
+2. **Equipment Request Audit** ✅ complete (expand/collapse detail rows, amber keyword highlight, 19 keywords including NIM, Sonopet, CUSA, Aquamantys, Stealth, BK Ultrasound, Spy ICG, PTeye), do not touch
 3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag tier system; includes **Rule Management** sub-view with read-only rule cards, mailto flag-for-review, and mailto request-new-rule flows)
 4. **Equipment Terms view** ✅ complete (accessible via "View terms being checked" link in Equipment Request Audit; shows keyword pills; "Suggest equipment to check" button opens mailto pre-filled with suggestion template)
 
@@ -29,7 +29,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.84**
+- Current version: **v1.3.85**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - **Cache busting:** `styles.css` and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
@@ -52,7 +52,7 @@ All four tools on the home screen are **live and complete**:
 
 The tool flags cases where any of these terms appear in Special Needs but are NOT in the Equipment field:
 
-`C-arm`, `Airo`, `Myosure fluid management`, `Fluid management system`, `Fluent`, `Myosure`, `NIM`, `Microscope`, `Gamma`, `Neoprobe`, `Geiger`, `Trunode`, `Sonopet`
+`C-arm`, `Airo`, `Myosure fluid management`, `Fluid management system`, `Fluent`, `Myosure`, `NIM`, `Microscope`, `Gamma`, `Neoprobe`, `Geiger`, `Trunode`, `Sonopet`, `CUSA`, `Aquamantys`, `Stealth`, `BK Ultrasound`, `Spy ICG`, `PTeye`
 
 **Matching logic (in order):**
 1. Exact substring (case-insensitive)
@@ -153,6 +153,7 @@ Both historical and prospective Epic reports share the same columns:
 | HARD-4 | Cardiac Surgery Room | equipmentContainsAny: ["Machine Heart Lung Perfusion", "Mount Table Large Estech", "Stool Hydraulic Ima", "Unit Hemopro 5500", "Cable Pacing Tester"] | OR7 |
 | HARD-5 | Transplant Room | equipmentContainsAny: ["Table Back w/o shelf (Transplant)", "Table Small w/o shelf (Transplant)", "Cooler Donor", "Cart Renal Transplant", "ORGANOX"] | OR6, OR9 |
 | HARD-6 | Hybrid/Cath Lab | equipmentContainsAny: ["CV ACCESSION EQ"] | OR14 |
+| HARD-7 | Free Flap Procedure | procedureTextContains: "free flap" | OR6, OR7, OR8, OR9 |
 
 ### Tier 2 — Strong Operational (Alert) — 2 rules
 
@@ -318,8 +319,8 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Equipment audit detail pane: "Report an issue" button (`.rule-flag-btn`) in header row above the detail grid; opens mailto pre-filled with case number and blank ISSUE field
 - C-arm false positive fix: `KEYWORD_OPTIONS` map adds `requiresPrefix: "c"` to "C-arm"; `matchSatisfiesPrefix` helper validates non-exact matches require the matched text or immediately preceding chars to start with "c"; `tokenBagMatch` is skipped for keywords with `requiresPrefix`
 - Equipment audit case cell: bold case number at top (copyable via `makeCopyable`); "▶ Details" affordance below (flex row, arrow rotates 90° when expanded via `.expanded` class on the row); clicking case number copies (stopPropagation prevents row toggle)
-- Violations table: grouped by case number — one row per case, colored by highest severity (min tier); Severity column shows highest-tier badge; Rule column stacks `[T# badge] rule_label` per violation; Explanation column stacks explanation text; groups sorted by date → minTier → caseNumber; violations within each group sorted by tier ascending
-- Violations table Case # column: bold; no click-to-copy. Uses event delegation: ONE `click` listener on `roomRulesViolationsTable` (`<tbody>`). Each `<tr>` has `data-sort-date` and `data-case-num` attributes. Delegated handler uses `e.target.closest("tr[data-sort-date]")`, looks up group in `_violGroupDataMap`, always calls `showGanttSidebar` with fallback case object. `_violGroupDataMap` rebuilt each audit run. Document `pointerdown` excludes `#roomRulesViolationsTable`. Table has `<thead>` with Case #, Date, Surgeon, Room, Procedure(s), Severity, Rule, Explanation columns; the `<h2>` section title above the table was removed.
+- Violations table: grouped by case number — one row per case, colored by highest severity (min tier); Priority column shows highest-tier badge; Rule column stacks `[T# badge] rule_label` per violation; Explanation column stacks explanation text; groups sorted by date → minTier → caseNumber; violations within each group sorted by tier ascending
+- Violations table Case # column: bold; no click-to-copy. Uses event delegation: ONE `click` listener on `roomRulesViolationsTable` (`<tbody>`). Each `<tr>` has `data-sort-date` and `data-case-num` attributes. Delegated handler uses `e.target.closest("tr[data-sort-date]")`, looks up group in `_violGroupDataMap`, always calls `showGanttSidebar` with fallback case object. `_violGroupDataMap` rebuilt each audit run. Document `pointerdown` excludes `#roomRulesViolationsTable`. Table has `<thead>` with Case #, Date, Surgeon, Room, Procedure(s), Priority, Rule, Explanation columns; the `<h2>` section title above the table was removed.
 - CPT audit tables (Table 1 missingRows, Table 2 inpatientRows): case number cells bold + click-to-copy via `makeCopyable`; both tables now include a Location column (after Date) showing department or room from the report
 - Equipment audit results table: Location column added after Case # column
 - `.copy-case` CSS: `cursor: pointer` only (no `user-select: none`)
