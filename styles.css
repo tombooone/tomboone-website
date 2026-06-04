@@ -539,6 +539,8 @@
     /* ── Violation table rows are clickable ──────────────────────── */
     tr[class*="violation-tier"] { cursor: pointer; }
     tr[class*="violation-tier"]:hover td { filter: brightness(0.94); }
+    tr[class*="violation-tier"] td:nth-child(4) { white-space: nowrap; }
+    .equip-row-main td:nth-child(2) { white-space: nowrap; }
 
     /* ── Gantt block highlight (from table row click) ────────────── */
     @keyframes gantt-highlight-pulse {

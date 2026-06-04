@@ -54,7 +54,13 @@
       "Neoprobe",
       "Geiger",
       "Trunode",
-      "Sonopet"
+      "Sonopet",
+      "CUSA",
+      "Aquamantys",
+      "Stealth",
+      "BK Ultrasound",
+      "Spy ICG",
+      "PTeye"
     ];
 
     // Optional per-keyword matching constraints.
@@ -470,7 +476,7 @@
           tr.append(missingCaseCell);
           tr.append(codeListTd(row.orderCodes));
           tr.append(codeListTd(row.caseCodes));
-          tr.append(codeListTd(row.missingCodes));
+          tr.append(missingCodesTd(row.missingCodes));
           tr.append(explanationTd(row.explanation, row.missingCodes));
           missingTable.append(tr);
         });
@@ -836,6 +842,19 @@
       const el = document.createElement("td");
       el.className = "code-list";
       appendCodeText(el, codes.join(", "), codes);
+      return el;
+    }
+
+    function missingCodesTd(codes) {
+      const el = document.createElement("td");
+      el.className = "code-list";
+      codes.forEach((code, i) => {
+        if (i > 0) el.append(document.createTextNode(", "));
+        const mark = document.createElement("mark");
+        mark.style.cssText = "background:#fef3c7;font-weight:700;border-radius:2px;padding:0 2px;color:#92400e;";
+        mark.textContent = code;
+        el.append(mark);
+      });
       return el;
     }
 
@@ -1325,6 +1344,14 @@
         match: { equipmentContainsAny: ["CV ACCESSION EQ"] },
         allowedRooms: ["OR 14"]
       },
+      {
+        id: "hard-7",
+        tier: 1,
+        label: "Free Flap Procedure",
+        description: "Free flap procedures require a room with three overhead lights. Cases must be in OR 6, OR 7, OR 8, or OR 9.",
+        match: { procedureTextContains: "free flap" },
+        allowedRooms: ["OR 6", "OR 7", "OR 8", "OR 9"]
+      },
       // ── Tier 2: Strong Operational ────────────────────────────────────────
       {
         id: "ops-1",
@@ -1623,7 +1650,7 @@
         }
         case 2: {
           if (rule.id === "ops-2") {
-            return "OR 4 is the designated pediatric room. If OR 4 is unavailable, consider OR 3 or OR 5. Please move this case if any of these rooms are available.";
+            return "Pediatric cases belong in OR 4. If unavailable, consider OR 3 or OR 5.";
           }
           const list = formatRoomList(rooms, "and");
           return `${rule.label} equipment is designated for ${list}. Please move this case if available.`;
