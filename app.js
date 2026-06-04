@@ -1817,7 +1817,8 @@
       const headerInfo = findHeaderInfoForColumns(populatedRows, roomRulesColumns);
       if (!headerInfo) throw new Error("Could not locate the header row in this spreadsheet.");
       const { indexes, headerRowIndex } = headerInfo;
-      const dataRows = populatedRows.slice(headerRowIndex + 1);
+      const dataRows = populatedRows.slice(headerRowIndex + 1)
+        .filter((row) => /wbvc\s+or\b/i.test(cell(row, indexes.room)));
       const violations = [];
       const cases = [];
       const ruleMatchCounts = new Map();
@@ -2420,7 +2421,7 @@
       GANTT_ROOMS.forEach((room) => {
         const label = document.createElement("div");
         label.className = "gantt-room-label";
-        label.textContent = room;
+        label.textContent = "WBVC " + room;
         fixedCol.append(label);
       });
 
