@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-04 (v1.3.85)
+## Last updated: 2026-06-04 (v1.3.86)
 
 ---
 
@@ -20,7 +20,7 @@ A PHI-safe OR scheduling audit web tool at **tomboone.io** (primary, live) and *
 
 All four tools on the home screen are **live and complete**:
 1. **CPT Audit Tool** ✅ complete, do not touch
-2. **Equipment Request Audit** ✅ complete (expand/collapse detail rows, amber keyword highlight, 19 keywords including NIM, Sonopet, CUSA, Aquamantys, Stealth, BK Ultrasound, Spy ICG, PTeye), do not touch
+2. **Equipment Request Audit** ✅ complete (expand/collapse detail rows, amber keyword highlight, 19 keywords including NIM, Sonopet, CUSA, Aquamantys, Stealth, Ultrasound, Spy ICG, PTeye), do not touch
 3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag tier system; includes **Rule Management** sub-view with read-only rule cards, mailto flag-for-review, and mailto request-new-rule flows)
 4. **Equipment Terms view** ✅ complete (accessible via "View terms being checked" link in Equipment Request Audit; shows keyword pills; "Suggest equipment to check" button opens mailto pre-filled with suggestion template)
 
@@ -29,7 +29,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.85**
+- Current version: **v1.3.86**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - **Cache busting:** `styles.css` and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
@@ -52,7 +52,7 @@ All four tools on the home screen are **live and complete**:
 
 The tool flags cases where any of these terms appear in Special Needs but are NOT in the Equipment field:
 
-`C-arm`, `Airo`, `Myosure fluid management`, `Fluid management system`, `Fluent`, `Myosure`, `NIM`, `Microscope`, `Gamma`, `Neoprobe`, `Geiger`, `Trunode`, `Sonopet`, `CUSA`, `Aquamantys`, `Stealth`, `BK Ultrasound`, `Spy ICG`, `PTeye`
+`C-arm`, `Airo`, `Myosure fluid management`, `Fluid management system`, `Fluent`, `Myosure`, `NIM`, `Microscope`, `Gamma`, `Neoprobe`, `Geiger`, `Trunode`, `Sonopet`, `CUSA`, `Aquamantys`, `Stealth`, `Ultrasound`, `Spy ICG`, `PTeye`
 
 **Matching logic (in order):**
 1. Exact substring (case-insensitive)
@@ -321,7 +321,7 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Equipment audit case cell: bold case number at top (copyable via `makeCopyable`); "▶ Details" affordance below (flex row, arrow rotates 90° when expanded via `.expanded` class on the row); clicking case number copies (stopPropagation prevents row toggle)
 - Violations table: grouped by case number — one row per case, colored by highest severity (min tier); Priority column shows highest-tier badge; Rule column stacks `[T# badge] rule_label` per violation; Explanation column stacks explanation text; groups sorted by date → minTier → caseNumber; violations within each group sorted by tier ascending
 - Violations table Case # column: bold; no click-to-copy. Uses event delegation: ONE `click` listener on `roomRulesViolationsTable` (`<tbody>`). Each `<tr>` has `data-sort-date` and `data-case-num` attributes. Delegated handler uses `e.target.closest("tr[data-sort-date]")`, looks up group in `_violGroupDataMap`, always calls `showGanttSidebar` with fallback case object. `_violGroupDataMap` rebuilt each audit run. Document `pointerdown` excludes `#roomRulesViolationsTable`. Table has `<thead>` with Case #, Date, Surgeon, Room, Procedure(s), Priority, Rule, Explanation columns; the `<h2>` section title above the table was removed.
-- CPT audit tables (Table 1 missingRows, Table 2 inpatientRows): case number cells bold + click-to-copy via `makeCopyable`; both tables now include a Location column (after Date) showing department or room from the report
+- CPT audit tables (Table 1 missingRows, Table 2 inpatientRows): case number cells bold + click-to-copy via `makeCopyable`; both tables now include a Location column (after Date) showing department or room from the report; Explanation column removed from both tables (Table 1 now 6 columns, Table 2 now 3 columns)
 - Equipment audit results table: Location column added after Case # column
 - `.copy-case` CSS: `cursor: pointer` only (no `user-select: none`)
 - All three tools accept the consolidated **CPMC Scheduling Automation** export; instructions updated to reference this name
