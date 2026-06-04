@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-03 (v1.3.77)
+## Last updated: 2026-06-04 (v1.3.79)
 
 ---
 
@@ -29,7 +29,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.77**
+- Current version: **v1.3.79**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
@@ -319,5 +319,10 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Equipment audit case cell: bold case number at top (copyable via `makeCopyable`); "▶ Details" affordance below (flex row, arrow rotates 90° when expanded via `.expanded` class on the row); clicking case number copies (stopPropagation prevents row toggle)
 - Violations table: grouped by case number — one row per case, colored by highest severity (min tier); Severity column shows highest-tier badge; Rule column stacks `[T# badge] rule_label` per violation; Explanation column stacks explanation text; groups sorted by date → minTier → caseNumber; violations within each group sorted by tier ascending
 - Violations table Case # column: bold; no click-to-copy. Uses event delegation: ONE `click` listener on `roomRulesViolationsTable` (`<tbody>`). Each `<tr>` has `data-sort-date` and `data-case-num` attributes. Delegated handler uses `e.target.closest("tr[data-sort-date]")`, looks up group in `_violGroupDataMap`, always calls `showGanttSidebar` with fallback case object. `_violGroupDataMap` rebuilt each audit run. Document `pointerdown` excludes `#roomRulesViolationsTable`. Table has `<thead>` with Case #, Date, Surgeon, Room, Procedure(s), Severity, Rule, Explanation columns; the `<h2>` section title above the table was removed.
-- CPT audit tables (Table 1 missingRows, Table 2 inpatientRows): case number cells bold + click-to-copy via `makeCopyable`
+- CPT audit tables (Table 1 missingRows, Table 2 inpatientRows): case number cells bold + click-to-copy via `makeCopyable`; both tables now include a Location column (after Date) showing department or room from the report
+- Equipment audit results table: Location column added after Case # column
 - `.copy-case` CSS: `cursor: pointer` only (no `user-select: none`)
+- All three tools accept the consolidated **CPMC Scheduling Report** export; instructions updated to reference this name
+- `sharedAuditData` module-level variable `{ rows, filename }` caches parsed rows; set on any successful audit run, cleared on any Clear button; `wireAuditTool` returns `{ primeFromShared }` called by `showView` to pre-fill status and enable Run when navigating between tools; `onRun` callbacks accept `cachedRows` as 3rd param and skip file read when present
+- Column `accepted` arrays expanded throughout to match consolidated report column names (e.g. "case/appt date", "lead surgeon (as scheduled)", "sh ip surgical equipment", "surgical service (as scheduled)", etc.)
+- `findHeaderInfoForColumns`: columns with `optional: true` are excluded from the missing-column check; optional `room` and `department` columns added to CPT and equipment audits; location = department value if present, else room value
