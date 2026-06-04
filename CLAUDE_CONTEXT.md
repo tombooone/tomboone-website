@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-03 (v1.3.75)
+## Last updated: 2026-06-03 (v1.3.77)
 
 ---
 
@@ -29,7 +29,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.75**
+- Current version: **v1.3.77**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
@@ -302,7 +302,7 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Laterality rules not statistically significant at WBVC — only PCNL confirmed
 - All alert/flag language should be suggestive not punitive — brief, explain the reason
 - Tier 3 post-processing: group contiguous same-service-or-surgeon cases in same room (gap ≤ 30 min) into a block; suppress the flag for all cases in the block if no allowed room has a prime-time gap (07:30–15:30, or 09:00–15:30 on biweekly inservice Fridays) large enough to hold the entire block
-- ops-2 (Pediatric Room) post-processing: same block-feasibility approach applied to Tier 2 ops-2 violations; "pediatric" defined as age < 18 OR equipment contains "Cart Pediatric" or "Warmer Overhead (French Fry)"; checks OR 4 only; `cases` array stores `patientAge` and `equipmentText` to support this
+- ops-2 (Pediatric Room) post-processing: same block-feasibility approach applied to Tier 2 ops-2 violations; "pediatric" defined as age < 18 OR equipment contains "Cart Pediatric" or "Warmer Overhead (French Fry)"; checks OR 4 first, then OR 3 and OR 5 as fallbacks — flag suppressed only if none of the three has a feasible prime-time gap; explanation: "OR 4 is the designated pediatric room. If OR 4 is unavailable, consider OR 3 or OR 5. Please move this case if any of these rooms are available."
 - Show all alerts and flags regardless of tier (no suppression in output except Tier 3 and ops-2 feasibility checks)
 - "Violation" replaced with "alert" (Tier 1-2) and "flag" (Tier 3-5) in all user-facing text
 - Equipment accessories must NOT be used as robot triggers (Tower Robot, daVinci Surgeon Chair, Table Trumpf 7000dV)
