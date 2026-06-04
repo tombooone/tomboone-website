@@ -1,4 +1,5 @@
     let sharedAuditData = null;
+    let sharedAuditResults = null;
 
     const requiredColumns = [
       {
@@ -128,6 +129,7 @@
       statusEl: document.getElementById("status"),
       resultsPanel: document.getElementById("resultsPanel"),
       tables: [missingTable, inpatientTable],
+      toolKey: "cpt",
     });
 
     let _equipTool = wireAuditTool({
@@ -137,6 +139,7 @@
       statusEl: document.getElementById("equipmentStatus"),
       resultsPanel: document.getElementById("equipmentResultsPanel"),
       tables: [equipmentMissingTable],
+      toolKey: "equipment",
     });
 
     loadInpatientOnlyCodes();
@@ -156,7 +159,7 @@
       if (viewName === "equipmentTerms") buildEquipmentTermsView();
     }
 
-    function wireAuditTool({ fileInput, runButton, clearButton, statusEl, resultsPanel, tables }) {
+    function wireAuditTool({ fileInput, runButton, clearButton, statusEl, resultsPanel, tables, toolKey }) {
       let selectedFile = null;
 
       function setStatus(message, isError = false) {
@@ -165,10 +168,11 @@
       }
 
       function showFromShared() {
-        if (sharedAuditData) {
+        if (sharedAuditResults) {
+          _showCachedResult(toolKey);
+        } else if (sharedAuditData) {
           runButton.disabled = false;
           clearButton.disabled = false;
-          resultsPanel.hidden = false;
           statusEl.classList.remove("error");
         }
       }
@@ -197,6 +201,7 @@
         setStatus("Reading spreadsheet locally...");
         try {
           await _runAllAudits(selectedFile);
+          _showCachedResult(toolKey);
           const firstHeading = resultsPanel.querySelector("h2");
           if (firstHeading) { firstHeading.tabIndex = -1; firstHeading.focus(); }
         } catch (error) {
@@ -210,6 +215,7 @@
 
       clearButton.addEventListener("click", () => {
         sharedAuditData = null;
+        sharedAuditResults = null;
         if (_cptTool) _cptTool.reset();
         if (_equipTool) _equipTool.reset();
         if (_roomRulesTool) _roomRulesTool.reset();
@@ -230,61 +236,87 @@
         sharedAuditData = { rows, filename: file.name };
       }
 
+      sharedAuditResults = {};
+
       // CPT audit
-      {
-        const panel = document.getElementById("resultsPanel");
-        const status = document.getElementById("status");
-        try {
-          if (!inpatientOnlyCodes.size) {
-            await loadInpatientOnlyCodes();
-            if (!inpatientOnlyCodes.size) throw new Error("CMS Addendum E could not be loaded. Start a local web server before running the audit.");
-          }
-          const r = auditRows(rows);
-          renderResults(r);
-          panel.hidden = false;
-          status.textContent = `Audit complete. Reviewed ${r.totalRows} data row${r.totalRows === 1 ? "" : "s"}.`;
-          status.classList.remove("error");
-        } catch (e) {
-          status.textContent = e.message || "Unable to run CPT audit on this file.";
-          status.classList.add("error");
+      try {
+        if (!inpatientOnlyCodes.size) {
+          await loadInpatientOnlyCodes();
+          if (!inpatientOnlyCodes.size) throw new Error("CMS Addendum E could not be loaded. Start a local web server before running the audit.");
         }
+        sharedAuditResults.cpt = auditRows(rows);
+      } catch (e) {
+        sharedAuditResults.cptError = e.message || "Unable to run CPT audit on this file.";
       }
 
       // Equipment audit
-      {
-        const panel = document.getElementById("equipmentResultsPanel");
-        const status = document.getElementById("equipmentStatus");
-        try {
-          const r = auditEquipmentRows(rows);
-          renderEquipmentResults(r);
-          panel.hidden = false;
-          status.textContent = `Audit complete. Reviewed ${r.totalRows} data row${r.totalRows === 1 ? "" : "s"}.`;
-          status.classList.remove("error");
-        } catch (e) {
-          status.textContent = e.message || "Unable to run equipment audit on this file.";
-          status.classList.add("error");
-        }
+      try {
+        sharedAuditResults.equipment = auditEquipmentRows(rows);
+      } catch (e) {
+        sharedAuditResults.equipmentError = e.message || "Unable to run equipment audit on this file.";
       }
 
       // Room rules audit
-      {
-        const panel = roomRulesResultsPanel;
-        const status = document.getElementById("roomRulesStatus");
-        try {
-          const r = auditRoomRules(rows);
-          renderRoomRulesResults(r);
+      try {
+        sharedAuditResults.roomRules = auditRoomRules(rows);
+      } catch (e) {
+        sharedAuditResults.roomRulesError = e.message || "Unable to run room rules audit on this file.";
+      }
+    }
+
+    function _showCachedResult(toolKey) {
+      if (!sharedAuditResults) return;
+
+      if (toolKey === "cpt") {
+        const panel = document.getElementById("resultsPanel");
+        const status = document.getElementById("status");
+        if (sharedAuditResults.cpt) {
+          renderResults(sharedAuditResults.cpt);
           panel.hidden = false;
-          status.textContent = `Audit complete. Reviewed ${r.totalRows} case${r.totalRows === 1 ? "" : "s"}.`;
+          const r = sharedAuditResults.cpt;
+          status.textContent = `Audit complete. Reviewed ${r.totalRows} data row${r.totalRows === 1 ? "" : "s"}.`;
           status.classList.remove("error");
-        } catch (e) {
-          status.textContent = e.message || "Unable to run room rules audit on this file.";
+        } else if (sharedAuditResults.cptError) {
+          status.textContent = sharedAuditResults.cptError;
           status.classList.add("error");
         }
+        document.getElementById("runAudit").disabled = false;
+        document.getElementById("clearAudit").disabled = false;
       }
 
-      // Enable run/clear on all tools
-      ["runAudit","clearAudit","runEquipmentAudit","clearEquipmentAudit","runRoomRulesAudit","clearRoomRulesAudit"]
-        .forEach(id => { document.getElementById(id).disabled = false; });
+      if (toolKey === "equipment") {
+        const panel = document.getElementById("equipmentResultsPanel");
+        const status = document.getElementById("equipmentStatus");
+        if (sharedAuditResults.equipment) {
+          renderEquipmentResults(sharedAuditResults.equipment);
+          panel.hidden = false;
+          const r = sharedAuditResults.equipment;
+          status.textContent = `Audit complete. Reviewed ${r.totalRows} data row${r.totalRows === 1 ? "" : "s"}.`;
+          status.classList.remove("error");
+        } else if (sharedAuditResults.equipmentError) {
+          status.textContent = sharedAuditResults.equipmentError;
+          status.classList.add("error");
+        }
+        document.getElementById("runEquipmentAudit").disabled = false;
+        document.getElementById("clearEquipmentAudit").disabled = false;
+      }
+
+      if (toolKey === "roomRules") {
+        const panel = roomRulesResultsPanel;
+        const status = document.getElementById("roomRulesStatus");
+        if (sharedAuditResults.roomRules) {
+          renderRoomRulesResults(sharedAuditResults.roomRules);
+          panel.hidden = false;
+          const r = sharedAuditResults.roomRules;
+          status.textContent = `Audit complete. Reviewed ${r.totalRows} case${r.totalRows === 1 ? "" : "s"}.`;
+          status.classList.remove("error");
+        } else if (sharedAuditResults.roomRulesError) {
+          status.textContent = sharedAuditResults.roomRulesError;
+          status.classList.add("error");
+        }
+        document.getElementById("runRoomRulesAudit").disabled = false;
+        document.getElementById("clearRoomRulesAudit").disabled = false;
+      }
     }
 
     async function loadInpatientOnlyCodes() {
@@ -1480,6 +1512,7 @@
       statusEl: document.getElementById("roomRulesStatus"),
       resultsPanel: roomRulesResultsPanel,
       tables: [roomRulesViolationsTable],
+      toolKey: "roomRules",
     });
 
     document.getElementById("viewActiveRulesBtn").addEventListener("click", () => showView("ruleManagement"));
