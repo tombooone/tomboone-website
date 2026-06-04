@@ -58,7 +58,7 @@
       "CUSA",
       "Aquamantys",
       "Stealth",
-      "BK Ultrasound",
+      "Ultrasound",
       "Spy ICG",
       "PTeye"
     ];
@@ -477,18 +477,17 @@
           tr.append(codeListTd(row.orderCodes));
           tr.append(codeListTd(row.caseCodes));
           tr.append(missingCodesTd(row.missingCodes));
-          tr.append(explanationTd(row.explanation, row.missingCodes));
           missingTable.append(tr);
         });
       } else {
-        missingTable.append(emptyRow(7, "No missing CPT discrepancies found."));
+        missingTable.append(emptyRow(6, "No missing CPT discrepancies found."));
       }
 
       result.errorMessages.forEach((message) => {
         const tr = document.createElement("tr");
         tr.className = "error-row";
         const errorCell = td(`Error check: ${message}`);
-        errorCell.colSpan = 7;
+        errorCell.colSpan = 6;
         tr.append(errorCell);
         missingTable.append(tr);
       });
@@ -502,11 +501,10 @@
           inpatientCaseCell.style.fontWeight = "700";
           makeCopyable(inpatientCaseCell, row.caseNumber);
           tr.append(inpatientCaseCell);
-          tr.append(explanationTd(row.explanation, row.codes));
           inpatientTable.append(tr);
         });
       } else {
-        inpatientTable.append(emptyRow(4, "No CMS inpatient-only CPT codes found on outpatient cases."));
+        inpatientTable.append(emptyRow(3, "No CMS inpatient-only CPT codes found on outpatient cases."));
       }
     }
 
