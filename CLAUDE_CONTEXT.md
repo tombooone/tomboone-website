@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-04 (v1.3.81)
+## Last updated: 2026-06-04 (v1.3.82)
 
 ---
 
@@ -29,7 +29,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.81**
+- Current version: **v1.3.82**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
@@ -323,6 +323,6 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Equipment audit results table: Location column added after Case # column
 - `.copy-case` CSS: `cursor: pointer` only (no `user-select: none`)
 - All three tools accept the consolidated **CPMC Scheduling Automation** export; instructions updated to reference this name
-- `sharedAuditData` module-level variable `{ rows, filename }` caches parsed rows; any tool's Run button triggers `_runAllAudits(file)` which runs all three audits and renders all three results panels simultaneously; navigating to another tool shows results already populated; Clear on any tool calls `reset()` on all three tools and clears `sharedAuditData`; `wireAuditTool` returns `{ showFromShared, reset }` — `showFromShared` is called by `showView` to ensure the results panel is visible on navigate; no `onRun` callback — each tool's run button calls the shared `_runAllAudits` function
+- `sharedAuditData = { rows, filename }` caches parsed rows; `sharedAuditResults = { cpt, equipment, roomRules, cptError, equipmentError, roomRulesError }` caches computed results; Run on any tool calls `_runAllAudits(file)` which stores results in `sharedAuditResults` (no rendering inside `_runAllAudits`); run button handler then calls `_showCachedResult(toolKey)` for the clicked tool; `showFromShared()` in `showView` calls `_showCachedResult(toolKey)` for navigated-to tools; `_showCachedResult` renders from cache, unhides panel, sets status, enables buttons; Clear nulls both `sharedAuditData` and `sharedAuditResults`; each `wireAuditTool` call includes `toolKey: "cpt" | "equipment" | "roomRules"`
 - Column `accepted` arrays expanded throughout to match consolidated report column names (e.g. "case/appt date", "lead surgeon (as scheduled)", "sh ip surgical equipment", "surgical service (as scheduled)", etc.)
 - `findHeaderInfoForColumns`: columns with `optional: true` are excluded from the missing-column check; optional `room` and `department` columns added to CPT and equipment audits; location = department value if present, else room value
