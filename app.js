@@ -1,28 +1,42 @@
+    let sharedAuditData = null;
+
     const requiredColumns = [
       {
         key: "date",
         label: "Date",
-        accepted: ["date", "surgery date", "procedure date"]
+        accepted: ["date", "case/appt date", "surgery date", "procedure date"]
       },
       {
         key: "caseNumber",
         label: "Case #",
-        accepted: ["case #", "case number", "sample_case_id", "case id"]
+        accepted: ["case #", "case id", "case number"]
       },
       {
         key: "insuranceInfo",
         label: "Insurance Info",
-        accepted: ["insurance info"]
+        accepted: ["insurance info", "or case insurance information"]
       },
       {
         key: "panelCodes",
         label: "CPT Codes - All Panels",
-        accepted: ["cpt codes - all panels", "cpt codes all panels"]
+        accepted: ["cpt codes - all panels", "sh or scheduled case cpts - all panels", "cpt codes all panels"]
       },
       {
         key: "patientClass",
         label: "Base Patient Class",
-        accepted: ["base patient class", "patient class"]
+        accepted: ["base patient class", "case/log base patient class", "patient class (as scheduled)", "patient class"]
+      },
+      {
+        key: "room",
+        label: "Room",
+        optional: true,
+        accepted: ["room", "room (as scheduled)", "or room", "location"]
+      },
+      {
+        key: "department",
+        label: "Department",
+        optional: true,
+        accepted: ["department", "department name", "or department"]
       }
     ];
 
@@ -54,17 +68,29 @@
       {
         key: "caseNumber",
         label: "Case #",
-        accepted: ["case #", "case number", "sample_case_id", "case id"]
+        accepted: ["case #", "case id", "case number"]
       },
       {
         key: "specialNeeds",
         label: "Special Needs",
-        accepted: ["special needs", "special need"]
+        accepted: ["special needs", "special needs (as scheduled)", "special need"]
       },
       {
         key: "equipment",
         label: "Equipment",
-        accepted: ["equipment"]
+        accepted: ["equipment", "sh ip surgical equipment"]
+      },
+      {
+        key: "room",
+        label: "Room",
+        optional: true,
+        accepted: ["room", "room (as scheduled)", "or room", "location"]
+      },
+      {
+        key: "department",
+        label: "Department",
+        optional: true,
+        accepted: ["department", "department name", "or department"]
       }
     ];
 
@@ -95,36 +121,38 @@
     document.getElementById("backHome").addEventListener("click", () => showView("home"));
     document.getElementById("equipmentBackHome").addEventListener("click", () => showView("home"));
 
-    wireAuditTool({
+    let _cptTool = wireAuditTool({
       fileInput: document.getElementById("fileInput"),
       runButton: document.getElementById("runAudit"),
       clearButton: document.getElementById("clearAudit"),
       statusEl: document.getElementById("status"),
       resultsPanel: document.getElementById("resultsPanel"),
       tables: [missingTable, inpatientTable],
-      onRun: async (file, setStatus) => {
+      onRun: async (file, setStatus, cachedRows) => {
         if (!inpatientOnlyCodes.size) {
           await loadInpatientOnlyCodes();
           if (!inpatientOnlyCodes.size) {
             throw new Error("CMS Addendum E could not be loaded. Start a local web server before running the audit.");
           }
         }
-        const rows = await readXlsxRows(file, requiredColumns);
+        const rows = cachedRows ?? await readXlsxRows(file, requiredColumns);
+        if (!cachedRows && file) sharedAuditData = { rows, filename: file.name };
         const result = auditRows(rows);
         renderResults(result);
         setStatus(`Audit complete. Reviewed ${result.totalRows} data row${result.totalRows === 1 ? "" : "s"}.`);
       }
     });
 
-    wireAuditTool({
+    let _equipTool = wireAuditTool({
       fileInput: document.getElementById("equipmentFileInput"),
       runButton: document.getElementById("runEquipmentAudit"),
       clearButton: document.getElementById("clearEquipmentAudit"),
       statusEl: document.getElementById("equipmentStatus"),
       resultsPanel: document.getElementById("equipmentResultsPanel"),
       tables: [equipmentMissingTable],
-      onRun: async (file, setStatus) => {
-        const rows = await readXlsxRows(file, equipmentRequiredColumns);
+      onRun: async (file, setStatus, cachedRows) => {
+        const rows = cachedRows ?? await readXlsxRows(file, equipmentRequiredColumns);
+        if (!cachedRows && file) sharedAuditData = { rows, filename: file.name };
         const result = auditEquipmentRows(rows);
         renderEquipmentResults(result);
         setStatus(`Audit complete. Reviewed ${result.totalRows} data row${result.totalRows === 1 ? "" : "s"}.`);
@@ -141,6 +169,9 @@
       document.getElementById("ruleManagementView").classList.toggle("active", viewName === "ruleManagement");
       document.getElementById("equipmentTermsView").classList.toggle("active", viewName === "equipmentTerms");
       document.getElementById("ruleInfoView").classList.toggle("active", viewName === "ruleInfo");
+      if (viewName === "audit" && _cptTool) _cptTool.primeFromShared();
+      if (viewName === "equipment" && _equipTool) _equipTool.primeFromShared();
+      if (viewName === "roomRules" && _roomRulesTool) _roomRulesTool.primeFromShared();
       if (viewName === "ruleManagement") buildRuleManagementView();
       if (viewName === "equipmentTerms") buildEquipmentTermsView();
     }
@@ -153,6 +184,15 @@
         statusEl.classList.toggle("error", isError);
       }
 
+      function primeFromShared() {
+        if (!selectedFile && sharedAuditData) {
+          runButton.disabled = false;
+          clearButton.disabled = false;
+          statusEl.classList.remove("error");
+          statusEl.textContent = `Ready: ${sharedAuditData.filename}`;
+        }
+      }
+
       fileInput.addEventListener("change", () => {
         selectedFile = fileInput.files[0] || null;
         runButton.disabled = !selectedFile;
@@ -162,11 +202,12 @@
       });
 
       runButton.addEventListener("click", async () => {
-        if (!selectedFile) return;
+        const cachedRows = !selectedFile && sharedAuditData ? sharedAuditData.rows : null;
+        if (!selectedFile && !cachedRows) return;
         runButton.disabled = true;
         setStatus("Reading spreadsheet locally...");
         try {
-          await onRun(selectedFile, setStatus);
+          await onRun(selectedFile, setStatus, cachedRows);
           resultsPanel.hidden = false;
           const firstHeading = resultsPanel.querySelector("h2");
           if (firstHeading) {
@@ -177,12 +218,13 @@
           console.error(error);
           setStatus(error.message || "Unable to process this spreadsheet.", true);
         } finally {
-          runButton.disabled = !selectedFile;
+          runButton.disabled = !selectedFile && !sharedAuditData;
         }
       });
 
       clearButton.addEventListener("click", () => {
         selectedFile = null;
+        sharedAuditData = null;
         fileInput.value = "";
         runButton.disabled = true;
         clearButton.disabled = true;
@@ -190,6 +232,8 @@
         tables.forEach((t) => { t.textContent = ""; });
         setStatus("Cleared. No spreadsheet data is retained in this page.");
       });
+
+      return { primeFromShared };
     }
 
     async function loadInpatientOnlyCodes() {
@@ -227,6 +271,7 @@
         const insuranceInfo = cell(row, indexes.insuranceInfo);
         const panelInfo = cell(row, indexes.panelCodes);
         const patientClass = cell(row, indexes.patientClass).toUpperCase();
+        const location = cell(row, indexes.department) || cell(row, indexes.room);
         const orderCodes = extractCodes(insuranceInfo);
         const panelCodesList = extractCodes(panelInfo).codes;
         const panelCodes = new Set(panelCodesList);
@@ -238,6 +283,7 @@
             date: dateValue.display,
             sortDate: dateValue.sort,
             caseNumber,
+            location,
             orderCodes: orderCodes.codes,
             caseCodes: panelCodesList,
             missingCodes,
@@ -254,6 +300,7 @@
             date: dateValue.display,
             sortDate: dateValue.sort,
             caseNumber,
+            location,
             codes: inpatientMatches,
             explanation: codeSentence(inpatientMatches, "listed by CMS Addendum E as inpatient-only but appears on an outpatient case")
           });
@@ -288,6 +335,7 @@
         const caseNumber = cell(row, indexes.caseNumber);
         const specialNeeds = cell(row, indexes.specialNeeds);
         const equipment = cell(row, indexes.equipment);
+        const location = cell(row, indexes.department) || cell(row, indexes.room);
         const foundTerms = findEquipmentTermsInText(specialNeeds);
 
         if (!foundTerms.length) return;
@@ -297,6 +345,7 @@
 
         includedRows.push({
           caseNumber,
+          location,
           specialNeeds,
           equipment,
           keyword: missingTerm.keyword,
@@ -324,6 +373,7 @@
         result.missingRows.forEach((row) => {
           const tr = document.createElement("tr");
           tr.append(td(row.date));
+          tr.append(td(row.location || ""));
           const missingCaseCell = td(row.caseNumber);
           missingCaseCell.style.fontWeight = "700";
           makeCopyable(missingCaseCell, row.caseNumber);
@@ -335,14 +385,14 @@
           missingTable.append(tr);
         });
       } else {
-        missingTable.append(emptyRow(6, "No missing CPT discrepancies found."));
+        missingTable.append(emptyRow(7, "No missing CPT discrepancies found."));
       }
 
       result.errorMessages.forEach((message) => {
         const tr = document.createElement("tr");
         tr.className = "error-row";
         const errorCell = td(`Error check: ${message}`);
-        errorCell.colSpan = 6;
+        errorCell.colSpan = 7;
         tr.append(errorCell);
         missingTable.append(tr);
       });
@@ -351,6 +401,7 @@
         result.inpatientRows.forEach((row) => {
           const tr = document.createElement("tr");
           tr.append(td(row.date));
+          tr.append(td(row.location || ""));
           const inpatientCaseCell = td(row.caseNumber);
           inpatientCaseCell.style.fontWeight = "700";
           makeCopyable(inpatientCaseCell, row.caseNumber);
@@ -359,7 +410,7 @@
           inpatientTable.append(tr);
         });
       } else {
-        inpatientTable.append(emptyRow(3, "No CMS inpatient-only CPT codes found on outpatient cases."));
+        inpatientTable.append(emptyRow(4, "No CMS inpatient-only CPT codes found on outpatient cases."));
       }
     }
 
@@ -391,6 +442,7 @@
           toggleAffordance.append(icon, toggleLabel);
           caseCell.append(equipCaseSpan, toggleAffordance);
           tr.append(caseCell);
+          tr.append(td(row.location || ""));
           tr.append(td(row.specialNeeds));
           const explCell = td(row.explanation);
           explCell.style.cursor = "pointer";
@@ -406,7 +458,7 @@
           detailTr.hidden = true;
 
           const detailCell = document.createElement("td");
-          detailCell.colSpan = 3;
+          detailCell.colSpan = 4;
 
           const detailDiv = document.createElement("div");
           detailDiv.className = "equip-detail";
@@ -481,7 +533,7 @@
           equipmentMissingTable.append(tr, detailTr);
         });
       } else {
-        equipmentMissingTable.append(emptyRow(3, "No matching equipment request discrepancies found."));
+        equipmentMissingTable.append(emptyRow(4, "No matching equipment request discrepancies found."));
       }
     }
 
@@ -746,7 +798,7 @@
         const indexes = Object.fromEntries(
           columns.map((column) => [column.key, findHeader(headers, column.accepted)])
         );
-        const missingHeaders = columns.filter((column) => indexes[column.key] === -1);
+        const missingHeaders = columns.filter((column) => !column.optional && indexes[column.key] === -1);
 
         if (!missingHeaders.length) {
           return { indexes, headerRowIndex: rowIndex };
@@ -1302,35 +1354,35 @@
     ];
 
     const roomRulesColumns = [
-      { key: "caseNumber", label: "Case #",        accepted: ["case #", "case number", "case id"] },
-      { key: "date",       label: "Date",           accepted: ["date", "surgery date", "procedure date"] },
-      { key: "room",       label: "Room",           accepted: ["room", "or room", "location"] },
-      { key: "procedures", label: "Case Procedures",accepted: ["case procedures", "procedure", "procedure name", "procedures"] },
-      { key: "equipment",  label: "Equipment",      accepted: ["equipment", "equipment items"] },
-      { key: "patientAge", label: "Patient Age",    accepted: ["patient age", "age"] },
-      { key: "service",    label: "Service",         accepted: ["service"] },
-      { key: "surgeon",    label: "Lead Surgeon",    accepted: ["lead surgeon", "surgeon"] },
-      { key: "projStart",  label: "Proj Start Time", accepted: ["proj start time"] },
-      { key: "projEnd",    label: "Proj End Time",   accepted: ["proj end time"] },
-      { key: "procStart",  label: "Proc Start",      accepted: ["proc start"] },
-      { key: "procEnd",    label: "Proc End",         accepted: ["proc end"] }
+      { key: "caseNumber", label: "Case #",         accepted: ["case #", "case id", "case number"] },
+      { key: "date",       label: "Date",            accepted: ["date", "case/appt date", "surgery date", "procedure date"] },
+      { key: "room",       label: "Room",            accepted: ["room", "room (as scheduled)", "or room", "location"] },
+      { key: "procedures", label: "Case Procedures", accepted: ["case procedures", "case/appt procedures (as scheduled)", "procedure name", "procedures"] },
+      { key: "equipment",  label: "Equipment",       accepted: ["equipment", "sh ip surgical equipment", "equipment items"] },
+      { key: "patientAge", label: "Patient Age",     accepted: ["patient age", "patient age in years"] },
+      { key: "service",    label: "Service",          accepted: ["service", "surgical service (as scheduled)"] },
+      { key: "surgeon",    label: "Lead Surgeon",     accepted: ["lead surgeon", "lead surgeon (as scheduled)"] },
+      { key: "projStart",  label: "Proj Start Time",  accepted: ["proj start time", "case/appt projected start time (as scheduled)"] },
+      { key: "projEnd",    label: "Proj End Time",    accepted: ["proj end time", "projected end time (as scheduled)"] },
+      { key: "procStart",  label: "Proc Start",       accepted: ["proc start", "procedures start time (as scheduled)"] },
+      { key: "procEnd",    label: "Proc End",          accepted: ["proc end", "procedure end time (as scheduled)"] }
     ];
 
     const roomRulesRequiredColumns = [
-      { label: "Date",                accepted: ["date"] },
-      { label: "Proc Start",          accepted: ["proc start"] },
-      { label: "Proc End",            accepted: ["proc end"] },
-      { label: "Case #",              accepted: ["case #", "case number"] },
-      { label: "Lead Surgeon",        accepted: ["lead surgeon"] },
-      { label: "Service",             accepted: ["service"] },
-      { label: "Case Procedures",     accepted: ["case procedures"] },
-      { label: "Patient Class",       accepted: ["patient class", "base patient class"] },
-      { label: "Room",                accepted: ["room"] },
-      { label: "Status",              accepted: ["status"] },
-      { label: "Equipment",           accepted: ["equipment"] },
-      { label: "Patient Age",         accepted: ["patient age"] },
-      { label: "Proj Start Time",     accepted: ["proj start time"] },
-      { label: "Proj End Time",       accepted: ["proj end time"] },
+      { label: "Date",                accepted: ["date", "case/appt date", "surgery date"] },
+      { label: "Proc Start",          accepted: ["proc start", "procedures start time (as scheduled)"] },
+      { label: "Proc End",            accepted: ["proc end", "procedure end time (as scheduled)"] },
+      { label: "Case #",              accepted: ["case #", "case id", "case number"] },
+      { label: "Lead Surgeon",        accepted: ["lead surgeon", "lead surgeon (as scheduled)"] },
+      { label: "Service",             accepted: ["service", "surgical service (as scheduled)"] },
+      { label: "Case Procedures",     accepted: ["case procedures", "case/appt procedures (as scheduled)"] },
+      { label: "Patient Class",       accepted: ["patient class", "case/log base patient class", "base patient class"] },
+      { label: "Room",                accepted: ["room", "room (as scheduled)"] },
+      { label: "Status",              accepted: ["status", "scheduling status (as scheduled)", "pref cards status"] },
+      { label: "Equipment",           accepted: ["equipment", "sh ip surgical equipment"] },
+      { label: "Patient Age",         accepted: ["patient age", "patient age in years"] },
+      { label: "Proj Start Time",     accepted: ["proj start time", "case/appt projected start time (as scheduled)"] },
+      { label: "Proj End Time",       accepted: ["proj end time", "projected end time (as scheduled)"] },
       { label: "Case Classification", accepted: ["case classification"] }
     ];
 
@@ -1370,15 +1422,16 @@
     document.getElementById("ruleInfoBackBtn").addEventListener("click", () => showView("ruleManagement"));
     document.getElementById("howThisWorksBtn").addEventListener("click", () => showView("ruleInfo"));
 
-    wireAuditTool({
+    let _roomRulesTool = wireAuditTool({
       fileInput: document.getElementById("roomRulesFileInput"),
       runButton: document.getElementById("runRoomRulesAudit"),
       clearButton: document.getElementById("clearRoomRulesAudit"),
       statusEl: document.getElementById("roomRulesStatus"),
       resultsPanel: roomRulesResultsPanel,
       tables: [roomRulesViolationsTable],
-      onRun: async (file, setStatus) => {
-        const rows = await readXlsxRows(file, roomRulesColumns);
+      onRun: async (file, setStatus, cachedRows) => {
+        const rows = cachedRows ?? await readXlsxRows(file, roomRulesColumns);
+        if (!cachedRows && file) sharedAuditData = { rows, filename: file.name };
         const result = auditRoomRules(rows);
         renderRoomRulesResults(result);
         setStatus(`Audit complete. Reviewed ${result.totalRows} case${result.totalRows === 1 ? "" : "s"}.`);
