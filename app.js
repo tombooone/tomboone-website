@@ -501,10 +501,11 @@
           inpatientCaseCell.style.fontWeight = "700";
           makeCopyable(inpatientCaseCell, row.caseNumber);
           tr.append(inpatientCaseCell);
+          tr.append(explanationTd(row.explanation, row.codes));
           inpatientTable.append(tr);
         });
       } else {
-        inpatientTable.append(emptyRow(3, "No CMS inpatient-only CPT codes found on outpatient cases."));
+        inpatientTable.append(emptyRow(4, "No CMS inpatient-only CPT codes found on outpatient cases."));
       }
     }
 
