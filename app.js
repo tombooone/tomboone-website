@@ -688,6 +688,7 @@
           const wrap = document.createElement("div");
           wrap.className = "table-wrap";
           const table = document.createElement("table");
+          table.className = "cpt-missing-table";
           table.append(makeTableHead("Date", "Location", "Case #", "CPT Codes on Order", "CPT Codes on Case", "Missing Codes"));
           const tbody = document.createElement("tbody");
           if (t2Rows.length) {
