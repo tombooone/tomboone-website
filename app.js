@@ -72,7 +72,8 @@
     };
 
     const KNOWN_PROBLEM_CPTS = [
-      { code: "J7296", description: "Levonorgestrel-releasing intrauterine contraceptive system (Kyleena), 19.5 mg", dateAdded: "2026-06-08", ticket: "Pending" }
+      { code: "J7296", description: "Levonorgestrel-releasing intrauterine contraceptive system (Kyleena), 19.5 mg", dateAdded: "2026-06-08", ticket: "Pending" },
+      { code: "J7298", description: "Levonorgestrel-releasing intrauterine contraceptive system (Mirena), 52 mg", dateAdded: "2026-06-08", ticket: "Pending" }
     ];
 
     const equipmentRequiredColumns = [
@@ -540,7 +541,7 @@
         }
 
         orderCodes.errors.forEach((badCode) => {
-          errorMessages.push({ code: badCode, date: dateValue.display, location, caseNumber });
+          errorMessages.push({ code: badCode, date: dateValue.display, sortDate: dateValue.sort, location, caseNumber });
         });
       });
 
@@ -673,6 +674,7 @@
           } else {
             tbody.append(emptyRow(4, "No CMS inpatient-only CPT codes found on outpatient cases."));
           }
+          addRowVisitedDelegation(tbody);
           table.append(tbody);
           wrap.append(table);
           body.append(wrap);
@@ -708,75 +710,65 @@
           } else {
             tbody.append(emptyRow(6, "No missing CPT discrepancies found."));
           }
+          addRowVisitedDelegation(tbody);
           table.append(tbody);
           wrap.append(table);
           body.append(wrap);
         }
       ));
 
-      // Table 3: Errors (unrecognized codes + short-code error messages)
+      // Table 3: Invalid CPT Codes (unrecognized codes + short-code error messages, merged and sorted)
       const t3UnrecognizedRows = result.missingRows.filter((r) => r.unrecognizedCodes.length > 0);
-      const t3Count = t3UnrecognizedRows.length + result.errorMessages.length;
+      const t3Items = [];
+      t3UnrecognizedRows.forEach((row) => {
+        t3Items.push({ date: row.date, sortDate: row.sortDate, caseNumber: row.caseNumber, location: row.location, codes: row.unrecognizedCodes });
+      });
+      result.errorMessages.forEach((entry) => {
+        t3Items.push({ date: entry.date, sortDate: entry.sortDate, caseNumber: entry.caseNumber, location: entry.location || "", codes: [entry.code] });
+      });
+      t3Items.sort((a, b) => {
+        if (a.sortDate !== b.sortDate) return a.sortDate - b.sortDate;
+        return String(a.caseNumber).localeCompare(String(b.caseNumber), undefined, { numeric: true });
+      });
       cptAccordion.append(makeAccordionSection(
-        "Table 3: Errors",
-        t3Count,
+        "Table 3: Invalid CPT Codes",
+        t3Items.length,
         (body) => {
           const wrap = document.createElement("div");
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.append(makeTableHead("Date", "Location", "Case #", "Issue"));
           const tbody = document.createElement("tbody");
-          if (t3Count > 0) {
-            t3UnrecognizedRows.forEach((row) => {
+          if (t3Items.length > 0) {
+            t3Items.forEach((item) => {
               const tr = document.createElement("tr");
-              tr.append(td(row.date));
-              tr.append(td(row.location || ""));
-              const caseCell = td(row.caseNumber);
+              tr.append(td(item.date));
+              tr.append(td(item.location || ""));
+              const caseCell = td(item.caseNumber);
               caseCell.style.fontWeight = "700";
-              makeCopyable(caseCell, row.caseNumber);
+              makeCopyable(caseCell, item.caseNumber);
               tr.append(caseCell);
               const issueCell = document.createElement("td");
-              row.unrecognizedCodes.forEach((code, i) => {
+              item.codes.forEach((code, i) => {
                 if (i > 0) issueCell.append(document.createTextNode(" "));
                 const wrap2 = document.createElement("span");
                 wrap2.style.cssText = "display:inline-flex;align-items:center;gap:4px;";
                 const mark = document.createElement("mark");
-                mark.style.cssText = "background:#fee2e2;color:#991b1b;font-weight:700;border-radius:2px;padding:0 2px;";
+                mark.style.cssText = "background:#fee2e2;color:#991b1b;font-weight:700;border-radius:2px;padding:0 2px;cursor:pointer;";
                 mark.textContent = code;
                 const label = document.createElement("span");
                 label.style.cssText = "font-size:0.7rem;color:#991b1b;";
                 label.textContent = "Invalid CPT — check for typo or contact ordering provider";
-                wrap2.append(makeCptLink(code, mark), label);
+                wrap2.append(mark, label);
                 issueCell.append(wrap2);
               });
-              tr.append(issueCell);
-              tbody.append(tr);
-            });
-            result.errorMessages.forEach((entry) => {
-              const tr = document.createElement("tr");
-              tr.append(td(entry.date));
-              tr.append(td(entry.location || ""));
-              const caseCell = td(entry.caseNumber);
-              caseCell.style.fontWeight = "700";
-              makeCopyable(caseCell, entry.caseNumber);
-              tr.append(caseCell);
-              const issueCell = document.createElement("td");
-              const wrapE = document.createElement("span");
-              wrapE.style.cssText = "display:inline-flex;align-items:center;gap:4px;";
-              const markE = document.createElement("mark");
-              markE.style.cssText = "background:#fee2e2;color:#991b1b;font-weight:700;border-radius:2px;padding:0 2px;";
-              markE.textContent = entry.code;
-              const labelE = document.createElement("span");
-              labelE.style.cssText = "font-size:0.7rem;color:#991b1b;";
-              labelE.textContent = "Invalid CPT — check for typo or contact ordering provider";
-              wrapE.append(makeCptLink(entry.code, markE), labelE);
-              issueCell.append(wrapE);
               tr.append(issueCell);
               tbody.append(tr);
             });
           } else {
             tbody.append(emptyRow(4, "No errors found."));
           }
+          addRowVisitedDelegation(tbody);
           table.append(tbody);
           wrap.append(table);
           body.append(wrap);
@@ -1137,16 +1129,25 @@
         const wrap = document.createElement("span");
         wrap.style.cssText = "display:inline-flex;align-items:center;gap:4px;white-space:nowrap;";
         const mark = document.createElement("mark");
-        mark.style.cssText = "background:#fef3c7;font-weight:700;border-radius:2px;padding:0 2px;color:#92400e;";
+        mark.style.cssText = "background:#fef3c7;font-weight:700;border-radius:2px;padding:0 2px;color:#92400e;cursor:pointer;";
         mark.textContent = code;
+        mark.addEventListener("click", (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(code).then(() => showToast("Copied: " + code));
+        });
         const subject = encodeURIComponent("CPT Not in Epic");
         const mailBody = encodeURIComponent(`CPT CODE: ${code}`);
         const btn = document.createElement("a");
         btn.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${mailBody}`;
-        btn.target = "_blank";
         btn.textContent = "Click here to report if CPT is not in Epic";
         btn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;text-decoration:none;display:inline-block;";
-        wrap.append(makeCptLink(code, mark), btn);
+        const lookupBtn = document.createElement("a");
+        lookupBtn.href = `https://www.aapc.com/codes/cpt-codes/${encodeURIComponent(code)}`;
+        lookupBtn.target = "_blank";
+        lookupBtn.rel = "noopener noreferrer";
+        lookupBtn.textContent = "CPT Lookup";
+        lookupBtn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;text-decoration:none;display:inline-block;";
+        wrap.append(mark, btn, lookupBtn);
         el.append(wrap);
       });
       return el;
@@ -1172,7 +1173,7 @@
         container.append(document.createTextNode(String(text).slice(lastIndex, offset)));
         const strong = document.createElement("strong");
         strong.textContent = code;
-        container.append(makeCptLink(code, strong));
+        container.append(strong);
         lastIndex = offset + match.length;
         return match;
       });
@@ -1190,6 +1191,16 @@
       emptyCell.colSpan = colSpan;
       row.append(emptyCell);
       return row;
+    }
+
+    function addRowVisitedDelegation(tbody) {
+      tbody.addEventListener("click", (e) => {
+        const t = e.target;
+        if (t.closest(".copy-case") || t.closest("mark") || t.closest("button") || t.closest("a")) {
+          const tr = t.closest("tr");
+          if (tr) tr.classList.add("row-visited");
+        }
+      });
     }
 
     function findHeaderInfoForColumns(rows, columns) {
