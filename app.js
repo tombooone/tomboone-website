@@ -71,6 +71,10 @@
       "C-arm": { requiresPrefix: "c" }
     };
 
+    const KNOWN_PROBLEM_CPTS = [
+      // { code: "XXXXX", description: "...", dateAdded: "YYYY-MM-DD", ticket: "TICKET-###" }
+    ];
+
     const equipmentRequiredColumns = [
       {
         key: "caseNumber",
@@ -301,11 +305,13 @@
       document.getElementById("ruleManagementView").classList.toggle("active", viewName === "ruleManagement");
       document.getElementById("equipmentTermsView").classList.toggle("active", viewName === "equipmentTerms");
       document.getElementById("ruleInfoView").classList.toggle("active", viewName === "ruleInfo");
+      document.getElementById("knownProblemCptsView").classList.toggle("active", viewName === "knownProblemCpts");
       if (viewName === "audit" && _cptTool) _cptTool.showFromShared();
       if (viewName === "equipment" && _equipTool) _equipTool.showFromShared();
       if (viewName === "roomRules" && _roomRulesTool) _roomRulesTool.showFromShared();
       if (viewName === "ruleManagement") buildRuleManagementView();
       if (viewName === "equipmentTerms") buildEquipmentTermsView();
+      if (viewName === "knownProblemCpts") buildKnownProblemCptsView();
     }
 
     function wireAuditTool({ fileInput, runButton, clearButton, statusEl, resultsPanel, tables, toolKey }) {
@@ -486,6 +492,7 @@
       const inpatientRows = [];
       const errorMessages = [];
       const dataRows = populatedRows.slice(headerRowIndex + 1);
+      const knownProblemSet = new Set(KNOWN_PROBLEM_CPTS.map((e) => e.code));
 
       dataRows.forEach((row, offset) => {
         const spreadsheetRowNumber = offset + headerRowIndex + 2;
@@ -498,8 +505,8 @@
         const orderCodes = extractCodes(insuranceInfo);
         const panelCodesList = extractCodes(panelInfo).codes;
         const panelCodes = new Set(panelCodesList);
-        const missingCodes = orderCodes.codes.filter((code) => !panelCodes.has(code));
-        const inpatientMatches = orderCodes.codes.filter((code) => inpatientOnlyCodes.has(code));
+        const missingCodes = orderCodes.codes.filter((code) => !panelCodes.has(code) && !knownProblemSet.has(code));
+        const inpatientMatches = orderCodes.codes.filter((code) => inpatientOnlyCodes.has(code) && !knownProblemSet.has(code));
 
         if (missingCodes.length) {
           missingRows.push({
@@ -975,11 +982,24 @@
       const el = document.createElement("td");
       el.className = "code-list";
       codes.forEach((code, i) => {
-        if (i > 0) el.append(document.createTextNode(", "));
+        if (i > 0) el.append(document.createTextNode(" "));
+        const wrap = document.createElement("span");
+        wrap.style.cssText = "display:inline-flex;align-items:center;gap:4px;white-space:nowrap;";
         const mark = document.createElement("mark");
         mark.style.cssText = "background:#fef3c7;font-weight:700;border-radius:2px;padding:0 2px;color:#92400e;";
         mark.textContent = code;
-        el.append(mark);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = "Not in Epic";
+        btn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;";
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const subject = encodeURIComponent("CPT Not in Epic");
+          const body = encodeURIComponent(`CPT CODE: ${code}`);
+          window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
+        });
+        wrap.append(mark, btn);
+        el.append(wrap);
       });
       return el;
     }
@@ -1681,6 +1701,8 @@
       const body = encodeURIComponent("COMMENT: \n\nThis is a request for a new room assignment rule.");
       window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
     });
+    document.getElementById("viewKnownProblemCptsBtn").addEventListener("click", () => showView("knownProblemCpts"));
+    document.getElementById("knownProblemCptsBack").addEventListener("click", () => showView("audit"));
     document.getElementById("viewEquipmentTermsBtn").addEventListener("click", () => showView("equipmentTerms"));
     document.getElementById("equipmentTermsBack").addEventListener("click", () => showView("equipment"));
     document.getElementById("suggestEquipmentBtn").addEventListener("click", () => {
@@ -1976,6 +1998,50 @@
         list.append(pill);
       });
       content.append(list);
+    }
+
+    function buildKnownProblemCptsView() {
+      const content = document.getElementById("knownProblemCptsContent");
+      if (!content) return;
+      content.textContent = "";
+      const wrap = document.createElement("div");
+      wrap.className = "table-section";
+      const tableWrap = document.createElement("div");
+      tableWrap.className = "table-wrap";
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      ["Code", "Description", "Date Added", "Ticket"].forEach((label) => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        headerRow.append(th);
+      });
+      thead.append(headerRow);
+      table.append(thead);
+      const tbody = document.createElement("tbody");
+      if (!KNOWN_PROBLEM_CPTS.length) {
+        const tr = document.createElement("tr");
+        tr.className = "empty-row";
+        const emptyCell = document.createElement("td");
+        emptyCell.colSpan = 4;
+        emptyCell.textContent = "No known problem CPTs on file.";
+        tr.append(emptyCell);
+        tbody.append(tr);
+      } else {
+        KNOWN_PROBLEM_CPTS.forEach((entry) => {
+          const tr = document.createElement("tr");
+          [entry.code, entry.description, entry.dateAdded, entry.ticket].forEach((val) => {
+            const cell = document.createElement("td");
+            cell.textContent = val || "";
+            tr.append(cell);
+          });
+          tbody.append(tr);
+        });
+      }
+      table.append(tbody);
+      tableWrap.append(table);
+      wrap.append(tableWrap);
+      content.append(wrap);
     }
 
     function validateRoomRulesColumns(populatedRows) {

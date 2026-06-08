@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.3.91">
+  <link rel="stylesheet" href="styles.css?v=1.3.92">
   <script>
   if (location.hostname === 'tomboonern.com') {
     var s = document.createElement('script');
@@ -109,6 +109,9 @@
               <li>Select the exported file and select Run audit.</li>
             </ol>
             <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">If you do not have access to this report, please email <a href="mailto:Thomas.Boone@SutterHealth.org" style="color: inherit;">Thomas.Boone@SutterHealth.org</a>.</p>
+            <div style="margin-top: 12px;">
+              <button class="ghost-button" type="button" id="viewKnownProblemCptsBtn" style="padding: 5px 10px;">View known problem CPTs</button>
+            </div>
           </aside>
 
           <section class="panel">
@@ -438,6 +441,22 @@
         <div id="equipmentTermsContent"></div>
       </section>
 
+      <section id="knownProblemCptsView" class="view" aria-labelledby="knownProblemCptsTitle">
+        <div class="back-row">
+          <button class="ghost-button" type="button" id="knownProblemCptsBack">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Back to audit</span>
+          </button>
+        </div>
+        <div class="page-heading">
+          <h1 id="knownProblemCptsTitle">Known Problem CPTs</h1>
+          <p class="lede">These CPT codes have been reported as not yet built in Epic and are excluded from flagging until added.</p>
+        </div>
+        <div id="knownProblemCptsContent"></div>
+      </section>
+
       <section id="ruleInfoView" class="view" aria-labelledby="ruleInfoTitle">
         <div class="back-row">
           <button class="ghost-button" type="button" id="ruleInfoBackBtn">
@@ -488,7 +507,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.91 · 2026-06-08</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.3.92 · 2026-06-08</p>
     </footer>
   </div>
 
@@ -504,6 +523,6 @@
       </div>
     </div>
   </div>
-  <script src="app.js?v=1.3.91"></script>
+  <script src="app.js?v=1.3.92"></script>
 </body>
 </html>
