@@ -1139,16 +1139,13 @@
         const mark = document.createElement("mark");
         mark.style.cssText = "background:#fef3c7;font-weight:700;border-radius:2px;padding:0 2px;color:#92400e;";
         mark.textContent = code;
-        const btn = document.createElement("button");
-        btn.type = "button";
+        const subject = encodeURIComponent("CPT Not in Epic");
+        const mailBody = encodeURIComponent(`CPT CODE: ${code}`);
+        const btn = document.createElement("a");
+        btn.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${mailBody}`;
+        btn.target = "_blank";
         btn.textContent = "Click here to report if CPT is not in Epic";
-        btn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;";
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const subject = encodeURIComponent("CPT Not in Epic");
-          const body = encodeURIComponent(`CPT CODE: ${code}`);
-          window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
-        });
+        btn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;text-decoration:none;display:inline-block;";
         wrap.append(makeCptLink(code, mark), btn);
         el.append(wrap);
       });
