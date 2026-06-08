@@ -111,8 +111,7 @@
     const equipmentView = document.getElementById("equipmentView");
 
     // DOM refs for CPT audit results (used by renderResults)
-    const missingTable = document.getElementById("missingTable");
-    const inpatientTable = document.getElementById("inpatientTable");
+    const cptAccordion = document.getElementById("cptAccordion");
     const totalRowsEl = document.getElementById("totalRows");
     const missingCountEl = document.getElementById("missingCount");
     const inpatientCountEl = document.getElementById("inpatientCount");
@@ -284,7 +283,7 @@
       clearButton: document.getElementById("clearAudit"),
       statusEl: document.getElementById("status"),
       resultsPanel: document.getElementById("resultsPanel"),
-      tables: [missingTable, inpatientTable],
+      tables: [cptAccordion],
       toolKey: "cpt",
     });
 
@@ -595,56 +594,179 @@
       };
     }
 
+    function makeAccordionSection(title, count, buildBody) {
+      const section = document.createElement("div");
+      section.className = "accordion-section";
+
+      const header = document.createElement("button");
+      header.type = "button";
+      header.className = "accordion-header";
+
+      const caret = document.createElement("span");
+      caret.className = "accordion-caret";
+      caret.textContent = "▶";
+      caret.setAttribute("aria-hidden", "true");
+
+      const titleNode = document.createTextNode(title);
+
+      const badge = document.createElement("span");
+      badge.className = "accordion-count";
+      badge.textContent = String(count);
+
+      header.append(caret, titleNode, badge);
+
+      const body = document.createElement("div");
+      body.className = "accordion-body";
+      body.hidden = true;
+      buildBody(body);
+
+      header.addEventListener("click", () => {
+        body.hidden = !body.hidden;
+        header.classList.toggle("open", !body.hidden);
+      });
+
+      section.append(header, body);
+      return section;
+    }
+
+    function makeTableHead(...labels) {
+      const thead = document.createElement("thead");
+      const tr = document.createElement("tr");
+      labels.forEach((label) => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        tr.append(th);
+      });
+      thead.append(tr);
+      return thead;
+    }
+
     function renderResults(result) {
       totalRowsEl.textContent = String(result.totalRows);
       missingCountEl.textContent = String(result.missingRows.length);
       inpatientCountEl.textContent = String(result.inpatientRows.length);
 
-      missingTable.textContent = "";
-      inpatientTable.textContent = "";
+      cptAccordion.textContent = "";
 
-      if (result.missingRows.length) {
-        result.missingRows.forEach((row) => {
-          const tr = document.createElement("tr");
-          tr.append(td(row.date));
-          tr.append(td(row.location || ""));
-          const missingCaseCell = td(row.caseNumber);
-          missingCaseCell.style.fontWeight = "700";
-          makeCopyable(missingCaseCell, row.caseNumber);
-          tr.append(missingCaseCell);
-          tr.append(codeListTd(row.orderCodes));
-          tr.append(codeListTd(row.caseCodes));
-          tr.append(missingCodesTd(row.missingCodes, row.unrecognizedCodes));
-          missingTable.append(tr);
-        });
-      } else {
-        missingTable.append(emptyRow(6, "No missing CPT discrepancies found."));
-      }
+      // Table 1: Inpatient-Only CPT Codes on Outpatient Cases
+      cptAccordion.append(makeAccordionSection(
+        "Table 1: Inpatient-Only CPT Codes on Outpatient Cases",
+        result.inpatientRows.length,
+        (body) => {
+          const wrap = document.createElement("div");
+          wrap.className = "table-wrap";
+          const table = document.createElement("table");
+          table.append(makeTableHead("Date", "Location", "Case #", "Explanation"));
+          const tbody = document.createElement("tbody");
+          if (result.inpatientRows.length) {
+            result.inpatientRows.forEach((row) => {
+              const tr = document.createElement("tr");
+              tr.append(td(row.date));
+              tr.append(td(row.location || ""));
+              const caseCell = td(row.caseNumber);
+              caseCell.style.fontWeight = "700";
+              makeCopyable(caseCell, row.caseNumber);
+              tr.append(caseCell);
+              tr.append(explanationTd(row.explanation, row.codes));
+              tbody.append(tr);
+            });
+          } else {
+            tbody.append(emptyRow(4, "No CMS inpatient-only CPT codes found on outpatient cases."));
+          }
+          table.append(tbody);
+          wrap.append(table);
+          body.append(wrap);
+        }
+      ));
 
-      result.errorMessages.forEach((message) => {
-        const tr = document.createElement("tr");
-        tr.className = "error-row";
-        const errorCell = td(`Error check: ${message}`);
-        errorCell.colSpan = 6;
-        tr.append(errorCell);
-        missingTable.append(tr);
-      });
+      // Table 2: CPT Codes Missing from Procedure Panels (valid codes only)
+      const t2Rows = result.missingRows.filter((r) => r.missingCodes.length > 0);
+      cptAccordion.append(makeAccordionSection(
+        "Table 2: CPT Codes Missing from Procedure Panels",
+        t2Rows.length,
+        (body) => {
+          const wrap = document.createElement("div");
+          wrap.className = "table-wrap";
+          const table = document.createElement("table");
+          table.append(makeTableHead("Date", "Location", "Case #", "CPT Codes on Order", "CPT Codes on Case", "Missing Codes"));
+          const tbody = document.createElement("tbody");
+          if (t2Rows.length) {
+            t2Rows.forEach((row) => {
+              const tr = document.createElement("tr");
+              tr.append(td(row.date));
+              tr.append(td(row.location || ""));
+              const caseCell = td(row.caseNumber);
+              caseCell.style.fontWeight = "700";
+              makeCopyable(caseCell, row.caseNumber);
+              tr.append(caseCell);
+              tr.append(codeListTd(row.orderCodes));
+              tr.append(codeListTd(row.caseCodes));
+              tr.append(missingCodesTd(row.missingCodes));
+              tbody.append(tr);
+            });
+          } else {
+            tbody.append(emptyRow(6, "No missing CPT discrepancies found."));
+          }
+          table.append(tbody);
+          wrap.append(table);
+          body.append(wrap);
+        }
+      ));
 
-      if (result.inpatientRows.length) {
-        result.inpatientRows.forEach((row) => {
-          const tr = document.createElement("tr");
-          tr.append(td(row.date));
-          tr.append(td(row.location || ""));
-          const inpatientCaseCell = td(row.caseNumber);
-          inpatientCaseCell.style.fontWeight = "700";
-          makeCopyable(inpatientCaseCell, row.caseNumber);
-          tr.append(inpatientCaseCell);
-          tr.append(explanationTd(row.explanation, row.codes));
-          inpatientTable.append(tr);
-        });
-      } else {
-        inpatientTable.append(emptyRow(4, "No CMS inpatient-only CPT codes found on outpatient cases."));
-      }
+      // Table 3: Errors (unrecognized codes + short-code error messages)
+      const t3UnrecognizedRows = result.missingRows.filter((r) => r.unrecognizedCodes.length > 0);
+      const t3Count = t3UnrecognizedRows.length + result.errorMessages.length;
+      cptAccordion.append(makeAccordionSection(
+        "Table 3: Errors",
+        t3Count,
+        (body) => {
+          const wrap = document.createElement("div");
+          wrap.className = "table-wrap";
+          const table = document.createElement("table");
+          table.append(makeTableHead("Date", "Location", "Case #", "Issue"));
+          const tbody = document.createElement("tbody");
+          if (t3Count > 0) {
+            t3UnrecognizedRows.forEach((row) => {
+              const tr = document.createElement("tr");
+              tr.append(td(row.date));
+              tr.append(td(row.location || ""));
+              const caseCell = td(row.caseNumber);
+              caseCell.style.fontWeight = "700";
+              makeCopyable(caseCell, row.caseNumber);
+              tr.append(caseCell);
+              const issueCell = document.createElement("td");
+              row.unrecognizedCodes.forEach((code, i) => {
+                if (i > 0) issueCell.append(document.createTextNode(" "));
+                const wrap2 = document.createElement("span");
+                wrap2.style.cssText = "display:inline-flex;align-items:center;gap:4px;";
+                const mark = document.createElement("mark");
+                mark.style.cssText = "background:#fee2e2;color:#991b1b;font-weight:700;border-radius:2px;padding:0 2px;";
+                mark.textContent = code;
+                const label = document.createElement("span");
+                label.style.cssText = "font-size:0.7rem;color:#991b1b;";
+                label.textContent = "Invalid CPT — check for typo or contact ordering provider";
+                wrap2.append(mark, label);
+                issueCell.append(wrap2);
+              });
+              tr.append(issueCell);
+              tbody.append(tr);
+            });
+            result.errorMessages.forEach((message) => {
+              const tr = document.createElement("tr");
+              tr.className = "error-row";
+              const cell = td(`Error check: ${message}`);
+              cell.colSpan = 4;
+              tr.append(cell);
+              tbody.append(tr);
+            });
+          } else {
+            tbody.append(emptyRow(4, "No errors found."));
+          }
+          table.append(tbody);
+          wrap.append(table);
+          body.append(wrap);
+        }
+      ));
     }
 
     function renderEquipmentResults(result) {
@@ -982,13 +1104,11 @@
       return el;
     }
 
-    function missingCodesTd(codes, unrecognizedCodes) {
+    function missingCodesTd(codes) {
       const el = document.createElement("td");
       el.className = "code-list";
-      let first = true;
-      (codes || []).forEach((code) => {
-        if (!first) el.append(document.createTextNode(" "));
-        first = false;
+      (codes || []).forEach((code, i) => {
+        if (i > 0) el.append(document.createTextNode(" "));
         const wrap = document.createElement("span");
         wrap.style.cssText = "display:inline-flex;align-items:center;gap:4px;white-space:nowrap;";
         const mark = document.createElement("mark");
@@ -1005,20 +1125,6 @@
           window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
         });
         wrap.append(mark, btn);
-        el.append(wrap);
-      });
-      (unrecognizedCodes || []).forEach((code) => {
-        if (!first) el.append(document.createTextNode(" "));
-        first = false;
-        const wrap = document.createElement("span");
-        wrap.style.cssText = "display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap;";
-        const mark = document.createElement("mark");
-        mark.style.cssText = "background:#fee2e2;color:#991b1b;font-weight:700;border-radius:2px;padding:0 2px;";
-        mark.textContent = code;
-        const label = document.createElement("span");
-        label.style.cssText = "font-size:0.7rem;color:#991b1b;";
-        label.textContent = "Invalid CPT — check for typo or contact ordering provider";
-        wrap.append(mark, label);
         el.append(wrap);
       });
       return el;

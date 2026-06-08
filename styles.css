@@ -423,6 +423,69 @@
       margin-top: 24px;
     }
 
+    .accordion-section {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .accordion-section + .accordion-section {
+      margin-top: 10px;
+    }
+
+    .accordion-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--panel);
+      border: none;
+      border-bottom: 1px solid transparent;
+      cursor: pointer;
+      text-align: left;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .accordion-header:hover {
+      background: #eef0f2;
+    }
+
+    .accordion-header.open {
+      border-bottom-color: var(--line);
+    }
+
+    .accordion-caret {
+      font-size: 0.7rem;
+      color: var(--muted);
+      transition: transform 0.15s;
+      flex-shrink: 0;
+    }
+
+    .accordion-header.open .accordion-caret {
+      transform: rotate(90deg);
+    }
+
+    .accordion-count {
+      margin-left: auto;
+      background: var(--muted);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      flex-shrink: 0;
+    }
+
+    .accordion-body .table-wrap {
+      border: none;
+      border-radius: 0;
+    }
+
     .table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
