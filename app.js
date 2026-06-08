@@ -540,7 +540,7 @@
         }
 
         orderCodes.errors.forEach((badCode) => {
-          errorMessages.push(`Row ${spreadsheetRowNumber}, case ${caseNumber}: CPT-like value "${badCode}" has fewer than 5 characters and was not audited.`);
+          errorMessages.push({ code: badCode, date: dateValue.display, location, caseNumber });
         });
       });
 
@@ -752,12 +752,26 @@
               tr.append(issueCell);
               tbody.append(tr);
             });
-            result.errorMessages.forEach((message) => {
+            result.errorMessages.forEach((entry) => {
               const tr = document.createElement("tr");
-              tr.className = "error-row";
-              const cell = td(`Error check: ${message}`);
-              cell.colSpan = 4;
-              tr.append(cell);
+              tr.append(td(entry.date));
+              tr.append(td(entry.location || ""));
+              const caseCell = td(entry.caseNumber);
+              caseCell.style.fontWeight = "700";
+              makeCopyable(caseCell, entry.caseNumber);
+              tr.append(caseCell);
+              const issueCell = document.createElement("td");
+              const wrapE = document.createElement("span");
+              wrapE.style.cssText = "display:inline-flex;align-items:center;gap:4px;";
+              const markE = document.createElement("mark");
+              markE.style.cssText = "background:#fee2e2;color:#991b1b;font-weight:700;border-radius:2px;padding:0 2px;";
+              markE.textContent = entry.code;
+              const labelE = document.createElement("span");
+              labelE.style.cssText = "font-size:0.7rem;color:#991b1b;";
+              labelE.textContent = "Invalid CPT — check for typo or contact ordering provider";
+              wrapE.append(markE, labelE);
+              issueCell.append(wrapE);
+              tr.append(issueCell);
               tbody.append(tr);
             });
           } else {
