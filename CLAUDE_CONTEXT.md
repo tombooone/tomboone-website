@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-08 (v1.3.99)
+## Last updated: 2026-06-08 (v1.4.00)
 
 ---
 
@@ -29,7 +29,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.99**
+- Current version: **v1.4.00**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - **Cache busting:** `styles.css` and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
@@ -322,7 +322,7 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Equipment audit case cell: bold case number at top (copyable via `makeCopyable`); "▶ Details" affordance below (flex row, arrow rotates 90° when expanded via `.expanded` class on the row); clicking case number copies (stopPropagation prevents row toggle)
 - Violations table: grouped by case number — one row per case, colored by highest severity (min tier); Priority column shows highest-tier badge; Rule column stacks `[T# badge] rule_label` per violation; Explanation column stacks explanation text; groups sorted by date → minTier → caseNumber; violations within each group sorted by tier ascending
 - Violations table Case # column: bold; no click-to-copy. Uses event delegation: ONE `click` listener on `roomRulesViolationsTable` (`<tbody>`). Each `<tr>` has `data-sort-date` and `data-case-num` attributes. Delegated handler uses `e.target.closest("tr[data-sort-date]")`, looks up group in `_violGroupDataMap`, always calls `showGanttSidebar` with fallback case object. `_violGroupDataMap` rebuilt each audit run. Document `pointerdown` excludes `#roomRulesViolationsTable`. Table has `<thead>` with Case #, Date, Surgeon, Room, Procedure(s), Priority, Rule, Explanation columns; the `<h2>` section title above the table was removed.
-- CPT audit results: rendered as 3 collapsible accordion sections (v1.3.96+) (all collapsed by default) in `#cptAccordion` div; accordion built entirely by `renderResults()` via `makeAccordionSection()` helper; each header shows title + count badge + caret that rotates when open. Table 1: Inpatient-Only CPT Codes on Outpatient Cases (4 cols: Date, Location, Case #, Explanation). Table 2: CPT Codes Missing from Procedure Panels — valid codes only (rows where `missingCodes.length > 0`); 6 cols: Date, Location, Case #, CPT Codes on Order, CPT Codes on Case, Missing Codes; amber mark (wrapped in AAPC lookup link) + "Click here to report if CPT is not in Epic" mailto button per code. Table 3: Errors — both unrecognized codes and short-code errors render identically: 4 cols (Date, Location, Case #, Issue) with red mark (wrapped in AAPC lookup link) + "Invalid CPT — check for typo or contact ordering provider" label. `errorMessages` now stores structured objects `{ code, date, location, caseNumber }` instead of strings.
+- CPT audit results: rendered as 3 collapsible accordion sections (v1.3.96+) (all collapsed by default) in `#cptAccordion` div; accordion built entirely by `renderResults()` via `makeAccordionSection()` helper; each header shows title + count badge + caret that rotates when open. Table 1: Inpatient-Only CPT Codes on Outpatient Cases (4 cols: Date, Location, Case #, Explanation). Table 2: CPT Codes Missing from Procedure Panels — valid codes only (rows where `missingCodes.length > 0`); 6 cols: Date, Location, Case #, CPT Codes on Order, CPT Codes on Case, Missing Codes; amber mark (wrapped in AAPC lookup link) + "Click here to report if CPT is not in Epic" `<a>` styled as button with `href="mailto:..."` and `target="_blank"` (no JS click handler — direct mailto anchor for browser/enterprise compatibility). Table 3: Errors — both unrecognized codes and short-code errors render identically: 4 cols (Date, Location, Case #, Issue) with red mark (wrapped in AAPC lookup link) + "Invalid CPT — check for typo or contact ordering provider" label. `errorMessages` now stores structured objects `{ code, date, location, caseNumber }` instead of strings.
 - Equipment audit results table: Location column added after Case # column
 - `.copy-case` CSS: `cursor: pointer` only (no `user-select: none`)
 - All three tools accept the consolidated **CPMC Scheduling Automation** export; instructions updated to reference this name
