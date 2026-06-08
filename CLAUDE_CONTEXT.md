@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-08 (v1.3.92)
+## Last updated: 2026-06-08 (v1.3.94)
 
 ---
 
@@ -29,7 +29,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.92**
+- Current version: **v1.3.94**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - **Cache busting:** `styles.css` and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
@@ -329,5 +329,6 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - `sharedAuditData = { rows, filename }` caches parsed rows; `sharedAuditResults = { cpt, equipment, roomRules, cptError, equipmentError, roomRulesError }` caches computed results; Run on any tool calls `_runAllAudits(file)` which stores results in `sharedAuditResults` (no rendering inside `_runAllAudits`); run button handler then calls `_showCachedResult(toolKey)` for the clicked tool; `showFromShared()` in `showView` calls `_showCachedResult(toolKey)` for navigated-to tools; `_showCachedResult` renders from cache, unhides panel, sets status, enables buttons; Clear nulls both `sharedAuditData` and `sharedAuditResults`; each `wireAuditTool` call includes `toolKey: "cpt" | "equipment" | "roomRules"`
 - Column `accepted` arrays expanded throughout to match consolidated report column names (e.g. "case/appt date", "lead surgeon (as scheduled)", "sh ip surgical equipment", "surgical service (as scheduled)", etc.)
 - `findHeaderInfoForColumns`: columns with `optional: true` are excluded from the missing-column check; optional `room` and `department` columns added to CPT and equipment audits; location = department value if present, else room value
-- Known Problem CPTs: `KNOWN_PROBLEM_CPTS` is a hardcoded array (currently empty) near the top of app.js — entries have `{ code, description, dateAdded, ticket }` fields. Codes in this array are silently excluded from both `missingCodes` (Table 1) and `inpatientMatches` (Table 2) in `auditRows()`. A "View known problem CPTs" ghost button in the CPT audit instructions panel navigates to `knownProblemCptsView`, which renders a 4-column table (Code, Description, Date Added, Ticket) or "No known problem CPTs on file." Table 1 Missing Codes cells now show each code as `<mark>` + "Not in Epic" button; clicking opens a mailto to Thomas.Boone@SutterHealth.org with subject "CPT Not in Epic" and body "CPT CODE: XXXXX".
+- Known Problem CPTs: `KNOWN_PROBLEM_CPTS` is a hardcoded array (currently contains J7296 — Levonorgestrel-releasing IUD (Kyleena), 19.5 mg, added 2026-06-08, ticket Pending) near the top of app.js — entries have `{ code, description, dateAdded, ticket }` fields. Codes in this array are silently excluded from both `missingCodes` (Table 1) and `inpatientMatches` (Table 2) in `auditRows()`. A "View known problem CPTs" ghost button in the CPT audit instructions panel navigates to `knownProblemCptsView`, which renders a 4-column table (Code, Description, Date Added, Ticket) or "No known problem CPTs on file." Table 1 Missing Codes cells now show each code as `<mark>` + "Not in Epic" button; clicking opens a mailto to Thomas.Boone@SutterHealth.org with subject "CPT Not in Epic" and body "CPT CODE: XXXXX".
+- CPT validation: `validCptCodes` is a large hardcoded `const Set` in app.js (manually added) containing all valid CPT codes. In `auditRows()`, after filtering by `knownProblemSet`, missing codes are split into `missingCodes` (present in `validCptCodes`) and `unrecognizedCodes` (not present). Both arrays are stored on `missingRows` entries. Table 1 renders valid missing codes with amber mark + "Not in Epic" mailto button; unrecognized codes get a red mark + inline text "Invalid CPT — check for typo or contact ordering provider" (no mailto button). A row fires if either array is non-empty.
 - CMS IPO codes: `inpatientOnlyCodes` is a hardcoded `const Set` in app.js with all CY 2026 Addendum E codes (source: OPPS_Addendum_E_2026 REV.pdf, ~1050 codes including T-codes, C-codes, G-codes). No external file fetch — `AddendumE2004.txt` has been deleted from the repo. The `loadInpatientOnlyCodes` function and its call site were removed entirely.
