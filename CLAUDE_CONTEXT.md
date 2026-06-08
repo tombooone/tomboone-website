@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-08 (v1.3.95)
+## Last updated: 2026-06-08 (v1.3.97)
 
 ---
 
@@ -29,7 +29,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.3.95**
+- Current version: **v1.3.97**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
 - **Cache busting:** `styles.css` and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
@@ -322,7 +322,7 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Equipment audit case cell: bold case number at top (copyable via `makeCopyable`); "▶ Details" affordance below (flex row, arrow rotates 90° when expanded via `.expanded` class on the row); clicking case number copies (stopPropagation prevents row toggle)
 - Violations table: grouped by case number — one row per case, colored by highest severity (min tier); Priority column shows highest-tier badge; Rule column stacks `[T# badge] rule_label` per violation; Explanation column stacks explanation text; groups sorted by date → minTier → caseNumber; violations within each group sorted by tier ascending
 - Violations table Case # column: bold; no click-to-copy. Uses event delegation: ONE `click` listener on `roomRulesViolationsTable` (`<tbody>`). Each `<tr>` has `data-sort-date` and `data-case-num` attributes. Delegated handler uses `e.target.closest("tr[data-sort-date]")`, looks up group in `_violGroupDataMap`, always calls `showGanttSidebar` with fallback case object. `_violGroupDataMap` rebuilt each audit run. Document `pointerdown` excludes `#roomRulesViolationsTable`. Table has `<thead>` with Case #, Date, Surgeon, Room, Procedure(s), Priority, Rule, Explanation columns; the `<h2>` section title above the table was removed.
-- CPT audit tables (Table 1 missingRows, Table 2 inpatientRows): case number cells bold + click-to-copy via `makeCopyable`; both tables include a Location column (after Date) showing department or room from the report; Table 1 has no Explanation column (6 columns: Date, Location, Case #, CPT Codes on Order, CPT Codes on Case, Missing Codes); Table 2 has Explanation column (4 columns: Date, Location, Case #, Explanation) — codes bolded inline via `explanationTd`
+- CPT audit results: rendered as 3 collapsible accordion sections (v1.3.96+) (all collapsed by default) in `#cptAccordion` div; accordion built entirely by `renderResults()` via `makeAccordionSection()` helper; each header shows title + count badge + caret that rotates when open. Table 1: Inpatient-Only CPT Codes on Outpatient Cases (4 cols: Date, Location, Case #, Explanation). Table 2: CPT Codes Missing from Procedure Panels — valid codes only (rows where `missingCodes.length > 0`); 6 cols: Date, Location, Case #, CPT Codes on Order, CPT Codes on Case, Missing Codes; amber mark + "Click here to report if CPT is not in Epic" mailto button per code. Table 3: Errors — unrecognized codes (red mark + "Invalid CPT" label) + short-code errorMessages; 4 cols: Date, Location, Case #, Issue.
 - Equipment audit results table: Location column added after Case # column
 - `.copy-case` CSS: `cursor: pointer` only (no `user-select: none`)
 - All three tools accept the consolidated **CPMC Scheduling Automation** export; instructions updated to reference this name
@@ -330,5 +330,6 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Column `accepted` arrays expanded throughout to match consolidated report column names (e.g. "case/appt date", "lead surgeon (as scheduled)", "sh ip surgical equipment", "surgical service (as scheduled)", etc.)
 - `findHeaderInfoForColumns`: columns with `optional: true` are excluded from the missing-column check; optional `room` and `department` columns added to CPT and equipment audits; location = department value if present, else room value
 - Known Problem CPTs: `KNOWN_PROBLEM_CPTS` is a hardcoded array (currently contains J7296 — Levonorgestrel-releasing IUD (Kyleena), 19.5 mg, added 2026-06-08, ticket Pending) near the top of app.js — entries have `{ code, description, dateAdded, ticket }` fields. Codes in this array are silently excluded from both `missingCodes` (Table 1) and `inpatientMatches` (Table 2) in `auditRows()`. A "View known problem CPTs" ghost button in the CPT audit instructions panel navigates to `knownProblemCptsView`, which renders a 4-column table (Code, Description, Date Added, Ticket) or "No known problem CPTs on file." Table 1 Missing Codes cells now show each code as `<mark>` + "Not in Epic" button; clicking opens a mailto to Thomas.Boone@SutterHealth.org with subject "CPT Not in Epic" and body "CPT CODE: XXXXX".
-- CPT validation: `validCptCodes` is a large hardcoded `const Set` in app.js (manually added) containing all valid CPT codes. In `auditRows()`, after filtering by `knownProblemSet`, missing codes are split into `missingCodes` (present in `validCptCodes`) and `unrecognizedCodes` (not present). Both arrays are stored on `missingRows` entries. Table 1 renders valid missing codes with amber mark + "Click here to report if CPT is not in Epic" mailto button; unrecognized codes get a red mark + inline text "Invalid CPT — check for typo or contact ordering provider" (no mailto button). A row fires if either array is non-empty.
+- Table 2 column widths: class `cpt-missing-table` on the dynamically-built Table 2 `<table>`; CSS `th:nth-child` rules in styles.css set widths to ~8% Date, ~10% Location, ~8% Case #, ~18% CPT Codes on Order, ~18% CPT Codes on Case, ~38% Missing Codes.
+- CPT validation: `validCptCodes` is a large hardcoded `const Set` in app.js (manually added). In `auditRows()`, after filtering by `knownProblemSet`, `allMissingCodes` is split into `missingCodes` (in `validCptCodes`) and `unrecognizedCodes` (not in `validCptCodes`). A row is pushed to `missingRows` if either is non-empty. `missingCodes` → Table 2 (accordion); `unrecognizedCodes` → Table 3 (accordion).
 - CMS IPO codes: `inpatientOnlyCodes` is a hardcoded `const Set` in app.js with all CY 2026 Addendum E codes (source: OPPS_Addendum_E_2026 REV.pdf, ~1050 codes including T-codes, C-codes, G-codes). No external file fetch — `AddendumE2004.txt` has been deleted from the repo. The `loadInpatientOnlyCodes` function and its call site were removed entirely.
