@@ -746,7 +746,7 @@
                 const label = document.createElement("span");
                 label.style.cssText = "font-size:0.7rem;color:#991b1b;";
                 label.textContent = "Invalid CPT — check for typo or contact ordering provider";
-                wrap2.append(mark, label);
+                wrap2.append(makeCptLink(code, mark), label);
                 issueCell.append(wrap2);
               });
               tr.append(issueCell);
@@ -769,7 +769,7 @@
               const labelE = document.createElement("span");
               labelE.style.cssText = "font-size:0.7rem;color:#991b1b;";
               labelE.textContent = "Invalid CPT — check for typo or contact ordering provider";
-              wrapE.append(markE, labelE);
+              wrapE.append(makeCptLink(entry.code, markE), labelE);
               issueCell.append(wrapE);
               tr.append(issueCell);
               tbody.append(tr);
@@ -1119,6 +1119,16 @@
       return el;
     }
 
+    function makeCptLink(code, child) {
+      const a = document.createElement("a");
+      a.href = `https://www.aapc.com/codes/cpt-codes/${encodeURIComponent(code)}`;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.style.cssText = "text-decoration: underline; cursor: pointer;";
+      a.append(child);
+      return a;
+    }
+
     function missingCodesTd(codes) {
       const el = document.createElement("td");
       el.className = "code-list";
@@ -1139,7 +1149,7 @@
           const body = encodeURIComponent(`CPT CODE: ${code}`);
           window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
         });
-        wrap.append(mark, btn);
+        wrap.append(makeCptLink(code, mark), btn);
         el.append(wrap);
       });
       return el;
@@ -1165,7 +1175,7 @@
         container.append(document.createTextNode(String(text).slice(lastIndex, offset)));
         const strong = document.createElement("strong");
         strong.textContent = code;
-        container.append(strong);
+        container.append(makeCptLink(code, strong));
         lastIndex = offset + match.length;
         return match;
       });
