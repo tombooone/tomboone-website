@@ -996,7 +996,7 @@
         mark.textContent = code;
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.textContent = "Not in Epic";
+        btn.textContent = "Click here to report if CPT is not in Epic";
         btn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;";
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
