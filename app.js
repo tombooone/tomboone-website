@@ -1066,7 +1066,7 @@
           eqValue.className = "equip-detail-value";
           const eqItems = String(row.equipment || "")
             .split(/\n/)
-            .map((s) => s.replace(/^W\s+/, "").trim())
+            .map((s) => s.trim())
             .filter(Boolean);
           eqValue.textContent = eqItems.length ? eqItems.join("\n") : "–";
 
