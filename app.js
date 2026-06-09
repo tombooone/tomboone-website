@@ -77,6 +77,151 @@
       "C-arm": { requiresPrefix: "c" }
     };
 
+    const KEYWORD_ALIASES = {
+      "PTeye": ["parathyroid"]
+    };
+
+    const KEYWORD_DISPLAY_NAMES = {
+      "Neoprobe": "TruNode"
+    };
+
+    const SURGEON_EQUIPMENT_PREFS = {
+      "300002": { ultrasound: "W Unit Ultrasound Aloka" },
+      "20111453": { microscope: "W Microscope Zeiss Eye" },
+      "10028590": { microscope: "W Microscope Zeiss Eye" },
+      "515396": { ultrasound: "W Unit Ultrasound Sonosite", microscope: "W Microscope Leica Neuro/General" },
+      "11000197": { microscope: "W Microscope Leica Neuro/General" },
+      "106348": { microscope: "W Microscope Zeiss Eye" },
+      "20164498": { ultrasound: "W Unit Ultrasound Anesthesia" },
+      "91213": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "20150744": { microscope: "W Microscope Zeiss Eye" },
+      "105955": { microscope: "W Microscope Zeiss Eye" },
+      "41288": { ultrasound: "W Unit Ultrasound Anesthesia", microscope: "W Microscope Mitaka Plastics" },
+      "10064348": { microscope: "W Microscope Zeiss Eye" },
+      "30233068": { microscope: "W Microscope Zeiss Eye" },
+      "30068533": { ultrasound: "W Unit Ultrasound Sonosite", microscope: "W Microscope ENT" },
+      "30068549": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "20090862": { microscope: "W Microscope Leica ENT" },
+      "30048657": { ultrasound: "W ULTRASOUND CONSOLE BK" },
+      "20005554": { ultrasound: "W Unit Ultrasound Aloka" },
+      "20047310": { microscope: "W Microscope Zeiss Eye" },
+      "30193982": { ultrasound: "W Unit Ultrasound Aloka" },
+      "30040090": { microscope: "W Microscope Zeiss Eye" },
+      "20063171": { microscope: "W Microscope Zeiss Eye" },
+      "10078893": { microscope: "W Microscope Leica ENT" },
+      "20140347": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "30059201": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "20005172": { microscope: "W Microscope Leica ENT" },
+      "20045706": { microscope: "Microscope ENT" },
+      "10015253": { ultrasound: "W Unit Ultrasound Sonosite", microscope: "W Microscope Leica ENT" },
+      "105914": { microscope: "W Microscope Leica Eye" },
+      "20002975": { ultrasound: "W Unit Ultrasound Aloka" },
+      "10025": { microscope: "Microscope ENT" },
+      "48428": { ultrasound: "W Unit Ultrasound from L&D" },
+      "566531": { microscope: "W Microscope Leica ENT" },
+      "30068703": { microscope: "W Microscope Leica ENT" },
+      "700227": { ultrasound: "W Unit Ultrasound Aloka" },
+      "20089611": { ultrasound: "W Unit Ultrasound from L&D" },
+      "106089": { ultrasound: "W Unit Ultrasound Aloka" },
+      "30091595": { microscope: "W Microscope ENT" },
+      "10013430": { ultrasound: "W Unit Ultrasound Anesthesia" },
+      "6601": { ultrasound: "W Unit Ultrasound from L&D" },
+      "30277959": { ultrasound: "W Unit Ultrasound Sonosite", microscope: "W Microscope ENT" },
+      "30291330": { ultrasound: "W Unit Ultrasound Aloka" },
+      "20150422": { microscope: "W Microscope Zeiss Eye" },
+      "20005259": { ultrasound: "W Unit Ultrasound Aloka" },
+      "2143": { ultrasound: "W Unit Ultrasound Anesthesia", microscope: "W Microscope ENT" },
+      "105751": { ultrasound: "W ULTRASOUND CONSOLE BK" },
+      "30021704": { microscope: "W Microscope Zeiss Eye" },
+      "20150578": { microscope: "W Microscope Zeiss Eye" },
+      "20028364": { ultrasound: "W Unit Ultrasound Sonosite", microscope: "W Microscope ENT" },
+      "20142245": { microscope: "W Microscope Leica Neuro/General" },
+      "105858": { ultrasound: "W Unit Ultrasound Aloka" },
+      "20005926": { ultrasound: "W Unit Ultrasound Aloka" },
+      "98786": { ultrasound: "W Unit Ultrasound Sonosite", microscope: "W Microscope Leica ENT" },
+      "515122": { microscope: "W Microscope Leica ENT" },
+      "30113240": { microscope: "W Microscope Leica Neuro/General" },
+      "10087662": { microscope: "W Microscope Zeiss Eye" },
+      "30025215": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "20002631": { microscope: "W Microscope Zeiss Eye" },
+      "20016947": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "30276343": { ultrasound: "W Unit Ultrasound Anesthesia", microscope: "W Microscope Leica ENT" },
+      "20002295": { ultrasound: "W Unit Ultrasound Aloka" },
+      "30068825": { microscope: "W Microscope Zeiss Eye" },
+      "10063670": { microscope: "W Microscope Leica ENT" },
+      "20048503": { microscope: "W Microscope Leica Neuro/General" },
+      "30068835": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "30068839": { ultrasound: "W Unit Ultrasound Anesthesia" },
+      "20125830": { microscope: "W Microscope Zeiss Eye" },
+      "107858": { microscope: "W Microscope Zeiss Eye" },
+      "10103762": { microscope: "W Microscope Leica Neuro/General" },
+      "20028386": { microscope: "W Microscope Leica Eye" },
+      "10010963": { microscope: "W Microscope Zeiss Eye" },
+      "30068849": { microscope: "W Microscope Zeiss Eye" },
+      "2136": { microscope: "W Microscope ENT" },
+      "10101593": { microscope: "W Microscope Zeiss Eye" },
+      "45714": { microscope: "W Microscope Leica ENT" },
+      "20120390": { microscope: "W Microscope Leica Neuro/General" },
+      "30067968": { ultrasound: "W Unit Ultrasound Aloka" },
+      "10041213": { microscope: "W Microscope Leica Neuro/General" },
+      "30068870": { microscope: "W Microscope ENT" },
+      "20150064": { ultrasound: "W Unit Ultrasound from L&D" },
+      "20160094": { ultrasound: "W Unit Ultrasound from L&D" },
+      "102825": { microscope: "W Microscope Leica Neuro/General" },
+      "30058757": { ultrasound: "W Unit Ultrasound Aloka" },
+      "20139153": { ultrasound: "W Unit Ultrasound Aloka" },
+      "30068900": { microscope: "W Microscope Leica Neuro/General" },
+      "30070766": { microscope: "W Microscope Zeiss Eye" },
+      "30099401": { ultrasound: "W Unit Ultrasound Sonosite", microscope: "W Microscope ENT" },
+      "30277019": { microscope: "W Microscope Leica ENT" },
+      "30045153": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "30079667": { microscope: "W Microscope Leica Neuro/General" },
+      "2025": { ultrasound: "W Unit Ultrasound Aloka" },
+      "30068943": { microscope: "W Microscope Zeiss Eye" },
+      "20004518": { ultrasound: "W Unit Ultrasound Sonosite", microscope: "W Microscope Leica Neuro/General" },
+      "10040515": { microscope: "W Microscope Leica Eye" },
+      "20135204": { microscope: "W Microscope ENT" },
+      "10028082": { microscope: "W Microscope Zeiss Eye" },
+      "515128": { ultrasound: "W Unit Ultrasound Aloka" },
+      "30039501": { microscope: "W Microscope Leica ENT" },
+      "20147696": { ultrasound: "W Unit Ultrasound Aloka" },
+      "20063777": { microscope: "W Microscope Zeiss Eye" },
+      "30037685": { ultrasound: "W Unit Ultrasound Anesthesia", microscope: "W Microscope ENT" },
+      "20121305": { microscope: "W Microscope Zeiss Eye" },
+      "162092": { microscope: "W Microscope Leica Neuro/General" },
+      "20159245": { microscope: "W Microscope Leica Eye" },
+      "10012049": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "30069070": { microscope: "W Microscope Zeiss Eye" },
+      "10031337": { ultrasound: "W Unit Ultrasound Aloka" },
+      "98136": { ultrasound: "W Unit Ultrasound Anesthesia", microscope: "W Microscope Leica Neuro/General" },
+      "10000883": { ultrasound: "W Unit Ultrasound from L&D" },
+      "20007772": { ultrasound: "W Unit Ultrasound Sonosite" },
+      "10105859": { microscope: "W Microscope Leica Neuro/General" },
+      "30093262": { microscope: "W Microscope Zeiss Eye" },
+      "20072308": { ultrasound: "W ULTRASOUND CONSOLE BK" },
+      "20086795": { microscope: "W Microscope Zeiss Eye" },
+      "105748": { microscope: "W Microscope Zeiss Eye" },
+      "20113222": { microscope: "W Microscope Zeiss Eye" },
+      "876": { ultrasound: "W Unit Ultrasound Aloka", microscope: "W Microscope Hand/Uro" },
+      "20041597": { microscope: "W Microscope Leica Neuro/General" },
+      "30103628": { microscope: "W Microscope Leica ENT" },
+      "20096372": { ultrasound: "W Unit Ultrasound Aloka" },
+      "105621": { microscope: "W Microscope Leica Neuro/General" },
+      "30021640": { microscope: "W Microscope Zeiss Eye" },
+      "20155760": { microscope: "W Microscope ENT" },
+      "96000": { ultrasound: "W ULTRASOUND CONSOLE BK" },
+      "30025687": { ultrasound: "W ULTRASOUND CONSOLE BK" },
+      "20150680": { microscope: "W Microscope Zeiss Eye" },
+      "30069162": { ultrasound: "W Unit Ultrasound Sonosite", microscope: "W Microscope Leica ENT" },
+      "30111501": { microscope: "W Microscope ENT" },
+      "20059009": { microscope: "W Microscope Zeiss Eye" },
+      "20144424": { microscope: "W Microscope Leica Neuro/General" },
+      "30069176": { microscope: "W Microscope ENT" },
+      "10078621": { microscope: "W Microscope Zeiss Eye" },
+      "20158330": { ultrasound: "W Unit Ultrasound Anesthesia", microscope: "W Microscope Leica Neuro/General" },
+      "6552": { ultrasound: "W Unit Ultrasound Aloka" }
+    };
+
     const KNOWN_PROBLEM_CPTS = [
       { code: "J7296", description: "Levonorgestrel-releasing intrauterine contraceptive system (Kyleena), 19.5 mg", dateAdded: "2026-06-08", ticket: "Pending" },
       { code: "J7298", description: "Levonorgestrel-releasing intrauterine contraceptive system (Mirena), 52 mg", dateAdded: "2026-06-08", ticket: "Pending" },
@@ -89,6 +234,11 @@
     ];
 
     const equipmentRequiredColumns = [
+      {
+        key: "date",
+        label: "Date",
+        accepted: ["date", "case/appt date", "surgery date", "procedure date"]
+      },
       {
         key: "caseNumber",
         label: "Case #",
@@ -103,6 +253,12 @@
         key: "equipment",
         label: "Equipment",
         accepted: ["equipment", "sh ip surgical equipment"]
+      },
+      {
+        key: "surgeon",
+        label: "Lead Surgeon",
+        optional: true,
+        accepted: ["lead surgeon", "lead surgeon (as scheduled)"]
       },
       {
         key: "room",
@@ -584,6 +740,8 @@
         const specialNeeds = cell(row, indexes.specialNeeds);
         const equipment = cell(row, indexes.equipment);
         const location = cell(row, indexes.department) || cell(row, indexes.room);
+        const surgeonRaw = cell(row, indexes.surgeon);
+        const dateValue = parseDateCell(cell(row, indexes.date));
         const foundTerms = findEquipmentTermsInText(specialNeeds);
 
         if (!foundTerms.length) return;
@@ -591,15 +749,21 @@
         const missingTerm = foundTerms.find((term) => !containsEquipmentTerm(equipment, term));
         if (!missingTerm) return;
 
+        const displayName = KEYWORD_DISPLAY_NAMES[missingTerm.keyword] || missingTerm.keyword;
+
         includedRows.push({
+          date: dateValue.display,
+          sortDate: dateValue.sort,
           caseNumber,
           location,
+          surgeon: parseSurgeonLastName(surgeonRaw),
+          surgeonId: extractSurgeonId(surgeonRaw),
           specialNeeds,
           equipment,
           keyword: missingTerm.keyword,
           matchStart: missingTerm.startIndex,
           matchEnd: missingTerm.startIndex + missingTerm.matchedText.length,
-          explanation: `${missingTerm.keyword} was listed in Special Needs but not added to Equipment`
+          explanation: `${displayName} was listed in Special Needs but not added to Equipment`
         });
       });
 
@@ -749,6 +913,7 @@
           const wrap = document.createElement("div");
           wrap.className = "table-wrap";
           const table = document.createElement("table");
+          table.className = "cpt-invalid-table";
           table.append(makeTableHead("Date", "Location", "Case #", "Issue"));
           const tbody = document.createElement("tbody");
           if (t3Items.length > 0) {
@@ -803,6 +968,8 @@
           const tr = document.createElement("tr");
           tr.className = "equip-row-main";
 
+          tr.append(td(row.date || ""));
+
           const caseCell = document.createElement("td");
           const equipCaseSpan = document.createElement("span");
           equipCaseSpan.textContent = row.caseNumber || "";
@@ -820,6 +987,7 @@
           caseCell.append(equipCaseSpan, toggleAffordance);
           tr.append(caseCell);
           tr.append(td(row.location || ""));
+          tr.append(td(row.surgeon || ""));
           tr.append(td(row.specialNeeds));
           const explCell = td(row.explanation);
           explCell.style.cursor = "pointer";
@@ -835,15 +1003,45 @@
           detailTr.hidden = true;
 
           const detailCell = document.createElement("td");
-          detailCell.colSpan = 4;
+          detailCell.colSpan = 6;
 
           const detailDiv = document.createElement("div");
           detailDiv.className = "equip-detail";
 
-          const snSection = document.createElement("div");
+          // Header row: column labels + report button in one flex row
+          const detailHeaderRow = document.createElement("div");
+          detailHeaderRow.style.cssText = "display:flex;align-items:center;gap:18px;grid-column:1/-1;";
+
           const snLabel = document.createElement("div");
           snLabel.className = "equip-detail-label";
+          snLabel.style.flex = "1";
           snLabel.textContent = "Special Needs";
+
+          const eqLabel = document.createElement("div");
+          eqLabel.className = "equip-detail-label";
+          eqLabel.style.flex = "1";
+          eqLabel.textContent = "Equipment List";
+          if (row.keyword) {
+            const missingTag = document.createElement("span");
+            missingTag.style.cssText = "margin-left: 6px; font-size: 0.68rem; font-weight: 700; color: #b91c1c; text-transform: none; letter-spacing: 0;";
+            missingTag.textContent = `(${row.keyword} not found)`;
+            eqLabel.append(missingTag);
+          }
+
+          const reportBtn = document.createElement("button");
+          reportBtn.type = "button";
+          reportBtn.className = "rule-flag-btn";
+          reportBtn.textContent = "Report an issue";
+          reportBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const subject = encodeURIComponent("Equipment Audit Issue");
+            const body = encodeURIComponent("CASE: " + row.caseNumber + "\n\nISSUE: ");
+            window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
+          });
+
+          detailHeaderRow.append(snLabel, eqLabel, reportBtn);
+
+          // Special Needs value (grid col 1)
           const snValue = document.createElement("div");
           snValue.className = "equip-detail-value";
           const snText = row.specialNeeds || "–";
@@ -862,18 +1060,8 @@
           } else {
             snValue.textContent = snText;
           }
-          snSection.append(snLabel, snValue);
 
-          const eqSection = document.createElement("div");
-          const eqLabel = document.createElement("div");
-          eqLabel.className = "equip-detail-label";
-          eqLabel.textContent = "Equipment List";
-          if (row.keyword) {
-            const missingTag = document.createElement("span");
-            missingTag.style.cssText = "margin-left: 6px; font-size: 0.68rem; font-weight: 700; color: #b91c1c; text-transform: none; letter-spacing: 0;";
-            missingTag.textContent = `(${row.keyword} not found)`;
-            eqLabel.append(missingTag);
-          }
+          // Equipment List value (grid col 2)
           const eqValue = document.createElement("div");
           eqValue.className = "equip-detail-value";
           const eqItems = String(row.equipment || "")
@@ -881,24 +1069,40 @@
             .map((s) => s.replace(/^W\s+/, "").trim())
             .filter(Boolean);
           eqValue.textContent = eqItems.length ? eqItems.join("\n") : "–";
-          eqSection.append(eqLabel, eqValue);
 
-          detailDiv.append(snSection, eqSection);
+          // Surgeon Preference section (spans both grid columns)
+          const surgPrefSection = document.createElement("div");
+          surgPrefSection.style.cssText = "grid-column:1/-1;";
+          const surgPrefLabel = document.createElement("div");
+          surgPrefLabel.className = "equip-detail-label";
+          surgPrefLabel.textContent = "Surgeon Preference";
+          const surgPrefValue = document.createElement("div");
+          surgPrefValue.className = "equip-detail-value";
 
-          const reportBtnHeader = document.createElement("div");
-          reportBtnHeader.style.cssText = "display: flex; justify-content: flex-end; padding: 8px 12px 0;";
-          const reportBtn = document.createElement("button");
-          reportBtn.type = "button";
-          reportBtn.className = "rule-flag-btn";
-          reportBtn.textContent = "Report an issue";
-          reportBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const subject = encodeURIComponent("Equipment Audit Issue");
-            const body = encodeURIComponent("CASE: " + row.caseNumber + "\n\nISSUE: ");
-            window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${body}`;
-          });
-          reportBtnHeader.append(reportBtn);
-          detailCell.append(reportBtnHeader, detailDiv);
+          if (!row.surgeonId) {
+            surgPrefValue.textContent = "Surgeon ID not found";
+          } else {
+            const prefs = SURGEON_EQUIPMENT_PREFS[row.surgeonId];
+            if (!prefs) {
+              surgPrefValue.textContent = "No preference on file";
+            } else {
+              const kw = String(row.keyword || "").toLowerCase();
+              const prefParts = [];
+              if (kw === "ultrasound") {
+                if (prefs.ultrasound) prefParts.push(prefs.ultrasound);
+              } else if (kw === "microscope") {
+                if (prefs.microscope) prefParts.push(prefs.microscope);
+              } else {
+                if (prefs.ultrasound) prefParts.push(prefs.ultrasound);
+                if (prefs.microscope) prefParts.push(prefs.microscope);
+              }
+              surgPrefValue.textContent = prefParts.length ? prefParts.join("\n") : "No preference on file";
+            }
+          }
+          surgPrefSection.append(surgPrefLabel, surgPrefValue);
+
+          detailDiv.append(detailHeaderRow, snValue, eqValue, surgPrefSection);
+          detailCell.append(detailDiv);
           detailTr.append(detailCell);
 
           tr.addEventListener("click", () => {
@@ -910,7 +1114,7 @@
           equipmentMissingTable.append(tr, detailTr);
         });
       } else {
-        equipmentMissingTable.append(emptyRow(4, "No matching equipment request discrepancies found."));
+        equipmentMissingTable.append(emptyRow(6, "No matching equipment request discrepancies found."));
       }
     }
 
@@ -958,6 +1162,11 @@
 
     function containsEquipmentTerm(text, termMatch) {
       const source = String(text || "");
+      const aliases = KEYWORD_ALIASES[termMatch.keyword];
+      if (aliases) {
+        const sourceLower = source.toLowerCase();
+        if (aliases.some((alias) => sourceLower.includes(alias.toLowerCase()))) return true;
+      }
       if (source.toLowerCase().includes(termMatch.keyword.toLowerCase())) return true;
       const kwOpts = KEYWORD_OPTIONS[termMatch.keyword];
       const prefixResult = findPrefixTokenMatch(source, termMatch.keyword);
@@ -1158,13 +1367,13 @@
         const mailBody = encodeURIComponent(`CPT CODE: ${code}`);
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.textContent = "Click here to report if CPT is not in Epic";
+        btn.textContent = "Click to report CPT not in Epic";
         btn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;";
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           const tr = btn.closest("tr");
           if (tr) tr.classList.add("row-visited");
-          window.open(`mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${mailBody}`);
+          window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${mailBody}`;
         });
         const lookupBtn = document.createElement("a");
         lookupBtn.href = `https://www.aapc.com/codes/cpt-codes/${encodeURIComponent(code)}`;
