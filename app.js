@@ -674,7 +674,6 @@
           } else {
             tbody.append(emptyRow(4, "No CMS inpatient-only CPT codes found on outpatient cases."));
           }
-          addRowVisitedDelegation(tbody);
           table.append(tbody);
           wrap.append(table);
           body.append(wrap);
@@ -710,7 +709,6 @@
           } else {
             tbody.append(emptyRow(6, "No missing CPT discrepancies found."));
           }
-          addRowVisitedDelegation(tbody);
           table.append(tbody);
           wrap.append(table);
           body.append(wrap);
@@ -768,7 +766,6 @@
           } else {
             tbody.append(emptyRow(4, "No errors found."));
           }
-          addRowVisitedDelegation(tbody);
           table.append(tbody);
           wrap.append(table);
           body.append(wrap);
@@ -1101,6 +1098,8 @@
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         navigator.clipboard.writeText(String(text)).then(() => showCopyToast(text));
+        const tr = el.closest("tr");
+        if (tr) tr.classList.add("row-visited");
       });
     }
 
