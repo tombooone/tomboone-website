@@ -38,6 +38,12 @@
         label: "Department",
         optional: true,
         accepted: ["department", "department name", "or department"]
+      },
+      {
+        key: "payer",
+        label: "Payer",
+        optional: true,
+        accepted: ["payer", "primary payer", "financial class"]
       }
     ];
 
@@ -503,6 +509,7 @@
         const panelInfo = cell(row, indexes.panelCodes);
         const patientClass = cell(row, indexes.patientClass).toUpperCase();
         const location = cell(row, indexes.department) || cell(row, indexes.room);
+        const payerValue = indexes.payer != null ? cell(row, indexes.payer) : "";
         const orderCodes = extractCodes(insuranceInfo);
         const panelCodesList = extractCodes(panelInfo).codes;
         const panelCodes = new Set(panelCodesList);
@@ -529,7 +536,8 @@
           });
         }
 
-        if (isOutpatient(patientClass) && inpatientMatches.length) {
+        const payerIsMedicare = !payerValue || payerValue.toLowerCase().includes("medicare");
+        if (isOutpatient(patientClass) && inpatientMatches.length && payerIsMedicare) {
           inpatientRows.push({
             date: dateValue.display,
             sortDate: dateValue.sort,
@@ -754,6 +762,10 @@
                 const mark = document.createElement("mark");
                 mark.style.cssText = "background:#fee2e2;color:#991b1b;font-weight:700;border-radius:2px;padding:0 2px;cursor:pointer;";
                 mark.textContent = code;
+                mark.addEventListener("click", (e) => {
+                  e.stopPropagation();
+                  window.open(`https://www.aapc.com/codes/cpt-codes/${encodeURIComponent(code)}`, "_blank");
+                });
                 const label = document.createElement("span");
                 label.style.cssText = "font-size:0.7rem;color:#991b1b;";
                 label.textContent = "Invalid CPT — check for typo or contact ordering provider";
@@ -1146,7 +1158,7 @@
           e.stopPropagation();
           const tr = btn.closest("tr");
           if (tr) tr.classList.add("row-visited");
-          window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${mailBody}`;
+          window.open(`mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${mailBody}`);
         });
         const lookupBtn = document.createElement("a");
         lookupBtn.href = `https://www.aapc.com/codes/cpt-codes/${encodeURIComponent(code)}`;
@@ -1162,7 +1174,7 @@
           const tr = wrap.closest("tr");
           if (tr) tr.classList.add("row-visited");
         });
-        wrap.append(mark, btn, lookupBtn);
+        wrap.append(mark, lookupBtn, btn);
         el.append(wrap);
       });
       return el;
