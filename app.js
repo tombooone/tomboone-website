@@ -1133,20 +1133,36 @@
         mark.textContent = code;
         mark.addEventListener("click", (e) => {
           e.stopPropagation();
+          const tr = e.target.closest("tr");
+          if (tr) tr.classList.add("row-visited");
           navigator.clipboard.writeText(code).then(() => showToast("Copied: " + code));
         });
         const subject = encodeURIComponent("CPT Not in Epic");
         const mailBody = encodeURIComponent(`CPT CODE: ${code}`);
-        const btn = document.createElement("a");
-        btn.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${mailBody}`;
+        const btn = document.createElement("button");
+        btn.type = "button";
         btn.textContent = "Click here to report if CPT is not in Epic";
-        btn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;text-decoration:none;display:inline-block;";
+        btn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;";
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const tr = btn.closest("tr");
+          if (tr) tr.classList.add("row-visited");
+          window.location.href = `mailto:Thomas.Boone@SutterHealth.org?subject=${subject}&body=${mailBody}`;
+        });
         const lookupBtn = document.createElement("a");
         lookupBtn.href = `https://www.aapc.com/codes/cpt-codes/${encodeURIComponent(code)}`;
         lookupBtn.target = "_blank";
         lookupBtn.rel = "noopener noreferrer";
         lookupBtn.textContent = "CPT Lookup";
         lookupBtn.style.cssText = "font-size:0.68rem;padding:1px 5px;border-radius:3px;border:1px solid var(--border,#d1d5db);background:var(--panel,#fff);color:var(--muted,#6b7280);cursor:pointer;line-height:1.4;text-decoration:none;display:inline-block;";
+        lookupBtn.addEventListener("click", () => {
+          const tr = lookupBtn.closest("tr");
+          if (tr) tr.classList.add("row-visited");
+        });
+        wrap.addEventListener("click", () => {
+          const tr = wrap.closest("tr");
+          if (tr) tr.classList.add("row-visited");
+        });
         wrap.append(mark, btn, lookupBtn);
         el.append(wrap);
       });
@@ -3296,7 +3312,7 @@
       if (tag === "input" || tag === "textarea") { buf = ""; return; }
       if (modal.classList.contains("active")) {
         if (e.key === "Escape") { closeGame(); return; }
-        const map = {ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0}};
+        const map = {ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0}, w:{x:0,y:-1}, s:{x:0,y:1}, a:{x:-1,y:0}, d:{x:1,y:0}};
         if (map[e.key]) {
           const d = map[e.key];
           const last = dirQueue.length ? dirQueue[dirQueue.length - 1] : dir;
