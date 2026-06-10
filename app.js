@@ -223,14 +223,14 @@
     };
 
     const KNOWN_PROBLEM_CPTS = [
-      { code: "J7296", description: "Levonorgestrel-releasing intrauterine contraceptive system (Kyleena), 19.5 mg", dateAdded: "2026-06-08", ticket: "Pending" },
-      { code: "J7298", description: "Levonorgestrel-releasing intrauterine contraceptive system (Mirena), 52 mg", dateAdded: "2026-06-08", ticket: "Pending" },
-      { code: "Q0091", description: "Screening Papanicolaou smear; obtaining, preparing, and conveyance of cervical or vaginal smear to laboratory", dateAdded: "2026-06-09", ticket: "Pending" },
-      { code: "Q9967", description: "Low osmolar contrast material, 300-399 mg/ml iodine concentration, per ml", dateAdded: "2026-06-09", ticket: "Pending" },
-      { code: "J7297", description: "Levonorgestrel-releasing intrauterine contraceptive system (Liletta), 52 mg", dateAdded: "2026-06-09", ticket: "Pending" },
-      { code: "J7301", description: "Levonorgestrel-releasing intrauterine contraceptive system (Skyla), 13.5 mg", dateAdded: "2026-06-09", ticket: "Pending" },
-      { code: "45386", description: "Colonoscopy, flexible; with dilation", dateAdded: "2026-06-09", ticket: "Pending" },
-      { code: "44394", description: "Colonoscopy through stoma; with removal of tumor(s), polyp(s), or other lesion(s) by snare technique", dateAdded: "2026-06-09", ticket: "Pending" }
+      { code: "J7296", description: "Levonorgestrel-releasing intrauterine contraceptive system (Kyleena), 19.5 mg", dateAdded: "2026-06-08", ticket: "RITM1383957" },
+      { code: "J7298", description: "Levonorgestrel-releasing intrauterine contraceptive system (Mirena), 52 mg", dateAdded: "2026-06-08", ticket: "RITM1383958" },
+      { code: "Q0091", description: "Screening Papanicolaou smear; obtaining, preparing, and conveyance of cervical or vaginal smear to laboratory", dateAdded: "2026-06-09", ticket: "RITM1383960" },
+      { code: "Q9967", description: "Low osmolar contrast material, 300-399 mg/ml iodine concentration, per ml", dateAdded: "2026-06-09", ticket: "RITM1383962" },
+      { code: "J7297", description: "Levonorgestrel-releasing intrauterine contraceptive system (Liletta), 52 mg", dateAdded: "2026-06-09", ticket: "RITM1383963" },
+      { code: "J7301", description: "Levonorgestrel-releasing intrauterine contraceptive system (Skyla), 13.5 mg", dateAdded: "2026-06-09", ticket: "RITM1383965" },
+      { code: "45386", description: "Colonoscopy, flexible; with dilation", dateAdded: "2026-06-09", ticket: "RITM1383952" },
+      { code: "44394", description: "Colonoscopy through stoma; with removal of tumor(s), polyp(s), or other lesion(s) by snare technique", dateAdded: "2026-06-09", ticket: "RITM1383989" }
     ];
 
     const equipmentRequiredColumns = [
@@ -969,8 +969,10 @@
           tr.className = "equip-row-main";
 
           tr.append(td(row.date || ""));
+          tr.append(td(row.location || ""));
 
           const caseCell = document.createElement("td");
+          caseCell.style.cssText = "display:flex;flex-direction:column;justify-content:space-between;";
           const equipCaseSpan = document.createElement("span");
           equipCaseSpan.textContent = row.caseNumber || "";
           equipCaseSpan.style.fontWeight = "700";
@@ -986,7 +988,6 @@
           toggleAffordance.append(icon, toggleLabel);
           caseCell.append(equipCaseSpan, toggleAffordance);
           tr.append(caseCell);
-          tr.append(td(row.location || ""));
           tr.append(td(row.surgeon || ""));
           tr.append(td(row.specialNeeds));
           const explCell = td(row.explanation);
@@ -1070,38 +1071,47 @@
             .filter(Boolean);
           eqValue.textContent = eqItems.length ? eqItems.join("\n") : "–";
 
-          // Surgeon Preference section (spans both grid columns)
-          const surgPrefSection = document.createElement("div");
-          surgPrefSection.style.cssText = "grid-column:1/-1;";
-          const surgPrefLabel = document.createElement("div");
-          surgPrefLabel.className = "equip-detail-label";
-          surgPrefLabel.textContent = "Surgeon Preference";
-          const surgPrefValue = document.createElement("div");
-          surgPrefValue.className = "equip-detail-value";
+          // Surgeon Preference section (spans both grid columns) — ultrasound/microscope only
+          const kw = String(row.keyword || "").toLowerCase();
+          const showSurgPref = kw === "ultrasound" || kw === "microscope";
+          let surgPrefSection = null;
 
-          if (!row.surgeonId) {
-            surgPrefValue.textContent = "Surgeon ID not found";
-          } else {
-            const prefs = SURGEON_EQUIPMENT_PREFS[row.surgeonId];
-            if (!prefs) {
-              surgPrefValue.textContent = "No preference on file";
+          if (showSurgPref) {
+            surgPrefSection = document.createElement("div");
+            surgPrefSection.style.cssText = "grid-column:1/-1;";
+            const surgPrefLabel = document.createElement("div");
+            surgPrefLabel.className = "equip-detail-label";
+            surgPrefLabel.textContent = "Surgeon Preference";
+            const surgPrefValue = document.createElement("div");
+            surgPrefValue.className = "equip-detail-value";
+            surgPrefValue.style.cursor = "pointer";
+
+            if (!row.surgeonId) {
+              surgPrefValue.textContent = "Surgeon ID not found";
             } else {
-              const kw = String(row.keyword || "").toLowerCase();
-              const prefParts = [];
-              if (kw === "ultrasound") {
-                if (prefs.ultrasound) prefParts.push(prefs.ultrasound);
-              } else if (kw === "microscope") {
-                if (prefs.microscope) prefParts.push(prefs.microscope);
+              const prefs = SURGEON_EQUIPMENT_PREFS[row.surgeonId];
+              if (!prefs) {
+                surgPrefValue.textContent = "No preference on file";
               } else {
-                if (prefs.ultrasound) prefParts.push(prefs.ultrasound);
-                if (prefs.microscope) prefParts.push(prefs.microscope);
+                const prefParts = [];
+                if (kw === "ultrasound") {
+                  if (prefs.ultrasound) prefParts.push(prefs.ultrasound);
+                } else if (kw === "microscope") {
+                  if (prefs.microscope) prefParts.push(prefs.microscope);
+                }
+                surgPrefValue.textContent = prefParts.length ? prefParts.join("\n") : "No preference on file";
               }
-              surgPrefValue.textContent = prefParts.length ? prefParts.join("\n") : "No preference on file";
             }
+            surgPrefValue.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const prefText = surgPrefValue.textContent;
+              navigator.clipboard.writeText(prefText).then(() => showToast("Copied: " + prefText));
+            });
+            surgPrefSection.append(surgPrefLabel, surgPrefValue);
           }
-          surgPrefSection.append(surgPrefLabel, surgPrefValue);
 
-          detailDiv.append(detailHeaderRow, snValue, eqValue, surgPrefSection);
+          detailDiv.append(detailHeaderRow, snValue, eqValue);
+          if (surgPrefSection) detailDiv.append(surgPrefSection);
           detailCell.append(detailDiv);
           detailTr.append(detailCell);
 
@@ -1984,9 +1994,9 @@
       {
         id: "svc-9",
         tier: 3,
-        label: "Gynecology Room",
-        description: "Gynecology cases are generally assigned to OR 1. Please verify this room assignment.",
-        match: { service: "Gynecology" },
+        label: "Gynecology/Obstetrics Room",
+        description: "Gynecology and Obstetrics cases are generally assigned to OR 1. Please verify this room assignment.",
+        match: { anyOf: [{ service: "Gynecology" }, { service: "Obstetrics" }] },
         allowedRooms: ["OR 1"]
       },
       // ── Tier 4: Surgeon Preference (generated from SURGEON_PREFS) ─────────
