@@ -498,6 +498,13 @@
     .cpt-invalid-table th:nth-child(3) { width: 10%; }
     .cpt-invalid-table th:nth-child(4) { width: 70%; }
 
+    .equipment-missing-table th:nth-child(1) { width: 7%; }
+    .equipment-missing-table th:nth-child(2) { width: 8%; }
+    .equipment-missing-table th:nth-child(3) { width: 9%; }
+    .equipment-missing-table th:nth-child(4) { width: 11%; }
+    .equipment-missing-table th:nth-child(5) { width: 30%; }
+    .equipment-missing-table th:nth-child(6) { width: 35%; }
+
     .table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
