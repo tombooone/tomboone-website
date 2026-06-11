@@ -972,7 +972,8 @@
           tr.append(td(row.location || ""));
 
           const caseCell = document.createElement("td");
-          caseCell.style.cssText = "display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;";
+          const caseCellWrap = document.createElement("div");
+          caseCellWrap.style.cssText = "display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;height:100%;min-height:48px;";
           const equipCaseSpan = document.createElement("span");
           equipCaseSpan.textContent = row.caseNumber || "";
           equipCaseSpan.style.fontWeight = "700";
@@ -986,7 +987,8 @@
           toggleLabel.className = "equip-toggle-label";
           toggleLabel.textContent = "Details";
           toggleAffordance.append(icon, toggleLabel);
-          caseCell.append(equipCaseSpan, toggleAffordance);
+          caseCellWrap.append(equipCaseSpan, toggleAffordance);
+          caseCell.append(caseCellWrap);
           tr.append(caseCell);
           tr.append(td(row.surgeon || ""));
           tr.append(td(row.specialNeeds));
@@ -1128,6 +1130,16 @@
       }
     }
 
+    // True if the word immediately before startIndex (skipping whitespace) is the standalone word "no"
+    function isPrecededByStandaloneNo(source, startIndex) {
+      let i = startIndex;
+      while (i > 0 && /\s/.test(source[i - 1])) i--;
+      if (i < 2) return false;
+      if (source.slice(i - 2, i).toLowerCase() !== "no") return false;
+      if (i - 2 === 0) return true;
+      return !/\w/.test(source[i - 3]);
+    }
+
     function findEquipmentTermsInText(text) {
       const source = String(text || "");
       const lowered = source.toLowerCase();
@@ -1139,13 +1151,15 @@
         let foundIndex = lowered.indexOf(search, startIndex);
 
         while (foundIndex !== -1) {
-          matches.push({
-            keyword,
-            keywordIndex,
-            startIndex: foundIndex,
-            matchedText: source.slice(foundIndex, foundIndex + keyword.length),
-            matchType: "exact"
-          });
+          if (!isPrecededByStandaloneNo(source, foundIndex)) {
+            matches.push({
+              keyword,
+              keywordIndex,
+              startIndex: foundIndex,
+              matchedText: source.slice(foundIndex, foundIndex + keyword.length),
+              matchType: "exact"
+            });
+          }
           startIndex = foundIndex + 1;
           foundIndex = lowered.indexOf(search, startIndex);
         }
@@ -1154,11 +1168,15 @@
           const kwOpts = KEYWORD_OPTIONS[keyword];
           const prefixMatch = findPrefixTokenMatch(source, keyword);
           if (prefixMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, prefixMatch.startIndex, prefixMatch.matchedText, kwOpts.requiresPrefix))) {
-            matches.push({ keyword, keywordIndex, startIndex: prefixMatch.startIndex, matchedText: prefixMatch.matchedText, matchType: "prefix" });
+            if (!isPrecededByStandaloneNo(source, prefixMatch.startIndex)) {
+              matches.push({ keyword, keywordIndex, startIndex: prefixMatch.startIndex, matchedText: prefixMatch.matchedText, matchType: "prefix" });
+            }
           } else {
             const fuzzyMatch = findBestFuzzyEquipmentMatch(source, keyword);
             if (fuzzyMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, fuzzyMatch.startIndex, fuzzyMatch.matchedText, kwOpts.requiresPrefix))) {
-              matches.push({ keyword, keywordIndex, startIndex: fuzzyMatch.startIndex, matchedText: fuzzyMatch.matchedText, matchType: "fuzzy", score: fuzzyMatch.score });
+              if (!isPrecededByStandaloneNo(source, fuzzyMatch.startIndex)) {
+                matches.push({ keyword, keywordIndex, startIndex: fuzzyMatch.startIndex, matchedText: fuzzyMatch.matchedText, matchType: "fuzzy", score: fuzzyMatch.score });
+              }
             }
           }
         }
