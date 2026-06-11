@@ -498,12 +498,12 @@
     .cpt-invalid-table th:nth-child(3) { width: 10%; }
     .cpt-invalid-table th:nth-child(4) { width: 70%; }
 
-    .equipment-missing-table th:nth-child(1) { width: 7%; }
-    .equipment-missing-table th:nth-child(2) { width: 9%; }
-    .equipment-missing-table th:nth-child(3) { width: 8%; }
+    .equipment-missing-table th:nth-child(1) { width: 8%; }
+    .equipment-missing-table th:nth-child(2) { width: 12%; }
+    .equipment-missing-table th:nth-child(3) { width: 9%; }
     .equipment-missing-table th:nth-child(4) { width: 11%; }
-    .equipment-missing-table th:nth-child(5) { width: 30%; }
-    .equipment-missing-table th:nth-child(6) { width: 35%; }
+    .equipment-missing-table th:nth-child(5) { width: 28%; }
+    .equipment-missing-table th:nth-child(6) { width: 32%; }
 
     .table-wrap {
       overflow-x: auto;
@@ -1147,7 +1147,8 @@
       display: flex;
       align-items: center;
       gap: 4px;
-      margin-top: 6px;
+      margin-top: auto;
+      align-self: flex-start;
       width: fit-content;
       cursor: pointer;
       user-select: none;

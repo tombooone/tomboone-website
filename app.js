@@ -972,7 +972,7 @@
           tr.append(td(row.location || ""));
 
           const caseCell = document.createElement("td");
-          caseCell.style.cssText = "display:flex;flex-direction:column;justify-content:space-between;";
+          caseCell.style.cssText = "display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;";
           const equipCaseSpan = document.createElement("span");
           equipCaseSpan.textContent = row.caseNumber || "";
           equipCaseSpan.style.fontWeight = "700";
