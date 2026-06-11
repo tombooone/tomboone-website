@@ -1313,43 +1313,16 @@
       color: var(--muted);
       font-size: 0.9rem;
     }
-    .dev-gate-input {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      font-size: 0.95rem;
-      margin-bottom: 12px;
-    }
-    .dev-gate-submit {
-      width: 100%;
-      margin-bottom: 14px;
-    }
     .dev-gate-prod-link {
-      display: inline-block;
-      font-size: 0.82rem;
-      color: var(--brand-blue);
+      display: inline-flex;
+      width: 100%;
+      text-decoration: none;
     }
-    .dev-gate-shake {
-      animation: dev-gate-shake 320ms ease;
-    }
-    @keyframes dev-gate-shake {
-      10%, 90% { transform: translateX(-2px); }
-      20%, 80% { transform: translateX(4px); }
-      30%, 50%, 70% { transform: translateX(-8px); }
-      40%, 60% { transform: translateX(8px); }
-    }
-    .dev-badge {
-      position: fixed;
-      bottom: 12px;
-      right: 12px;
-      background: var(--warn);
-      color: #fff;
-      font-size: 0.7rem;
+    .dev-pill {
+      color: var(--warn);
+      background: var(--warn-soft);
+      border-color: var(--accent);
       font-weight: 700;
-      letter-spacing: 0.08em;
-      padding: 4px 10px;
-      border-radius: 6px;
-      z-index: 9000;
-      pointer-events: none;
+      letter-spacing: 0.06em;
     }
+    .dev-pill[hidden] { display: none; }

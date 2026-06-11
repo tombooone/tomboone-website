@@ -3590,48 +3590,35 @@
 
   (function() {
     const DEV_HOSTNAME = "tomboone.io";
-    const PASSWORD_HASH = "87ccf22c9ae44ed5ae2a77417e0b6fe5166ad9d3fc4d61d377d58004eba8411d";
+    const TARGET = "fefe";
 
     if (window.location.hostname !== DEV_HOSTNAME) return;
 
     const badge = document.getElementById("devBadge");
-    if (badge) badge.hidden = false;
 
-    if (sessionStorage.getItem("devUnlocked") === "true") return;
+    if (sessionStorage.getItem("devUnlocked") === "true") {
+      if (badge) badge.hidden = false;
+      return;
+    }
 
     const overlay = document.getElementById("devGateOverlay");
-    const input = document.getElementById("devGatePassword");
-    const submitBtn = document.getElementById("devGateSubmit");
-    if (!overlay || !input || !submitBtn) return;
-
+    if (!overlay) return;
     overlay.hidden = false;
-    input.focus();
 
-    async function sha256Hex(text) {
-      const data = new TextEncoder().encode(text);
-      const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
-      return Array.from(new Uint8Array(hashBuffer))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
-    }
-
-    async function tryUnlock() {
-      const hash = await sha256Hex(input.value);
-      if (hash === PASSWORD_HASH) {
-        sessionStorage.setItem("devUnlocked", "true");
-        overlay.hidden = true;
-        return;
+    let buf = "";
+    document.addEventListener("keydown", (e) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea") { buf = ""; return; }
+      if (e.key.length === 1) {
+        buf += e.key.toLowerCase();
+        if (buf.length > TARGET.length) buf = buf.slice(-TARGET.length);
+        if (buf === TARGET) {
+          buf = "";
+          sessionStorage.setItem("devUnlocked", "true");
+          overlay.hidden = true;
+          if (badge) badge.hidden = false;
+        }
       }
-      input.value = "";
-      input.classList.remove("dev-gate-shake");
-      void input.offsetWidth;
-      input.classList.add("dev-gate-shake");
-      input.focus();
-    }
-
-    submitBtn.addEventListener("click", tryUnlock);
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") tryUnlock();
     });
   })();
 

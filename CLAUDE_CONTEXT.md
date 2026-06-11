@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-11 (v1.4.16)
+## Last updated: 2026-06-11 (v1.4.17)
 
 ---
 
@@ -16,7 +16,9 @@
 
 ## Project Overview
 
-A PHI-safe OR scheduling audit web tool at **tomboone.io** (primary, live) and **tomboonern.com** (configured via Cloudflare Pages, but blocked on the work network).
+A PHI-safe OR scheduling audit web tool, deployed as two environments via Cloudflare Pages:
+- **tomboonern.com** is **production**, tracking the `main` branch
+- **tomboone.io** is **dev/staging**, tracking the `dev` branch, and is gated behind a dev overlay (see Dev Gate below)
 
 All four tools on the home screen are **live and complete**:
 1. **CPT Audit Tool** ✅ complete, do not touch
@@ -29,33 +31,31 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.4.16**
+- Current version: **v1.4.17**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third)
 - **Cache busting:** `styles.css` and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
-- Cloudflare Web Analytics: snippet added to `<head>` in index.html, wrapped in `location.hostname === 'tomboonern.com'` guard — fires only on tomboonern.com, not tomboone.io or localhost
-- Cloudflare Pages auto-deploys on push to main
+- Cloudflare Web Analytics: snippet added to `<head>` in index.html, wrapped in `location.hostname === 'tomboonern.com'` guard — fires only on tomboonern.com (production); tomboone.io (dev) and localhost are intentionally excluded
+- Cloudflare Pages: push to `main` auto-deploys tomboonern.com; push to `dev` auto-deploys tomboone.io
 
 ---
 
 ## Dev / Prod Branch Workflow
 
-- `tomboone.io` is the **dev/staging** environment, served from the `dev` branch
-- `tomboonern.com` is **production**, served from the `main` branch
-- All day-to-day development work happens on the `dev` branch and is visible at tomboone.io
-- Only merge `dev` into `main` (which deploys to tomboonern.com) when Tom explicitly says **"release"**
-- Version bumps still happen on every push, on both branches, as always
+- All development work happens on the `dev` branch; pushing `dev` deploys tomboone.io only
+- Only merge `dev` into `main` (which deploys tomboonern.com) when Tom explicitly says **"release"**
+- Releases happen via merging `dev` into `main` — no force pushes or rebases to `main`
+- Version bumps happen on every push, on both branches, as always
 
 ### Dev Gate (tomboone.io only)
 
-- A client-side password overlay gates the app on tomboone.io only (`window.location.hostname === 'tomboone.io'`); no-op on any other hostname, including tomboonern.com and localhost
-- Overlay markup lives in `index.html` (`#devGateOverlay`, `#devGatePassword`, `#devGateSubmit`), styled in `styles.css` (`.dev-gate-overlay`, `.dev-gate-box`, etc.); logic is in a standalone IIFE at the end of `app.js`, after the worm easter egg
-- Submitted password is hashed with `window.crypto.subtle.digest("SHA-256", ...)` and compared to a hardcoded hex hash constant (`PASSWORD_HASH`) in app.js — the plaintext password is never stored in the repo
-- On success: `sessionStorage.setItem('devUnlocked', 'true')` and the overlay hides; on page load, if this flag is already set the gate is skipped entirely (persists until the tab closes)
-- Wrong password: input shakes (`.dev-gate-shake` CSS animation) and clears, with no indication of what was wrong
-- A small fixed "DEV" badge (`#devBadge`, bottom-right corner) renders only on tomboone.io, regardless of gate state
-- "Go to production" link in the overlay points to `https://tomboonern.com`
+- A full-screen overlay gates the app on tomboone.io only (`window.location.hostname === 'tomboone.io'`); no-op on any other hostname, including tomboonern.com and localhost
+- Overlay markup lives in `index.html` (`#devGateOverlay`, `.dev-gate-box`), styled in `styles.css` (`.dev-gate-overlay`, `.dev-gate-box`, `.dev-gate-prod-link`); logic is in a standalone IIFE at the end of `app.js`, after the worm easter egg
+- Overlay shows heading "Dev Environment", explanatory text, and a "Go to production" button linking to `https://tomboonern.com`; it is opaque, full-viewport, and blocks all interaction with the page behind it
+- Dismissal: a keystroke buffer listener (independent of the worm easter egg's listener and buffer) watches for the typed sequence "fefe" anywhere outside an input/textarea. On match, the overlay is hidden and `sessionStorage.setItem('devUnlocked', 'true')` is set
+- On page load: if `sessionStorage.getItem('devUnlocked') === 'true'`, the overlay is skipped entirely (persists until the tab closes)
+- DEV badge: `#devBadge`, an amber pill in the topbar next to the privacy pills (`.dev-pill` class on `.privacy-pill`), shown once the gate has been passed on tomboone.io; hostname-keyed the same way, so it never renders on tomboonern.com or localhost
 
 ---
 
