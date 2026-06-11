@@ -486,6 +486,7 @@
       border-radius: 0;
     }
 
+    .cpt-discrepancy-table { table-layout: fixed; }
     .cpt-discrepancy-table th:nth-child(1) { width: 8%; }
     .cpt-discrepancy-table th:nth-child(2) { width: 10%; }
     .cpt-discrepancy-table th:nth-child(3) { width: 9%; }

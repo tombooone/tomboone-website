@@ -1473,10 +1473,9 @@
       if (!codes.length) return emptyCodeTd();
       const el = document.createElement("td");
       el.className = "code-list";
-      codes.forEach((code, i) => {
-        if (i > 0) el.append(document.createTextNode(" "));
+      codes.forEach((code) => {
         const wrap = document.createElement("span");
-        wrap.style.cssText = "display:inline-flex;align-items:center;gap:4px;white-space:nowrap;";
+        wrap.style.cssText = "display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:2px 0;";
         const subject = encodeURIComponent("CPT Not in Epic");
         const mailBody = encodeURIComponent(`CPT CODE: ${code}`);
         const btn = document.createElement("button");
@@ -1503,10 +1502,9 @@
       if (!codes.length) return emptyCodeTd();
       const el = document.createElement("td");
       el.className = "code-list";
-      codes.forEach((code, i) => {
-        if (i > 0) el.append(document.createTextNode(" "));
+      codes.forEach((code) => {
         const wrap = document.createElement("span");
-        wrap.style.cssText = "display:inline-flex;align-items:center;gap:4px;white-space:nowrap;";
+        wrap.style.cssText = "display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:2px 0;";
         wrap.addEventListener("click", () => {
           const tr = wrap.closest("tr");
           if (tr) tr.classList.add("row-visited");
@@ -1521,10 +1519,9 @@
       if (!entries.length) return emptyCodeTd();
       const el = document.createElement("td");
       el.className = "code-list";
-      entries.forEach((entry, i) => {
-        if (i > 0) el.append(document.createTextNode(" "));
+      entries.forEach((entry) => {
         const wrap = document.createElement("span");
-        wrap.style.cssText = "display:inline-flex;align-items:center;gap:4px;white-space:nowrap;";
+        wrap.style.cssText = "display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:2px 0;";
         const originTag = document.createElement("span");
         originTag.style.cssText = "font-size:0.68rem;color:var(--muted);";
         originTag.textContent = entry.origin === "case" ? "(on case)" : "(on order)";
