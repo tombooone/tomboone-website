@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-10 (v1.4.15)
+## Last updated: 2026-06-11 (v1.4.16)
 
 ---
 
@@ -29,13 +29,33 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.4.15**
+- Current version: **v1.4.16**
 - Repo: github.com/tombooone/tomboone-website
-- File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second)
+- File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third)
 - **Cache busting:** `styles.css` and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
 - Deploy: `git add index.html styles.css app.js && git commit -m "message" && git push`
 - Cloudflare Web Analytics: snippet added to `<head>` in index.html, wrapped in `location.hostname === 'tomboonern.com'` guard — fires only on tomboonern.com, not tomboone.io or localhost
 - Cloudflare Pages auto-deploys on push to main
+
+---
+
+## Dev / Prod Branch Workflow
+
+- `tomboone.io` is the **dev/staging** environment, served from the `dev` branch
+- `tomboonern.com` is **production**, served from the `main` branch
+- All day-to-day development work happens on the `dev` branch and is visible at tomboone.io
+- Only merge `dev` into `main` (which deploys to tomboonern.com) when Tom explicitly says **"release"**
+- Version bumps still happen on every push, on both branches, as always
+
+### Dev Gate (tomboone.io only)
+
+- A client-side password overlay gates the app on tomboone.io only (`window.location.hostname === 'tomboone.io'`); no-op on any other hostname, including tomboonern.com and localhost
+- Overlay markup lives in `index.html` (`#devGateOverlay`, `#devGatePassword`, `#devGateSubmit`), styled in `styles.css` (`.dev-gate-overlay`, `.dev-gate-box`, etc.); logic is in a standalone IIFE at the end of `app.js`, after the worm easter egg
+- Submitted password is hashed with `window.crypto.subtle.digest("SHA-256", ...)` and compared to a hardcoded hex hash constant (`PASSWORD_HASH`) in app.js — the plaintext password is never stored in the repo
+- On success: `sessionStorage.setItem('devUnlocked', 'true')` and the overlay hides; on page load, if this flag is already set the gate is skipped entirely (persists until the tab closes)
+- Wrong password: input shakes (`.dev-gate-shake` CSS animation) and clears, with no indication of what was wrong
+- A small fixed "DEV" badge (`#devBadge`, bottom-right corner) renders only on tomboone.io, regardless of gate state
+- "Go to production" link in the overlay points to `https://tomboonern.com`
 
 ---
 

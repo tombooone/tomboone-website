@@ -3588,3 +3588,50 @@
     restartBtn.addEventListener("click", startGame);
   })();
 
+  (function() {
+    const DEV_HOSTNAME = "tomboone.io";
+    const PASSWORD_HASH = "87ccf22c9ae44ed5ae2a77417e0b6fe5166ad9d3fc4d61d377d58004eba8411d";
+
+    if (window.location.hostname !== DEV_HOSTNAME) return;
+
+    const badge = document.getElementById("devBadge");
+    if (badge) badge.hidden = false;
+
+    if (sessionStorage.getItem("devUnlocked") === "true") return;
+
+    const overlay = document.getElementById("devGateOverlay");
+    const input = document.getElementById("devGatePassword");
+    const submitBtn = document.getElementById("devGateSubmit");
+    if (!overlay || !input || !submitBtn) return;
+
+    overlay.hidden = false;
+    input.focus();
+
+    async function sha256Hex(text) {
+      const data = new TextEncoder().encode(text);
+      const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+    }
+
+    async function tryUnlock() {
+      const hash = await sha256Hex(input.value);
+      if (hash === PASSWORD_HASH) {
+        sessionStorage.setItem("devUnlocked", "true");
+        overlay.hidden = true;
+        return;
+      }
+      input.value = "";
+      input.classList.remove("dev-gate-shake");
+      void input.offsetWidth;
+      input.classList.add("dev-gate-shake");
+      input.focus();
+    }
+
+    submitBtn.addEventListener("click", tryUnlock);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") tryUnlock();
+    });
+  })();
+
