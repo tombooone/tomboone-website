@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-11 (v1.4.17)
+## Last updated: 2026-06-11 (v1.4.18)
 
 ---
 
@@ -31,7 +31,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.4.17**
+- Current version: **v1.4.18**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third)
 - **Cache busting:** `styles.css` and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
@@ -51,8 +51,8 @@ All four tools on the home screen are **live and complete**:
 ### Dev Gate (tomboone.io only)
 
 - A full-screen overlay gates the app on tomboone.io only (`window.location.hostname === 'tomboone.io'`); no-op on any other hostname, including tomboonern.com and localhost
-- Overlay markup lives in `index.html` (`#devGateOverlay`, `.dev-gate-box`), styled in `styles.css` (`.dev-gate-overlay`, `.dev-gate-box`, `.dev-gate-prod-link`); logic is in a standalone IIFE at the end of `app.js`, after the worm easter egg
-- Overlay shows heading "Dev Environment", explanatory text, and a "Go to production" button linking to `https://tomboonern.com`; it is opaque, full-viewport, and blocks all interaction with the page behind it
+- Overlay markup lives in `index.html` (`#devGateOverlay`), styled in `styles.css` (`.dev-gate-overlay`, `.dev-gate-prod-link`); logic is in a standalone IIFE at the end of `app.js`, after the worm easter egg
+- Overlay is a fully opaque white full-viewport panel with one centered link, "Go to tomboonern.com", linking to `https://tomboonern.com` — no heading, subtext, or other content; nothing behind it is visible
 - Dismissal: a keystroke buffer listener (independent of the worm easter egg's listener and buffer) watches for the typed sequence "fefe" anywhere outside an input/textarea. On match, the overlay is hidden and `sessionStorage.setItem('devUnlocked', 'true')` is set
 - On page load: if `sessionStorage.getItem('devUnlocked') === 'true'`, the overlay is skipped entirely (persists until the tab closes)
 - DEV badge: `#devBadge`, an amber pill in the topbar next to the privacy pills (`.dev-pill` class on `.privacy-pill`), shown once the gate has been passed on tomboone.io; hostname-keyed the same way, so it never renders on tomboonern.com or localhost
