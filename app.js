@@ -1074,12 +1074,13 @@
             .filter(Boolean);
           eqValue.textContent = eqItems.length ? eqItems.join("\n") : "–";
 
-          // Surgeon Preference section (spans both grid columns) — ultrasound/microscope only
+          // Surgeon Preference section (spans both grid columns) — ultrasound/microscope only, WBVC only
           const kw = String(row.keyword || "").toLowerCase();
-          const showSurgPref = kw === "ultrasound" || kw === "microscope";
+          const showSurgPref = (kw === "ultrasound" || kw === "microscope") && /wbvc/i.test(row.location || "");
           let surgPrefSection = null;
 
           if (showSurgPref) {
+            const noPrefText = kw === "ultrasound" ? "No ultrasound preference on file" : "No microscope preference on file";
             surgPrefSection = document.createElement("div");
             surgPrefSection.style.cssText = "grid-column:1/-1;";
             const surgPrefLabel = document.createElement("div");
@@ -1094,7 +1095,7 @@
             } else {
               const prefs = SURGEON_EQUIPMENT_PREFS[row.surgeonId];
               if (!prefs) {
-                surgPrefValue.textContent = "No preference on file";
+                surgPrefValue.textContent = noPrefText;
               } else {
                 const prefParts = [];
                 if (kw === "ultrasound") {
@@ -1102,7 +1103,7 @@
                 } else if (kw === "microscope") {
                   if (prefs.microscope) prefParts.push(prefs.microscope);
                 }
-                surgPrefValue.textContent = prefParts.length ? prefParts.join("\n") : "No preference on file";
+                surgPrefValue.textContent = prefParts.length ? prefParts.join("\n") : noPrefText;
               }
             }
             surgPrefValue.addEventListener("click", (e) => {
