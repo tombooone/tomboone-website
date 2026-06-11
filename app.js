@@ -968,18 +968,11 @@
           const tr = document.createElement("tr");
           tr.className = "equip-row-main";
 
-          tr.append(td(row.date || ""));
-          tr.append(td(row.location || ""));
-
-          const caseCell = document.createElement("td");
-          const caseCellWrap = document.createElement("div");
-          caseCellWrap.style.cssText = "display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;height:100%;min-height:48px;";
-          const equipCaseSpan = document.createElement("span");
-          equipCaseSpan.textContent = row.caseNumber || "";
-          equipCaseSpan.style.fontWeight = "700";
-          makeCopyable(equipCaseSpan, row.caseNumber);
+          const dateCell = document.createElement("td");
+          dateCell.append(document.createTextNode(row.date || ""));
           const toggleAffordance = document.createElement("div");
           toggleAffordance.className = "equip-toggle-affordance";
+          toggleAffordance.style.cssText = "display:block;margin-top:4px;";
           const icon = document.createElement("span");
           icon.className = "equip-toggle-icon";
           icon.textContent = "▶";
@@ -987,8 +980,16 @@
           toggleLabel.className = "equip-toggle-label";
           toggleLabel.textContent = "Details";
           toggleAffordance.append(icon, toggleLabel);
-          caseCellWrap.append(equipCaseSpan, toggleAffordance);
-          caseCell.append(caseCellWrap);
+          dateCell.append(toggleAffordance);
+          tr.append(dateCell);
+          tr.append(td(row.location || ""));
+
+          const caseCell = document.createElement("td");
+          const equipCaseSpan = document.createElement("span");
+          equipCaseSpan.textContent = row.caseNumber || "";
+          equipCaseSpan.style.fontWeight = "700";
+          makeCopyable(equipCaseSpan, row.caseNumber);
+          caseCell.append(equipCaseSpan);
           tr.append(caseCell);
           tr.append(td(row.surgeon || ""));
           tr.append(td(row.specialNeeds));
