@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-11 (v1.4.20)
+## Last updated: 2026-06-15 (v1.4.21)
 
 ---
 
@@ -31,7 +31,7 @@ All four tools on the home screen are **live and complete**:
 
 ## Current Version & Deployment
 
-- Current version: **v1.4.20**
+- Current version: **v1.4.21**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third)
 - **Cache busting:** `styles.css` and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
@@ -358,3 +358,4 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 - Table 2 column widths: class `cpt-discrepancy-table` on the dynamically-built Table 2 `<table>`; `table-layout: fixed` is set on the class (the base `table` rule is auto layout, so the percentage widths are not enforced without it); CSS `th:nth-child` rules in styles.css set widths to ~8% Date, ~10% Location, ~9% Case #, ~25% Missing, ~25% Not on Order, ~23% Invalid. Each code entry in the Missing/Not on Order/Invalid cells is a block-level `display:flex;flex-wrap:wrap` span (one code per line, buttons wrap within the column) — NOT `inline-flex` + `white-space:nowrap`, which blew out the column widths and overflowed the table (fixed in v1.4.20). The old `cpt-missing-table` and `cpt-invalid-table` CSS rules were removed in v1.4.19.
 - CPT validation: `validCptCodes` is a large hardcoded `const Set` in app.js (manually added). In `auditRows()`, validity is checked first on both the order and case code lists: codes not in `validCptCodes` (and not in `knownProblemSet`) go to `invalidCodes` with their origin and are excluded from `missingCodes`/`notOnOrderCodes`. See the CPT audit results bullet above for the full bucket definitions.
 - CMS IPO codes: `inpatientOnlyCodes` is a hardcoded `const Set` in app.js with all CY 2026 Addendum E codes (source: OPPS_Addendum_E_2026 REV.pdf, ~1050 codes including T-codes, C-codes, G-codes). No external file fetch — `AddendumE2004.txt` has been deleted from the repo. The `loadInpatientOnlyCodes` function and its call site were removed entirely.
+- App renamed from "CPMC Scheduling Tools" to "CPMC Surgical and Perioperative Services Tools" (v1.4.21): updated in `<title>`, `.brand` div `aria-label`, and `<h1 id="homeTitle">` in index.html. No other references to the old name remain.
