@@ -47,6 +47,7 @@ All four tools on the home screen are **live and complete**:
 - Only merge `dev` into `main` (which deploys tomboonern.com) when Tom explicitly says **"release"**
 - Releases happen via merging `dev` into `main` — no force pushes or rebases to `main`
 - Version bumps happen on every push, on both branches, as always
+- Most recent release: `dev` merged into `main` at v1.4.23 (2026-06-15), fast-forwarded — tomboonern.com is current through v1.4.23
 
 ### Dev Gate (tomboone.io only)
 
