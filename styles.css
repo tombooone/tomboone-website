@@ -1302,3 +1302,44 @@
       letter-spacing: 0.06em;
     }
     .dev-pill[hidden] { display: none; }
+
+    /* Audit result filters (CPT campus + flag type, Equipment campus) */
+    .audit-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin: 0 0 16px;
+    }
+    .audit-filters:empty { display: none; }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .filter-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-right: 2px;
+    }
+    .filter-chip {
+      font-family: inherit;
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .filter-chip:hover {
+      border-color: var(--brand);
+    }
+    .filter-chip.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #ffffff;
+      font-weight: 700;
+    }

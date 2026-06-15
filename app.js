@@ -272,12 +272,14 @@
 
     // DOM refs for CPT audit results (used by renderResults)
     const cptAccordion = document.getElementById("cptAccordion");
+    const cptFilters = document.getElementById("cptFilters");
     const totalRowsEl = document.getElementById("totalRows");
     const missingCountEl = document.getElementById("missingCount");
     const inpatientCountEl = document.getElementById("inpatientCount");
 
     // DOM refs for equipment audit results (used by renderEquipmentResults)
     const equipmentMissingTable = document.getElementById("equipmentMissingTable");
+    const equipmentFilters = document.getElementById("equipmentFilters");
     const equipmentTotalRowsEl = document.getElementById("equipmentTotalRows");
     const equipmentMissingCountEl = document.getElementById("equipmentMissingCount");
     const equipmentKeywordCountEl = document.getElementById("equipmentKeywordCount");
@@ -637,6 +639,28 @@
       }
     }
 
+    // Campus codes used for display normalization and the audit filters
+    const CAMPUS_CODES = ["WBVC", "WBMB", "WBDE"];
+
+    // Derive the campus code (WBVC, WBMB, WBDE) from a Location/Department value.
+    // Returns "" if none is present.
+    function deriveCampus(locationStr) {
+      const m = String(locationStr || "").match(/\b(WBVC|WBMB|WBDE)\b/i);
+      return m ? m[1].toUpperCase() : "";
+    }
+
+    // Display-only room normalization (does NOT affect normalizeRoomName/rule matching).
+    // - If raw Room already starts with a campus code, show it unchanged.
+    // - Otherwise prepend the campus code derived from Location (e.g. "GI 01" + "WBVC GI" -> "WBVC GI 01").
+    // - If Room is blank, show just the campus code from Location.
+    function formatRoomDisplay(rawRoom, rawLocation) {
+      const room = String(rawRoom || "").trim();
+      const campus = deriveCampus(rawLocation);
+      if (room && /^(WBVC|WBMB|WBDE)\b/i.test(room)) return room;
+      if (room) return campus ? `${campus} ${room}` : room;
+      return campus || String(rawLocation || "").trim();
+    }
+
     function auditRows(rows) {
       const populatedRows = rows.filter(hasData);
 
@@ -660,7 +684,10 @@
         const insuranceInfo = cell(row, indexes.insuranceInfo);
         const panelInfo = cell(row, indexes.panelCodes);
         const patientClass = cell(row, indexes.patientClass).toUpperCase();
-        const location = cell(row, indexes.department) || cell(row, indexes.room);
+        const rawRoom = cell(row, indexes.room);
+        const rawLocation = cell(row, indexes.department) || rawRoom;
+        const location = formatRoomDisplay(rawRoom, rawLocation);
+        const campus = deriveCampus(rawLocation);
         const payerValue = indexes.payer != null ? cell(row, indexes.payer) : "";
         const orderExtract = extractCodes(insuranceInfo);
         const caseExtract = extractCodes(panelInfo);
@@ -696,6 +723,7 @@
             sortDate: dateValue.sort,
             caseNumber,
             location,
+            campus,
             orderCodes: orderList,
             caseCodes: caseList,
             missingCodes,
@@ -711,6 +739,7 @@
             sortDate: dateValue.sort,
             caseNumber,
             location,
+            campus,
             codes: inpatientMatches,
             explanation: codeSentence(inpatientMatches, "listed by CMS Addendum E as inpatient-only but appears on an outpatient case")
           });
@@ -740,7 +769,10 @@
         const caseNumber = cell(row, indexes.caseNumber);
         const specialNeeds = cell(row, indexes.specialNeeds);
         const equipment = cell(row, indexes.equipment);
-        const location = cell(row, indexes.department) || cell(row, indexes.room);
+        const rawRoom = cell(row, indexes.room);
+        const rawLocation = cell(row, indexes.department) || rawRoom;
+        const location = formatRoomDisplay(rawRoom, rawLocation);
+        const campus = deriveCampus(rawLocation);
         const surgeonRaw = cell(row, indexes.surgeon);
         const dateValue = parseDateCell(cell(row, indexes.date));
         const foundTerms = findEquipmentTermsInText(specialNeeds);
@@ -757,6 +789,7 @@
           sortDate: dateValue.sort,
           caseNumber,
           location,
+          campus,
           surgeon: parseSurgeonLastName(surgeonRaw),
           surgeonId: extractSurgeonId(surgeonRaw),
           specialNeeds,
@@ -821,25 +854,107 @@
       return thead;
     }
 
+    // Builds a labeled row of filter chips. onSelect receives the chosen option value.
+    function buildFilterGroup(label, options, getCurrent, onSelect) {
+      const group = document.createElement("div");
+      group.className = "filter-group";
+      const lab = document.createElement("span");
+      lab.className = "filter-label";
+      lab.textContent = label + ":";
+      group.append(lab);
+      const current = getCurrent();
+      options.forEach((opt) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "filter-chip" + (opt.value === current ? " active" : "");
+        chip.textContent = opt.label;
+        chip.addEventListener("click", () => onSelect(opt.value));
+        group.append(chip);
+      });
+      return group;
+    }
+
+    // CPT audit filter state (campus applies to both tables; flag type applies to Table 2)
+    let lastCptResult = null;
+    let cptCampusFilter = "all";
+    let cptFlagFilter = "all";
+
+    function getCptFilteredRows(result) {
+      let inpatientRows = result.inpatientRows;
+      let discrepancyRows = result.discrepancyRows;
+      if (cptCampusFilter !== "all") {
+        inpatientRows = inpatientRows.filter((r) => r.campus === cptCampusFilter);
+        discrepancyRows = discrepancyRows.filter((r) => r.campus === cptCampusFilter);
+      }
+      if (cptFlagFilter !== "all") {
+        // Surface the case if it has any flag of the selected type; the row still
+        // renders its full flag set (missing/not on order/invalid) once surfaced.
+        discrepancyRows = discrepancyRows.filter((r) => r[cptFlagFilter].length);
+      }
+      return { inpatientRows, discrepancyRows };
+    }
+
     function renderResults(result) {
+      lastCptResult = result;
+      cptCampusFilter = "all";
+      cptFlagFilter = "all";
+      renderCptFilterControls(result);
+      renderCptTables();
+    }
+
+    function renderCptFilterControls(result) {
+      cptFilters.textContent = "";
+      const presentCampuses = CAMPUS_CODES.filter(
+        (c) => result.discrepancyRows.some((r) => r.campus === c) || result.inpatientRows.some((r) => r.campus === c)
+      );
+
+      if (presentCampuses.length > 1) {
+        const campusOptions = [{ value: "all", label: "All campuses" }].concat(
+          presentCampuses.map((c) => ({ value: c, label: c }))
+        );
+        cptFilters.append(buildFilterGroup("Campus", campusOptions, () => cptCampusFilter, (v) => {
+          cptCampusFilter = v;
+          renderCptTables();
+          renderCptFilterControls(lastCptResult);
+        }));
+      }
+
+      const flagOptions = [
+        { value: "all", label: "All flags" },
+        { value: "missingCodes", label: "Missing" },
+        { value: "notOnOrderCodes", label: "Not on Order" },
+        { value: "invalidCodes", label: "Invalid" }
+      ];
+      cptFilters.append(buildFilterGroup("Flag type", flagOptions, () => cptFlagFilter, (v) => {
+        cptFlagFilter = v;
+        renderCptTables();
+        renderCptFilterControls(lastCptResult);
+      }));
+    }
+
+    function renderCptTables() {
+      const result = lastCptResult;
       totalRowsEl.textContent = String(result.totalRows);
       missingCountEl.textContent = String(result.discrepancyRows.length);
       inpatientCountEl.textContent = String(result.inpatientRows.length);
+
+      const filtered = getCptFilteredRows(result);
+      const inpatientRows = filtered.inpatientRows;
 
       cptAccordion.textContent = "";
 
       // Table 1: Inpatient-Only CPT Codes on Outpatient Cases
       cptAccordion.append(makeAccordionSection(
         "Table 1: Inpatient-Only CPT Codes on Outpatient Cases (Medicare)",
-        result.inpatientRows.length,
+        inpatientRows.length,
         (body) => {
           const wrap = document.createElement("div");
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.append(makeTableHead("Date", "Location", "Case #", "Explanation"));
           const tbody = document.createElement("tbody");
-          if (result.inpatientRows.length) {
-            result.inpatientRows.forEach((row) => {
+          if (inpatientRows.length) {
+            inpatientRows.forEach((row) => {
               const tr = document.createElement("tr");
               tr.append(td(row.date));
               tr.append(td(row.location || ""));
@@ -860,7 +975,7 @@
       ));
 
       // Table 2: CPT Code Discrepancies (consolidated bidirectional comparison)
-      const t2Rows = result.discrepancyRows;
+      const t2Rows = filtered.discrepancyRows;
       const t2MissingCases = t2Rows.filter((r) => r.missingCodes.length).length;
       const t2NotOnOrderCases = t2Rows.filter((r) => r.notOnOrderCodes.length).length;
       const t2InvalidCases = t2Rows.filter((r) => r.invalidCodes.length).length;
@@ -1003,14 +1118,45 @@
       return div;
     }
 
+    // Equipment audit filter state (campus only)
+    let lastEquipResult = null;
+    let equipCampusFilter = "all";
+
     function renderEquipmentResults(result) {
+      lastEquipResult = result;
+      equipCampusFilter = "all";
+      renderEquipmentFilterControls(result);
+      renderEquipmentTable();
+    }
+
+    function renderEquipmentFilterControls(result) {
+      equipmentFilters.textContent = "";
+      const presentCampuses = CAMPUS_CODES.filter((c) => result.includedRows.some((r) => r.campus === c));
+      if (presentCampuses.length > 1) {
+        const campusOptions = [{ value: "all", label: "All campuses" }].concat(
+          presentCampuses.map((c) => ({ value: c, label: c }))
+        );
+        equipmentFilters.append(buildFilterGroup("Campus", campusOptions, () => equipCampusFilter, (v) => {
+          equipCampusFilter = v;
+          renderEquipmentTable();
+          renderEquipmentFilterControls(lastEquipResult);
+        }));
+      }
+    }
+
+    function renderEquipmentTable() {
+      const result = lastEquipResult;
       equipmentTotalRowsEl.textContent = String(result.totalRows);
       equipmentMissingCountEl.textContent = String(result.includedRows.length);
       equipmentKeywordCountEl.textContent = String(equipmentKeywords.length);
       equipmentMissingTable.textContent = "";
 
-      if (result.includedRows.length) {
-        result.includedRows.forEach((row) => {
+      const rows = equipCampusFilter === "all"
+        ? result.includedRows
+        : result.includedRows.filter((r) => r.campus === equipCampusFilter);
+
+      if (rows.length) {
+        rows.forEach((row) => {
           // Main row with toggle
           const tr = document.createElement("tr");
           tr.className = "equip-row-main";
@@ -1123,7 +1269,7 @@
 
           // Surgeon Preference section (spans both grid columns) — ultrasound/microscope only, WBVC only
           const kw = String(row.keyword || "").toLowerCase();
-          const showSurgPref = (kw === "ultrasound" || kw === "microscope") && /wbvc/i.test(row.location || "");
+          const showSurgPref = (kw === "ultrasound" || kw === "microscope") && (row.campus === "WBVC" || /wbvc/i.test(row.location || ""));
           let surgPrefSection = null;
 
           if (showSurgPref) {
