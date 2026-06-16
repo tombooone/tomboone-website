@@ -40,6 +40,12 @@
         accepted: ["department", "department name", "or department"]
       },
       {
+        key: "location",
+        label: "Location",
+        optional: true,
+        accepted: ["location", "department location", "or location"]
+      },
+      {
         key: "payer",
         label: "Payer",
         optional: true,
@@ -262,6 +268,12 @@
         label: "Department",
         optional: true,
         accepted: ["department", "department name", "or department"]
+      },
+      {
+        key: "location",
+        label: "Location",
+        optional: true,
+        accepted: ["location", "department location", "or location"]
       }
     ];
 
@@ -685,7 +697,7 @@
         const panelInfo = cell(row, indexes.panelCodes);
         const patientClass = cell(row, indexes.patientClass).toUpperCase();
         const rawRoom = cell(row, indexes.room);
-        const rawLocation = cell(row, indexes.department) || rawRoom;
+        const rawLocation = (indexes.location != null && cell(row, indexes.location)) || cell(row, indexes.department) || rawRoom;
         const location = formatRoomDisplay(rawRoom, rawLocation);
         const campus = deriveCampus(rawLocation);
         const payerValue = indexes.payer != null ? cell(row, indexes.payer) : "";
@@ -770,7 +782,7 @@
         const specialNeeds = cell(row, indexes.specialNeeds);
         const equipment = cell(row, indexes.equipment);
         const rawRoom = cell(row, indexes.room);
-        const rawLocation = cell(row, indexes.department) || rawRoom;
+        const rawLocation = (indexes.location != null && cell(row, indexes.location)) || cell(row, indexes.department) || rawRoom;
         const location = formatRoomDisplay(rawRoom, rawLocation);
         const campus = deriveCampus(rawLocation);
         const surgeonRaw = cell(row, indexes.surgeon);
