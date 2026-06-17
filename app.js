@@ -506,7 +506,6 @@
       }
 
       function showFromShared() {
-        console.log("[showFromShared] toolKey:", toolKey, "| sharedAuditResults:", sharedAuditResults ? { hasCpt: !!sharedAuditResults.cpt, hasEquipment: !!sharedAuditResults.equipment, hasRoomRules: !!sharedAuditResults.roomRules } : null);
         if (sharedAuditResults) {
           _showCachedResult(toolKey);
         } else if (sharedAuditData) {
@@ -598,11 +597,6 @@
         sharedAuditResults.roomRulesError = e.message || "Unable to run room rules audit on this file.";
       }
 
-      console.log("[_runAllAudits] sharedAuditResults after all audits:", {
-        hasCpt: !!sharedAuditResults.cpt, cptError: sharedAuditResults.cptError,
-        hasEquipment: !!sharedAuditResults.equipment, equipmentError: sharedAuditResults.equipmentError,
-        hasRoomRules: !!sharedAuditResults.roomRules, roomRulesError: sharedAuditResults.roomRulesError,
-      });
     }
 
     function _showCachedResult(toolKey) {
