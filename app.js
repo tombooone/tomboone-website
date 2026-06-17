@@ -1000,7 +1000,7 @@
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.className = "cpt-discrepancy-table";
-          table.append(makeTableHead("Date", "Location", "Case #", "Missing", "Not on Order", "Invalid"));
+          table.append(makeTableHead("Date", "Location", "Case #", "On Order, Not on Case", "On Case, Not on Order", "Invalid CPT Codes"));
           const tbody = document.createElement("tbody");
           if (t2Rows.length) {
             t2Rows.forEach((row) => {
