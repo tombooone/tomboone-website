@@ -228,7 +228,16 @@
       "6552": { ultrasound: "W Unit Ultrasound Aloka" }
     };
 
-    const KNOWN_PROBLEM_CPTS = [];
+    const KNOWN_PROBLEM_CPTS = [
+      { code: "J7296", description: "Levonorgestrel-releasing intrauterine contraceptive system (Kyleena), 19.5 mg", dateAdded: "2026-06-08", ticket: "RITM1383957" },
+      { code: "J7298", description: "Levonorgestrel-releasing intrauterine contraceptive system (Mirena), 52 mg", dateAdded: "2026-06-08", ticket: "RITM1383958" },
+      { code: "Q0091", description: "Screening Papanicolaou smear; obtaining, preparing, and conveyance of cervical or vaginal smear to laboratory", dateAdded: "2026-06-09", ticket: "RITM1383960" },
+      { code: "Q9967", description: "Low osmolar contrast material, 300-399 mg/ml iodine concentration, per ml", dateAdded: "2026-06-09", ticket: "RITM1383962" },
+      { code: "J7297", description: "Levonorgestrel-releasing intrauterine contraceptive system (Liletta), 52 mg", dateAdded: "2026-06-09", ticket: "RITM1383963" },
+      { code: "J7301", description: "Levonorgestrel-releasing intrauterine contraceptive system (Skyla), 13.5 mg", dateAdded: "2026-06-09", ticket: "RITM1383965" },
+      { code: "45386", description: "Colonoscopy, flexible; with dilation", dateAdded: "2026-06-09", ticket: "RITM1383952" },
+      { code: "44394", description: "Colonoscopy through stoma; with removal of tumor(s), polyp(s), or other lesion(s) by snare technique", dateAdded: "2026-06-09", ticket: "RITM1383989" }
+    ];
 
     const equipmentRequiredColumns = [
       {
