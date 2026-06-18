@@ -828,7 +828,7 @@
               dateCell.append(document.createTextNode(row.date || ""));
               const toggleAffordance = document.createElement("div");
               toggleAffordance.className = "equip-toggle-affordance";
-              toggleAffordance.style.cssText = "display:block;margin-top:4px;";
+              toggleAffordance.style.cssText = "margin-top:4px;";
               const icon = document.createElement("span");
               icon.className = "equip-toggle-icon";
               icon.textContent = "▶";
@@ -994,7 +994,7 @@
           dateCell.append(document.createTextNode(row.date || ""));
           const toggleAffordance = document.createElement("div");
           toggleAffordance.className = "equip-toggle-affordance";
-          toggleAffordance.style.cssText = "display:block;margin-top:4px;";
+          toggleAffordance.style.cssText = "margin-top:4px;";
           const icon = document.createElement("span");
           icon.className = "equip-toggle-icon";
           icon.textContent = "▶";
