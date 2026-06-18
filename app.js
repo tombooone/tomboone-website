@@ -469,12 +469,12 @@
     }
 
     // Campus codes used for display normalization and the audit filters
-    const CAMPUS_CODES = ["WBVC", "WBMB", "WBDE"];
+    const campusCodesPattern = CAMPUS_CONFIG.WBVC.campusCodes.join("|");
 
     // Derive the campus code (WBVC, WBMB, WBDE) from a Location/Department value.
     // Returns "" if none is present.
     function deriveCampus(locationStr) {
-      const m = String(locationStr || "").match(/\b(WBVC|WBMB|WBDE)\b/i);
+      const m = String(locationStr || "").match(new RegExp(`\\b(${campusCodesPattern})\\b`, "i"));
       return m ? m[1].toUpperCase() : "";
     }
 
@@ -485,7 +485,7 @@
     function formatRoomDisplay(rawRoom, rawLocation) {
       const room = String(rawRoom || "").trim();
       const campus = deriveCampus(rawLocation);
-      if (room && /^(WBVC|WBMB|WBDE)\b/i.test(room)) return room;
+      if (room && new RegExp(`^(${campusCodesPattern})\\b`, "i").test(room)) return room;
       if (room) return campus ? `${campus} ${room}` : room;
       return campus || String(rawLocation || "").trim();
     }
@@ -733,7 +733,7 @@
 
     function renderCptFilterControls(result) {
       cptFilters.textContent = "";
-      const presentCampuses = CAMPUS_CODES.filter(
+      const presentCampuses = CAMPUS_CONFIG.WBVC.campusCodes.filter(
         (c) => result.discrepancyRows.some((r) => r.campus === c) || result.inpatientRows.some((r) => r.campus === c)
       );
 
@@ -960,7 +960,7 @@
 
     function renderEquipmentFilterControls(result) {
       equipmentFilters.textContent = "";
-      const presentCampuses = CAMPUS_CODES.filter((c) => result.includedRows.some((r) => r.campus === c));
+      const presentCampuses = CAMPUS_CONFIG.WBVC.campusCodes.filter((c) => result.includedRows.some((r) => r.campus === c));
       if (presentCampuses.length > 1) {
         const campusOptions = [{ value: "all", label: "All campuses" }].concat(
           presentCampuses.map((c) => ({ value: c, label: c }))
@@ -1098,7 +1098,7 @@
 
           // Surgeon Preference section (spans both grid columns) — ultrasound/microscope only, WBVC only
           const kw = String(row.keyword || "").toLowerCase();
-          const showSurgPref = (kw === "ultrasound" || kw === "microscope") && (row.campus === "WBVC" || /wbvc/i.test(row.location || ""));
+          const showSurgPref = (kw === "ultrasound" || kw === "microscope") && (row.campus === CAMPUS_CONFIG.WBVC.campusCode || new RegExp(CAMPUS_CONFIG.WBVC.campusCode, "i").test(row.location || ""));
           let surgPrefSection = null;
 
           if (showSurgPref) {
@@ -2405,8 +2405,9 @@
       const headerInfo = findHeaderInfoForColumns(populatedRows, roomRulesColumns);
       if (!headerInfo) throw new Error("Could not locate the header row in this spreadsheet.");
       const { indexes, headerRowIndex } = headerInfo;
+      const roomPrefixRegex = new RegExp(CAMPUS_CONFIG.WBVC.roomPrefix.replace(/\s+/g, "\\s+") + "\\b", "i");
       const dataRows = populatedRows.slice(headerRowIndex + 1)
-        .filter((row) => /wbvc\s+or\b/i.test(cell(row, indexes.room)));
+        .filter((row) => roomPrefixRegex.test(cell(row, indexes.room)));
       const violations = [];
       const cases = [];
       const ruleMatchCounts = new Map();
@@ -2489,7 +2490,6 @@
 
       // Post-process Tier 3: suppress flags when no allowed room has a prime-time gap
       // large enough to fit the contiguous block of related cases for that rule.
-      const T3_PRIME_END = 930; // 15:30
       const t3DayMs = 86400000;
       const t3Suppressed = new Set(); // "caseNumber:ruleId"
       const t3ProcessedBlocks = new Set(); // "sortDate:room:ruleId:blockStart"
@@ -2542,9 +2542,9 @@
         t3ProcessedBlocks.add(blockKey);
 
         // Biweekly inservice Friday: OR start shifts 07:30 → 09:00
-        const diffDays = Math.round((v.sortDate - BIWEEKLY_FRI_ANCHOR_MS) / t3DayMs);
+        const diffDays = Math.round((v.sortDate - CAMPUS_CONFIG.WBVC.biweeklyFriAnchorMs) / t3DayMs);
         const isInserviceFri = new Date(v.sortDate).getDay() === 5 && diffDays >= 0 && diffDays % 14 === 0;
-        const primeStart = isInserviceFri ? 540 : 450; // 09:00 or 07:30
+        const primeStart = isInserviceFri ? CAMPUS_CONFIG.WBVC.inservicePrimeStartMin : CAMPUS_CONFIG.WBVC.primeStartMin;
 
         // Feasibility: does any allowed room have a prime-time gap ≥ blockDur?
         let feasible = false;
@@ -2559,7 +2559,7 @@
             if (s > cursor && s - cursor >= blockDur) { feasible = true; break; }
             if (e > cursor) cursor = e;
           }
-          if (!feasible && T3_PRIME_END - cursor >= blockDur) feasible = true;
+          if (!feasible && CAMPUS_CONFIG.WBVC.primeEndMin - cursor >= blockDur) feasible = true;
         }
 
         if (!feasible) {
@@ -2616,9 +2616,9 @@
         if (ops2ProcessedBlocks.has(blockKey)) return;
         ops2ProcessedBlocks.add(blockKey);
 
-        const diffDays = Math.round((v.sortDate - BIWEEKLY_FRI_ANCHOR_MS) / t3DayMs);
+        const diffDays = Math.round((v.sortDate - CAMPUS_CONFIG.WBVC.biweeklyFriAnchorMs) / t3DayMs);
         const isInserviceFri = new Date(v.sortDate).getDay() === 5 && diffDays >= 0 && diffDays % 14 === 0;
-        const primeStart = isInserviceFri ? 540 : 450;
+        const primeStart = isInserviceFri ? CAMPUS_CONFIG.WBVC.inservicePrimeStartMin : CAMPUS_CONFIG.WBVC.primeStartMin;
 
         let feasible = false;
         for (const checkRoom of ["OR 4", "OR 3", "OR 5"]) {
@@ -2632,7 +2632,7 @@
             if (s > cursor && s - cursor >= blockDur) { feasible = true; break; }
             if (e > cursor) cursor = e;
           }
-          if (!feasible && T3_PRIME_END - cursor >= blockDur) feasible = true;
+          if (!feasible && CAMPUS_CONFIG.WBVC.primeEndMin - cursor >= blockDur) feasible = true;
         }
 
         if (!feasible) {
@@ -2764,18 +2764,12 @@
     let _calSortedDates  = [];
 
     // ── Gantt constants ───────────────────────────────────────────────────────
-    const GANTT_START_MIN = 390;   // 06:30
-    const GANTT_END_MIN   = 1140;  // 19:00
-    // Biweekly staff inservice Fridays (every 14 days from 2026-05-29) → OR start at 09:00
-    const BIWEEKLY_FRI_ANCHOR_MS = new Date(2026, 4, 29).getTime();
     const GANTT_PX_MIN    = 1.5;
     const GANTT_ROW_H     = 44;
     const GANTT_AXIS_H    = 28;
     const GANTT_LABEL_W   = 72;
     const GANTT_MIN_W     = 20;
-    const GANTT_TOTAL_W   = (GANTT_END_MIN - GANTT_START_MIN) * GANTT_PX_MIN;
-    const GANTT_ROOMS     = ["OR 1","OR 2","OR 3","OR 4","OR 5","OR 6","OR 7",
-                             "OR 8","OR 9","OR 10","OR 11","OR 12","OR 13","OR 14"];
+    const GANTT_TOTAL_W   = (CAMPUS_CONFIG.WBVC.ganttEndMin - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN;
 
     // ── buildGantt ────────────────────────────────────────────────────────────
     function buildGantt(result) {
@@ -3006,31 +3000,31 @@
       corner.className = "gantt-corner";
       fixedCol.append(corner);
 
-      GANTT_ROOMS.forEach((room) => {
+      CAMPUS_CONFIG.WBVC.rooms.forEach((room) => {
         const label = document.createElement("div");
         label.className = "gantt-room-label";
         label.textContent = room;
         fixedCol.append(label);
       });
 
-      // Time axis — start at first full hour >= GANTT_START_MIN to avoid mislabeled ticks
-      const firstTickMin = Math.ceil(GANTT_START_MIN / 60) * 60;
+      // Time axis — start at first full hour >= CAMPUS_CONFIG.WBVC.ganttStartMin to avoid mislabeled ticks
+      const firstTickMin = Math.ceil(CAMPUS_CONFIG.WBVC.ganttStartMin / 60) * 60;
       const axis = document.createElement("div");
       axis.className = "gantt-time-axis";
       axis.style.width = GANTT_TOTAL_W + "px";
-      for (let m = firstTickMin; m <= GANTT_END_MIN; m += 60) {
+      for (let m = firstTickMin; m <= CAMPUS_CONFIG.WBVC.ganttEndMin; m += 60) {
         const tick = document.createElement("div");
         tick.className = "gantt-time-tick";
         const h = Math.floor(m / 60);
         tick.textContent = `${h}:00`;
-        tick.style.left = ((m - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
+        tick.style.left = ((m - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
         axis.append(tick);
       }
       scrollable.append(axis);
 
       // Biweekly inservice Friday → OR start at 09:00 instead of 07:30
       const dayMs = 86400000;
-      const diffDays = Math.round((sortDate - BIWEEKLY_FRI_ANCHOR_MS) / dayMs);
+      const diffDays = Math.round((sortDate - CAMPUS_CONFIG.WBVC.biweeklyFriAnchorMs) / dayMs);
       const isInserviceFriday = new Date(sortDate).getDay() === 5
         && diffDays >= 0 && diffDays % 14 === 0;
       const refMin = isInserviceFriday ? 9 * 60 : 7 * 60 + 30;
@@ -3043,23 +3037,23 @@
       });
 
       // Room lanes
-      GANTT_ROOMS.forEach((room, i) => {
+      CAMPUS_CONFIG.WBVC.rooms.forEach((room, i) => {
         const lane = document.createElement("div");
         lane.className = "gantt-lane" + (i % 2 === 1 ? " gantt-lane-alt" : "");
         lane.style.width = GANTT_TOTAL_W + "px";
 
         // Gridlines on the hour (aligned to tick marks)
-        for (let m = firstTickMin; m <= GANTT_END_MIN; m += 60) {
+        for (let m = firstTickMin; m <= CAMPUS_CONFIG.WBVC.ganttEndMin; m += 60) {
           const gl = document.createElement("div");
           gl.className = "gantt-lane-gridline";
-          gl.style.left = ((m - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
+          gl.style.left = ((m - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
           lane.append(gl);
         }
 
         // Reference line (07:30 standard, 09:00 on biweekly inservice Fridays)
         const ref = document.createElement("div");
         ref.className = "gantt-ref-line";
-        ref.style.left = ((refMin - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
+        ref.style.left = ((refMin - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
         lane.append(ref);
 
         // Case blocks — 3-segment Epic-snapboard style
@@ -3067,8 +3061,8 @@
           .forEach((c) => {
             const viols   = violsByCaseNum.get(c.caseNumber) || [];
             const minTier = viols.length ? Math.min(...viols.map((v) => v.ruleTier)) : null;
-            const clampS  = Math.max(c.startMin, GANTT_START_MIN);
-            const clampE  = Math.min(c.endMin,   GANTT_END_MIN);
+            const clampS  = Math.max(c.startMin, CAMPUS_CONFIG.WBVC.ganttStartMin);
+            const clampE  = Math.min(c.endMin,   CAMPUS_CONFIG.WBVC.ganttEndMin);
             if (clampS >= clampE) return;
 
             const blockW  = Math.max((clampE - clampS) * GANTT_PX_MIN, GANTT_MIN_W);
@@ -3083,7 +3077,7 @@
             const block = document.createElement("div");
             block.className = "gantt-case-block" +
               (minTier !== null ? " gantt-viol-" + minTier : "");
-            block.style.left  = ((clampS - GANTT_START_MIN) * GANTT_PX_MIN) + "px";
+            block.style.left  = ((clampS - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
             block.style.width = blockW + "px";
             block.dataset.caseNum = String(c.caseNumber);
 

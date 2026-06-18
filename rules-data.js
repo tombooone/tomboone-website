@@ -1,7 +1,23 @@
-// rules-data.js — pure data constants for the CPMC audit tools (v1.5.0).
+// rules-data.js — pure data constants for the CPMC audit tools (v1.5.1).
 // Loaded BEFORE app.js in index.html; these top-level const bindings are
 // shared with app.js via the global lexical environment of classic scripts.
 // SURGEON_PREFS must be declared before ROOM_RULES (ROOM_RULES spreads it).
+
+    const CAMPUS_CONFIG = {
+      WBVC: {
+        roomPrefix:        "WBVC OR",
+        campusCode:        "WBVC",
+        rooms:             ["OR 1","OR 2","OR 3","OR 4","OR 5","OR 6","OR 7",
+                            "OR 8","OR 9","OR 10","OR 11","OR 12","OR 13","OR 14"],
+        ganttStartMin:     390,   // 06:30
+        ganttEndMin:       1140,  // 19:00
+        primeStartMin:     450,   // 07:30
+        primeEndMin:       930,   // 15:30
+        inservicePrimeStartMin: 540, // 09:00 on biweekly inservice Fridays
+        biweeklyFriAnchorMs: new Date(2026, 4, 29).getTime(),
+        campusCodes:       ["WBVC", "WBMB", "WBDE"],
+      }
+    };
 
     const SURGEON_PREFS = [
       { name: "Jossart",    id: "105751",   rooms: ["OR 10"] },
