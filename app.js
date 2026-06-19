@@ -306,6 +306,14 @@
       toolKey: "staffing",
     });
 
+    // Scheduled-staffing comparison panel: live updates as inputs change
+    document.getElementById("staffingDaySelect").addEventListener("change", (e) => {
+      selectStaffingDay(Number(e.target.value) || 0);
+    });
+    ["staffingEight", "staffingTen", "staffingTwelve"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", updateStaffingComparison);
+    });
+
     function showView(viewName) {
       homeView.classList.toggle("active", viewName === "home");
       auditView.classList.toggle("active", viewName === "audit");
@@ -2751,7 +2759,7 @@
         .sort((a, b) => a.sortDate - b.sortDate)
         .map((d) => {
           const staffHours = d.minutes * STAFFING_CONFIG.whpuos;
-          const ftes = staffHours / STAFFING_CONFIG.fteHoursPerDay;
+          const ftes = staffHours / STAFFING_CONFIG.fteWeeklyHours;
           return {
             display:    d.display,
             sortDate:   d.sortDate,
@@ -2768,13 +2776,23 @@
       return { totalRows, days, totalMinutes, totalStaffHours };
     }
 
+    // Holds the currently rendered staffing result + selected day index for the
+    // scheduled-staffing comparison panel below the per-day table.
+    let _staffingResult = null;
+    let _staffingSelectedIndex = 0;
+
     function renderStaffingResults(result) {
+      _staffingResult = result;
+      _staffingSelectedIndex = 0;
+
       document.getElementById("staffingDayCount").textContent = String(result.days.length);
       document.getElementById("staffingTotalMinutes").textContent = String(Math.round(result.totalMinutes));
       document.getElementById("staffingTotalHours").textContent = result.totalStaffHours.toFixed(1);
 
       const tbody = document.getElementById("staffingTable");
       tbody.textContent = "";
+
+      const schedulePanel = document.getElementById("staffingSchedulePanel");
 
       if (!result.days.length) {
         const tr = document.createElement("tr");
@@ -2784,11 +2802,14 @@
         emptyCell.textContent = "No cases with projected start and end times were found.";
         tr.append(emptyCell);
         tbody.append(tr);
+        if (schedulePanel) schedulePanel.hidden = true;
         return;
       }
+      if (schedulePanel) schedulePanel.hidden = false;
 
-      result.days.forEach((d) => {
+      result.days.forEach((d, idx) => {
         const tr = document.createElement("tr");
+        tr.dataset.dayIndex = String(idx);
         [
           d.display,
           String(Math.round(d.minutes)),
@@ -2799,8 +2820,64 @@
           td.textContent = val;
           tr.append(td);
         });
+        tr.addEventListener("click", () => selectStaffingDay(idx));
         tbody.append(tr);
       });
+
+      // Populate the day dropdown from the per-day rows
+      const select = document.getElementById("staffingDaySelect");
+      select.textContent = "";
+      result.days.forEach((d, idx) => {
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        opt.textContent = d.display;
+        select.append(opt);
+      });
+
+      selectStaffingDay(0);
+    }
+
+    function selectStaffingDay(index) {
+      if (!_staffingResult || !_staffingResult.days.length) return;
+      _staffingSelectedIndex = index;
+
+      // Keep dropdown + row highlight in sync
+      const select = document.getElementById("staffingDaySelect");
+      if (select) select.value = String(index);
+      document.querySelectorAll("#staffingTable tr").forEach((tr) => {
+        tr.classList.toggle("selected", tr.dataset.dayIndex === String(index));
+      });
+
+      updateStaffingComparison();
+    }
+
+    function updateStaffingComparison() {
+      if (!_staffingResult || !_staffingResult.days.length) return;
+      const day = _staffingResult.days[_staffingSelectedIndex];
+      if (!day) return;
+
+      const eight  = Math.max(0, Number(document.getElementById("staffingEight").value) || 0);
+      const ten    = Math.max(0, Number(document.getElementById("staffingTen").value) || 0);
+      const twelve = Math.max(0, Number(document.getElementById("staffingTwelve").value) || 0);
+
+      const scheduledFte =
+        eight  * STAFFING_CONFIG.shiftFte.eight +
+        ten    * STAFFING_CONFIG.shiftFte.ten +
+        twelve * STAFFING_CONFIG.shiftFte.twelve;
+
+      const budgetedFte = day.ftes;
+      const variance = budgetedFte - scheduledFte; // + = under budget, − = over budget
+
+      document.getElementById("staffingBudgetedFte").textContent = budgetedFte.toFixed(1);
+      document.getElementById("staffingScheduledFte").textContent = scheduledFte.toFixed(1);
+
+      const varEl = document.getElementById("staffingVariance");
+      const rounded = variance.toFixed(1);
+      // Avoid showing a signed "-0.0"
+      const display = Math.abs(variance) < 0.05 ? "0.0" : (variance > 0 ? `+${rounded}` : rounded);
+      varEl.textContent = display;
+      varEl.classList.toggle("variance-over", variance < -0.05);  // over budget = red
+      varEl.classList.toggle("variance-under", variance >= -0.05); // under/neutral = green
     }
 
     function renderRoomRulesResults(result) {

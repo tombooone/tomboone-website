@@ -423,6 +423,52 @@
       margin-top: 24px;
     }
 
+    /* OR Staffing Budget Calculator — day selection + scheduled-staffing panel */
+    .staffing-table tbody tr {
+      cursor: pointer;
+    }
+    .staffing-table tbody tr.selected td {
+      background: var(--soft);
+      box-shadow: inset 3px 0 0 var(--brand);
+    }
+    .staffing-schedule-panel {
+      margin-top: 22px;
+    }
+    .staffing-schedule-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .staffing-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .staffing-field span {
+      font-weight: 500;
+    }
+    .staffing-field select,
+    .staffing-field input {
+      font: inherit;
+      font-size: 0.95rem;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .staffing-field select:focus,
+    .staffing-field input:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 2px rgba(0, 124, 137, 0.15);
+    }
+    .staffing-compare-grid .metric-value.variance-under { color: #1a7f4b; }
+    .staffing-compare-grid .metric-value.variance-over { color: #b42318; }
+
     .accordion-section {
       border: 1px solid var(--line);
       border-radius: 8px;
