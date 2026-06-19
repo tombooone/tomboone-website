@@ -1,4 +1,4 @@
-// rules-data.js — pure data constants for the CPMC audit tools (v1.5.4).
+// rules-data.js — pure data constants for the CPMC audit tools (v1.5.5).
 // Loaded BEFORE app.js in index.html; these top-level const bindings are
 // shared with app.js via the global lexical environment of classic scripts.
 // SURGEON_PREFS must be declared before ROOM_RULES (ROOM_RULES spreads it).

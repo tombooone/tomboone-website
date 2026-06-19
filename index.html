@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.5.4">
+  <link rel="stylesheet" href="styles.css?v=1.5.5">
   <script>
   if (location.hostname === 'tomboonern.com') {
     var s = document.createElement('script');
@@ -95,7 +95,7 @@
               </svg>
             </span>
             <span class="tool-title">OR Staffing Budget Calculator</span>
-            <span class="tool-copy">Calculate budgeted staff hours and FTEs from scheduled OR minutes for a selected day.</span>
+            <span class="tool-copy">Compare budgeted staff hours and FTEs against your scheduled staffing for upcoming WBVC OR days.</span>
           </button>
 
         </div>
@@ -398,6 +398,7 @@
 
         <div class="page-heading">
           <h1 id="staffingTitle">OR Staffing Budget Calculator</h1>
+          <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
           <p class="lede">The calculation runs locally in this browser tab. No file is uploaded or stored.</p>
         </div>
 
@@ -409,7 +410,7 @@
               <li>Select the exported file and select Run audit.</li>
             </ol>
             <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">If you do not have access to this report, please email <a href="mailto:Thomas.Boone@SutterHealth.org" style="color: inherit;">Thomas.Boone@SutterHealth.org</a>.</p>
-            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">Staff hours are budgeted at 0.103 worked hours per scheduled OR minute. One FTE is 5.714 hours per day (40 hrs/week ÷ 7 days).</p>
+            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">Staff hours are budgeted at 0.103 worked hours per scheduled OR minute. One FTE is 40 hours per week. Only upcoming days are shown.</p>
           </aside>
 
           <section class="panel">
@@ -430,77 +431,26 @@
         </div>
 
         <section id="staffingResultsPanel" class="panel result-panel" hidden>
-          <div class="summary-grid" aria-label="Staffing budget summary">
-            <div class="metric">
-              <span class="metric-value" id="staffingDayCount">0</span>
-              <span class="metric-label">Days shown</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value" id="staffingTotalMinutes">0</span>
-              <span class="metric-label">Total OR minutes</span>
-            </div>
-            <div class="metric">
-              <span class="metric-value" id="staffingTotalHours">0</span>
-              <span class="metric-label">Total staff hours</span>
-            </div>
-          </div>
-
           <div class="table-section">
             <h2>Budgeted staff hours and FTEs by day</h2>
-            <p style="color: var(--muted); font-size: 0.82rem; margin: -6px 0 10px;">Select a day below to compare it against your scheduled staffing.</p>
+            <p style="color: var(--muted); font-size: 0.82rem; margin: -6px 0 10px;">Enter the 8, 10, and 12-hour staff scheduled for each day to compare against the budgeted FTEs and hours. This is a planning aid, not a directive.</p>
             <div class="table-wrap">
               <table class="staffing-table">
                 <thead>
                   <tr>
                     <th>Date</th>
                     <th>OR Minutes</th>
-                    <th>Staff Hours Allowed</th>
-                    <th>FTEs</th>
+                    <th>OR Hours</th>
+                    <th>Staff Hours Budgeted</th>
+                    <th>FTEs Budgeted</th>
+                    <th>FTEs Scheduled</th>
+                    <th>FTE Variance</th>
+                    <th>Hours Variance</th>
                   </tr>
                 </thead>
                 <tbody id="staffingTable"></tbody>
               </table>
             </div>
-          </div>
-
-          <div class="panel staffing-schedule-panel" id="staffingSchedulePanel">
-            <h2 style="margin-top: 0;">Compare scheduled staffing</h2>
-            <p style="color: var(--muted); font-size: 0.82rem; margin: -4px 0 14px;">Enter the staff scheduled for the selected day to see how it lines up with the budgeted FTEs. This is a planning aid, not a directive.</p>
-
-            <div class="staffing-schedule-grid">
-              <label class="staffing-field">
-                <span>Day</span>
-                <select id="staffingDaySelect"></select>
-              </label>
-              <label class="staffing-field">
-                <span>8-hour staff</span>
-                <input id="staffingEight" type="number" min="0" step="1" value="0" inputmode="numeric">
-              </label>
-              <label class="staffing-field">
-                <span>10-hour staff</span>
-                <input id="staffingTen" type="number" min="0" step="1" value="0" inputmode="numeric">
-              </label>
-              <label class="staffing-field">
-                <span>12-hour staff</span>
-                <input id="staffingTwelve" type="number" min="0" step="1" value="0" inputmode="numeric">
-              </label>
-            </div>
-
-            <div class="summary-grid staffing-compare-grid" aria-label="Scheduled staffing comparison">
-              <div class="metric">
-                <span class="metric-value" id="staffingBudgetedFte">0.0</span>
-                <span class="metric-label">Budgeted FTEs (selected day)</span>
-              </div>
-              <div class="metric">
-                <span class="metric-value" id="staffingScheduledFte">0.0</span>
-                <span class="metric-label">Scheduled FTEs</span>
-              </div>
-              <div class="metric">
-                <span class="metric-value" id="staffingVariance">0.0</span>
-                <span class="metric-label">Budget variance</span>
-              </div>
-            </div>
-            <p id="staffingVarianceNote" style="color: var(--muted); font-size: 0.8rem; margin: 10px 0 0;">A positive variance means the day is under budget; a negative variance means it is over.</p>
           </div>
         </section>
       </section>
@@ -614,7 +564,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.5.4 · 2026-06-19</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.5.5 · 2026-06-19</p>
     </footer>
   </div>
 
@@ -633,7 +583,7 @@
   <div id="devGateOverlay" class="dev-gate-overlay" role="dialog" aria-modal="true" hidden>
     <a href="https://tomboonern.com" class="dev-gate-prod-link">Go to tomboonern.com</a>
   </div>
-  <script src="rules-data.js?v=1.5.4"></script>
-  <script src="app.js?v=1.5.4"></script>
+  <script src="rules-data.js?v=1.5.5"></script>
+  <script src="app.js?v=1.5.5"></script>
 </body>
 </html>

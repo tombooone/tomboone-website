@@ -423,51 +423,50 @@
       margin-top: 24px;
     }
 
-    /* OR Staffing Budget Calculator — day selection + scheduled-staffing panel */
-    .staffing-table tbody tr {
-      cursor: pointer;
+    /* OR Staffing Budget Calculator — per-day table with inline scheduled inputs */
+    .staffing-table th,
+    .staffing-table td {
+      vertical-align: middle;
     }
-    .staffing-table tbody tr.selected td {
-      background: var(--soft);
-      box-shadow: inset 3px 0 0 var(--brand);
+    .staffing-sched-cell {
+      white-space: nowrap;
     }
-    .staffing-schedule-panel {
-      margin-top: 22px;
+    .staffing-sched-inputs {
+      display: flex;
+      gap: 6px;
     }
-    .staffing-schedule-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-    .staffing-field {
+    .staffing-sched-inputs label {
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      font-size: 0.85rem;
+      align-items: center;
+      gap: 2px;
+      font-size: 0.68rem;
       color: var(--muted);
-    }
-    .staffing-field span {
       font-weight: 500;
     }
-    .staffing-field select,
-    .staffing-field input {
+    .staffing-sched-inputs input {
+      width: 46px;
       font: inherit;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
+      text-align: center;
       color: var(--ink);
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 8px 10px;
+      padding: 5px 4px;
     }
-    .staffing-field select:focus,
-    .staffing-field input:focus {
+    .staffing-sched-inputs input:focus {
       outline: none;
       border-color: var(--brand);
       box-shadow: 0 0 0 2px rgba(0, 124, 137, 0.15);
     }
-    .staffing-compare-grid .metric-value.variance-under { color: #1a7f4b; }
-    .staffing-compare-grid .metric-value.variance-over { color: #b42318; }
+    .staffing-sched-total {
+      margin-top: 5px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .staffing-var-under { color: #1a7f4b; font-weight: 600; }
+    .staffing-var-over { color: #b42318; font-weight: 600; }
 
     .accordion-section {
       border: 1px solid var(--line);

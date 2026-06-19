@@ -306,14 +306,6 @@
       toolKey: "staffing",
     });
 
-    // Scheduled-staffing comparison panel: live updates as inputs change
-    document.getElementById("staffingDaySelect").addEventListener("change", (e) => {
-      selectStaffingDay(Number(e.target.value) || 0);
-    });
-    ["staffingEight", "staffingTen", "staffingTwelve"].forEach((id) => {
-      document.getElementById(id).addEventListener("input", updateStaffingComparison);
-    });
-
     function showView(viewName) {
       homeView.classList.toggle("active", viewName === "home");
       auditView.classList.toggle("active", viewName === "audit");
@@ -2702,12 +2694,15 @@
     }
 
     // ── OR Staffing Budget Calculator ───────────────────────────────────────────
-    // Only Date, Proj Start Time, and Proj End Time are needed; this tool sums ALL
-    // cases in the export regardless of campus or room (department-wide budget).
+    // Scoped to WBVC OR rooms (same room filter as the Room Rules tool) and to
+    // FUTURE days only (strictly after today's local midnight) so partial/today
+    // and past days don't leak in. Date, Proj Start Time, Proj End Time required;
+    // Room is optional (used for the WBVC OR scope filter when present).
     const staffingColumns = [
       { key: "date",      label: "Date",            accepted: ["date", "case/appt date", "surgery date", "procedure date"] },
       { key: "projStart", label: "Proj Start Time", accepted: ["proj start time", "case/appt projected start time (as scheduled)"] },
-      { key: "projEnd",   label: "Proj End Time",   accepted: ["proj end time", "projected end time (as scheduled)"] }
+      { key: "projEnd",   label: "Proj End Time",   accepted: ["proj end time", "projected end time (as scheduled)"] },
+      { key: "room",      label: "Room",            accepted: ["room", "room (as scheduled)", "or room"], optional: true }
     ];
 
     function auditStaffing(rows) {
@@ -2726,12 +2721,28 @@
       const { indexes, headerRowIndex } = headerInfo;
       const dataRows = populatedRows.slice(headerRowIndex + 1);
 
+      // Only count FUTURE days — strictly after today's local midnight — so a
+      // partial current day or past dates don't appear as anomalous rows.
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const todayMs = todayMidnight.getTime();
+
+      // Same WBVC OR room scope as auditRoomRules. Applied only when a Room
+      // column is present; if the export lacks one, fall back to all rooms.
+      const hasRoom = indexes.room !== -1 && indexes.room !== undefined;
+      const roomPrefixRegex = new RegExp(CAMPUS_CONFIG.WBVC.roomPrefix.replace(/\s+/g, "\\s+") + "\\b", "i");
+
       // Sum OR minutes (Proj End − Proj Start) per day. Cases missing either
       // projected time are excluded from the sum (no note shown).
       const byDate = new Map(); // sortDate → { display, sortDate, minutes, caseCount }
       let totalRows = 0;
 
       dataRows.forEach((row) => {
+        if (hasRoom && !roomPrefixRegex.test(cell(row, indexes.room))) return; // WBVC OR only
+
+        const dateValue = parseDateCell(cell(row, indexes.date));
+        if (!(dateValue.sort > todayMs)) return; // future days only
+
         const rawStart = cell(row, indexes.projStart);
         const rawEnd   = cell(row, indexes.projEnd);
         const startMin = parseTimeToMinutes(rawStart);
@@ -2747,7 +2758,6 @@
         // before adding to the day's running total. Leave orMinutes as the unit for now.
         const caseMinutes = orMinutes;
 
-        const dateValue = parseDateCell(cell(row, indexes.date));
         const key = dateValue.sort;
         const entry = byDate.get(key) || { display: dateValue.display, sortDate: dateValue.sort, minutes: 0, caseCount: 0 };
         entry.minutes += caseMinutes;
@@ -2770,114 +2780,115 @@
           };
         });
 
-      const totalMinutes = days.reduce((sum, d) => sum + d.minutes, 0);
-      const totalStaffHours = totalMinutes * STAFFING_CONFIG.whpuos;
-
-      return { totalRows, days, totalMinutes, totalStaffHours };
+      return { totalRows, days };
     }
 
-    // Holds the currently rendered staffing result + selected day index for the
-    // scheduled-staffing comparison panel below the per-day table.
-    let _staffingResult = null;
-    let _staffingSelectedIndex = 0;
+    // Format a signed variance into a variance <td>: positive (under budget) green,
+    // negative (over budget) red, |v| < 0.05 a neutral green "0.0" (never "-0.0").
+    function setStaffingVariance(td, value) {
+      const rounded = value.toFixed(1);
+      const display = Math.abs(value) < 0.05 ? "0.0" : (value > 0 ? `+${rounded}` : rounded);
+      td.textContent = display;
+      td.classList.toggle("staffing-var-over", value < -0.05);   // over budget = red
+      td.classList.toggle("staffing-var-under", value >= -0.05); // under/neutral = green
+    }
 
     function renderStaffingResults(result) {
-      _staffingResult = result;
-      _staffingSelectedIndex = 0;
-
-      document.getElementById("staffingDayCount").textContent = String(result.days.length);
-      document.getElementById("staffingTotalMinutes").textContent = String(Math.round(result.totalMinutes));
-      document.getElementById("staffingTotalHours").textContent = result.totalStaffHours.toFixed(1);
-
       const tbody = document.getElementById("staffingTable");
       tbody.textContent = "";
-
-      const schedulePanel = document.getElementById("staffingSchedulePanel");
 
       if (!result.days.length) {
         const tr = document.createElement("tr");
         tr.className = "empty-row";
         const emptyCell = document.createElement("td");
-        emptyCell.colSpan = 4;
-        emptyCell.textContent = "No cases with projected start and end times were found.";
+        emptyCell.colSpan = 8;
+        emptyCell.textContent = "No upcoming WBVC OR cases with projected start and end times were found.";
         tr.append(emptyCell);
         tbody.append(tr);
-        if (schedulePanel) schedulePanel.hidden = true;
         return;
       }
-      if (schedulePanel) schedulePanel.hidden = false;
 
-      result.days.forEach((d, idx) => {
-        const tr = document.createElement("tr");
-        tr.dataset.dayIndex = String(idx);
-        [
-          d.display,
-          String(Math.round(d.minutes)),
-          d.staffHours.toFixed(1),
-          d.ftes.toFixed(1)
-        ].forEach((val) => {
-          const td = document.createElement("td");
-          td.textContent = val;
-          tr.append(td);
-        });
-        tr.addEventListener("click", () => selectStaffingDay(idx));
-        tbody.append(tr);
+      result.days.forEach((d) => {
+        tbody.append(buildStaffingRow(d));
       });
-
-      // Populate the day dropdown from the per-day rows
-      const select = document.getElementById("staffingDaySelect");
-      select.textContent = "";
-      result.days.forEach((d, idx) => {
-        const opt = document.createElement("option");
-        opt.value = String(idx);
-        opt.textContent = d.display;
-        select.append(opt);
-      });
-
-      selectStaffingDay(0);
     }
 
-    function selectStaffingDay(index) {
-      if (!_staffingResult || !_staffingResult.days.length) return;
-      _staffingSelectedIndex = index;
+    // Build one self-contained per-day row. The "FTEs Scheduled" cell holds three
+    // inputs (8/10/12-hr staff counts) whose live total + the row's two variance
+    // cells recompute on every input. Each row manages its own state independently.
+    function buildStaffingRow(d) {
+      const tr = document.createElement("tr");
+      const budgetedStaffHours = d.staffHours;
+      const budgetedFte = d.ftes;
 
-      // Keep dropdown + row highlight in sync
-      const select = document.getElementById("staffingDaySelect");
-      if (select) select.value = String(index);
-      document.querySelectorAll("#staffingTable tr").forEach((tr) => {
-        tr.classList.toggle("selected", tr.dataset.dayIndex === String(index));
+      const appendText = (text) => {
+        const td = document.createElement("td");
+        td.textContent = text;
+        tr.append(td);
+      };
+
+      appendText(d.display);                              // Date
+      appendText(String(Math.round(d.minutes)));          // OR Minutes
+      appendText((d.minutes / 60).toFixed(1));            // OR Hours
+      appendText(budgetedStaffHours.toFixed(1));          // Staff Hours Budgeted
+      appendText(budgetedFte.toFixed(1));                 // FTEs Budgeted
+
+      // FTEs Scheduled — compact input widget (8 / 10 / 12) + live total line
+      const schedTd = document.createElement("td");
+      schedTd.className = "staffing-sched-cell";
+      const inputsRow = document.createElement("div");
+      inputsRow.className = "staffing-sched-inputs";
+      const inputs = {};
+      [["eight", "8"], ["ten", "10"], ["twelve", "12"]].forEach(([key, label]) => {
+        const lab = document.createElement("label");
+        const span = document.createElement("span");
+        span.textContent = label;
+        const inp = document.createElement("input");
+        inp.type = "number";
+        inp.min = "0";
+        inp.step = "1";
+        inp.value = "0";
+        inp.inputMode = "numeric";
+        inp.setAttribute("aria-label", `${label}-hour staff`);
+        lab.append(span, inp);
+        inputsRow.append(lab);
+        inputs[key] = inp;
       });
+      const totalLine = document.createElement("div");
+      totalLine.className = "staffing-sched-total";
+      schedTd.append(inputsRow, totalLine);
+      tr.append(schedTd);
 
-      updateStaffingComparison();
-    }
+      // FTE Variance + Hours Variance cells
+      const fteVarTd = document.createElement("td");
+      const hoursVarTd = document.createElement("td");
+      tr.append(fteVarTd, hoursVarTd);
 
-    function updateStaffingComparison() {
-      if (!_staffingResult || !_staffingResult.days.length) return;
-      const day = _staffingResult.days[_staffingSelectedIndex];
-      if (!day) return;
+      function recompute() {
+        const eight  = Math.max(0, Number(inputs.eight.value)  || 0);
+        const ten    = Math.max(0, Number(inputs.ten.value)    || 0);
+        const twelve = Math.max(0, Number(inputs.twelve.value) || 0);
 
-      const eight  = Math.max(0, Number(document.getElementById("staffingEight").value) || 0);
-      const ten    = Math.max(0, Number(document.getElementById("staffingTen").value) || 0);
-      const twelve = Math.max(0, Number(document.getElementById("staffingTwelve").value) || 0);
+        const scheduledFte =
+          eight  * STAFFING_CONFIG.shiftFte.eight +
+          ten    * STAFFING_CONFIG.shiftFte.ten +
+          twelve * STAFFING_CONFIG.shiftFte.twelve;
+        const scheduledHours = eight * 8 + ten * 10 + twelve * 12;
 
-      const scheduledFte =
-        eight  * STAFFING_CONFIG.shiftFte.eight +
-        ten    * STAFFING_CONFIG.shiftFte.ten +
-        twelve * STAFFING_CONFIG.shiftFte.twelve;
+        totalLine.textContent = `${scheduledFte.toFixed(1)} FTEs / ${scheduledHours.toFixed(1)} hrs`;
+        setStaffingVariance(fteVarTd, budgetedFte - scheduledFte);
+        setStaffingVariance(hoursVarTd, budgetedStaffHours - scheduledHours);
+      }
 
-      const budgetedFte = day.ftes;
-      const variance = budgetedFte - scheduledFte; // + = under budget, − = over budget
+      Object.values(inputs).forEach((inp) => {
+        inp.addEventListener("input", recompute);
+        // Inputs are interactive controls inside the row; don't bubble to any
+        // future row-level click handler.
+        inp.addEventListener("click", (e) => e.stopPropagation());
+      });
+      recompute();
 
-      document.getElementById("staffingBudgetedFte").textContent = budgetedFte.toFixed(1);
-      document.getElementById("staffingScheduledFte").textContent = scheduledFte.toFixed(1);
-
-      const varEl = document.getElementById("staffingVariance");
-      const rounded = variance.toFixed(1);
-      // Avoid showing a signed "-0.0"
-      const display = Math.abs(variance) < 0.05 ? "0.0" : (variance > 0 ? `+${rounded}` : rounded);
-      varEl.textContent = display;
-      varEl.classList.toggle("variance-over", variance < -0.05);  // over budget = red
-      varEl.classList.toggle("variance-under", variance >= -0.05); // under/neutral = green
+      return tr;
     }
 
     function renderRoomRulesResults(result) {
