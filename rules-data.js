@@ -1,4 +1,4 @@
-// rules-data.js — pure data constants for the CPMC audit tools (v1.5.1).
+// rules-data.js — pure data constants for the CPMC audit tools (v1.5.3).
 // Loaded BEFORE app.js in index.html; these top-level const bindings are
 // shared with app.js via the global lexical environment of classic scripts.
 // SURGEON_PREFS must be declared before ROOM_RULES (ROOM_RULES spreads it).
@@ -17,6 +17,12 @@
         biweeklyFriAnchorMs: new Date(2026, 4, 29).getTime(),
         campusCodes:       ["WBVC", "WBMB", "WBDE"],
       }
+    };
+
+    // OR Staffing Budget Calculator constants.
+    const STAFFING_CONFIG = {
+      whpuos: 0.103,           // worked hours per unit of service (OR minute)
+      fteHoursPerDay: 5.714,   // 40 hrs/week ÷ 7 days
     };
 
     const SURGEON_PREFS = [

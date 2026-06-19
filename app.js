@@ -271,8 +271,10 @@
 
     document.getElementById("openAuditTool").addEventListener("click", () => showView("audit"));
     document.getElementById("openEquipmentTool").addEventListener("click", () => showView("equipment"));
+    document.getElementById("openStaffingTool").addEventListener("click", () => showView("staffing"));
     document.getElementById("backHome").addEventListener("click", () => showView("home"));
     document.getElementById("equipmentBackHome").addEventListener("click", () => showView("home"));
+    document.getElementById("staffingBackHome").addEventListener("click", () => showView("home"));
 
     let _cptTool = wireAuditTool({
       fileInput: document.getElementById("fileInput"),
@@ -294,11 +296,22 @@
       toolKey: "equipment",
     });
 
+    let _staffingTool = wireAuditTool({
+      fileInput: document.getElementById("staffingFileInput"),
+      runButton: document.getElementById("runStaffingAudit"),
+      clearButton: document.getElementById("clearStaffingAudit"),
+      statusEl: document.getElementById("staffingStatus"),
+      resultsPanel: document.getElementById("staffingResultsPanel"),
+      tables: [document.getElementById("staffingTable")],
+      toolKey: "staffing",
+    });
+
     function showView(viewName) {
       homeView.classList.toggle("active", viewName === "home");
       auditView.classList.toggle("active", viewName === "audit");
       equipmentView.classList.toggle("active", viewName === "equipment");
       document.getElementById("roomRulesView").classList.toggle("active", viewName === "roomRules");
+      document.getElementById("staffingView").classList.toggle("active", viewName === "staffing");
       document.getElementById("ruleManagementView").classList.toggle("active", viewName === "ruleManagement");
       document.getElementById("equipmentTermsView").classList.toggle("active", viewName === "equipmentTerms");
       document.getElementById("ruleInfoView").classList.toggle("active", viewName === "ruleInfo");
@@ -306,6 +319,7 @@
       if (viewName === "audit" && _cptTool) _cptTool.showFromShared();
       if (viewName === "equipment" && _equipTool) _equipTool.showFromShared();
       if (viewName === "roomRules" && _roomRulesTool) _roomRulesTool.showFromShared();
+      if (viewName === "staffing" && _staffingTool) _staffingTool.showFromShared();
       if (viewName === "ruleManagement") buildRuleManagementView();
       if (viewName === "equipmentTerms") buildEquipmentTermsView();
       if (viewName === "knownProblemCpts") buildKnownProblemCptsView();
@@ -371,6 +385,7 @@
         if (_cptTool) _cptTool.reset();
         if (_equipTool) _equipTool.reset();
         if (_roomRulesTool) _roomRulesTool.reset();
+        if (_staffingTool) _staffingTool.reset();
         const sb = document.getElementById("ganttSidebar");
         if (sb) sb.hidden = true;
         hideGanttTooltip();
@@ -409,6 +424,13 @@
         sharedAuditResults.roomRules = auditRoomRules(rows);
       } catch (e) {
         sharedAuditResults.roomRulesError = e.message || "Unable to run room rules audit on this file.";
+      }
+
+      // Staffing budget
+      try {
+        sharedAuditResults.staffing = auditStaffing(rows);
+      } catch (e) {
+        sharedAuditResults.staffingError = e.message || "Unable to run staffing calculation on this file.";
       }
 
     }
@@ -465,6 +487,23 @@
         }
         document.getElementById("runRoomRulesAudit").disabled = false;
         document.getElementById("clearRoomRulesAudit").disabled = false;
+      }
+
+      if (toolKey === "staffing") {
+        const panel = document.getElementById("staffingResultsPanel");
+        const status = document.getElementById("staffingStatus");
+        if (sharedAuditResults.staffing) {
+          renderStaffingResults(sharedAuditResults.staffing);
+          panel.hidden = false;
+          const r = sharedAuditResults.staffing;
+          status.textContent = `Calculation complete. Reviewed ${r.totalRows} case${r.totalRows === 1 ? "" : "s"} across ${r.days.length} day${r.days.length === 1 ? "" : "s"}.`;
+          status.classList.remove("error");
+        } else if (sharedAuditResults.staffingError) {
+          status.textContent = sharedAuditResults.staffingError;
+          status.classList.add("error");
+        }
+        document.getElementById("runStaffingAudit").disabled = false;
+        document.getElementById("clearStaffingAudit").disabled = false;
       }
     }
 
@@ -2652,6 +2691,116 @@
       const tier345Count = finalViolations.filter((v) => v.ruleTier >= 3).length;
 
       return { totalRows: dataRows.length, violations: finalViolations, tier12Count, tier345Count, cases, ruleMatchCounts };
+    }
+
+    // ── OR Staffing Budget Calculator ───────────────────────────────────────────
+    // Only Date, Proj Start Time, and Proj End Time are needed; this tool sums ALL
+    // cases in the export regardless of campus or room (department-wide budget).
+    const staffingColumns = [
+      { key: "date",      label: "Date",            accepted: ["date", "case/appt date", "surgery date", "procedure date"] },
+      { key: "projStart", label: "Proj Start Time", accepted: ["proj start time", "case/appt projected start time (as scheduled)"] },
+      { key: "projEnd",   label: "Proj End Time",   accepted: ["proj end time", "projected end time (as scheduled)"] }
+    ];
+
+    function auditStaffing(rows) {
+      const populatedRows = rows.filter(hasData);
+      if (populatedRows.length < 2) {
+        throw new Error("The spreadsheet was readable, but no data rows were found.");
+      }
+
+      const headerInfo = findHeaderInfoForColumns(populatedRows, staffingColumns);
+      if (!headerInfo) {
+        throw new Error(
+          "This file is missing one or more required columns: Date, Proj Start Time, Proj End Time. " +
+          "Please export a complete schedule from Epic."
+        );
+      }
+      const { indexes, headerRowIndex } = headerInfo;
+      const dataRows = populatedRows.slice(headerRowIndex + 1);
+
+      // Sum OR minutes (Proj End − Proj Start) per day. Cases missing either
+      // projected time are excluded from the sum (no note shown).
+      const byDate = new Map(); // sortDate → { display, sortDate, minutes, caseCount }
+      let totalRows = 0;
+
+      dataRows.forEach((row) => {
+        const rawStart = cell(row, indexes.projStart);
+        const rawEnd   = cell(row, indexes.projEnd);
+        const startMin = parseTimeToMinutes(rawStart);
+        const endMin   = parseTimeToMinutes(rawEnd);
+        if (startMin === null || endMin === null) return; // exclude, silently
+        const orMinutes = endMin - startMin;
+        if (!(orMinutes > 0)) return; // skip non-positive / malformed spans
+
+        totalRows += 1;
+
+        // FUTURE: per-case double-staffing multiplier (two RNs + two scrubs) would be
+        // applied here, e.g. `const caseMinutes = orMinutes * staffingMultiplier(row);`
+        // before adding to the day's running total. Leave orMinutes as the unit for now.
+        const caseMinutes = orMinutes;
+
+        const dateValue = parseDateCell(cell(row, indexes.date));
+        const key = dateValue.sort;
+        const entry = byDate.get(key) || { display: dateValue.display, sortDate: dateValue.sort, minutes: 0, caseCount: 0 };
+        entry.minutes += caseMinutes;
+        entry.caseCount += 1;
+        byDate.set(key, entry);
+      });
+
+      const days = Array.from(byDate.values())
+        .sort((a, b) => a.sortDate - b.sortDate)
+        .map((d) => {
+          const staffHours = d.minutes * STAFFING_CONFIG.whpuos;
+          const ftes = staffHours / STAFFING_CONFIG.fteHoursPerDay;
+          return {
+            display:    d.display,
+            sortDate:   d.sortDate,
+            minutes:    d.minutes,
+            staffHours,
+            ftes,
+            caseCount:  d.caseCount
+          };
+        });
+
+      const totalMinutes = days.reduce((sum, d) => sum + d.minutes, 0);
+      const totalStaffHours = totalMinutes * STAFFING_CONFIG.whpuos;
+
+      return { totalRows, days, totalMinutes, totalStaffHours };
+    }
+
+    function renderStaffingResults(result) {
+      document.getElementById("staffingDayCount").textContent = String(result.days.length);
+      document.getElementById("staffingTotalMinutes").textContent = String(Math.round(result.totalMinutes));
+      document.getElementById("staffingTotalHours").textContent = result.totalStaffHours.toFixed(1);
+
+      const tbody = document.getElementById("staffingTable");
+      tbody.textContent = "";
+
+      if (!result.days.length) {
+        const tr = document.createElement("tr");
+        tr.className = "empty-row";
+        const emptyCell = document.createElement("td");
+        emptyCell.colSpan = 4;
+        emptyCell.textContent = "No cases with projected start and end times were found.";
+        tr.append(emptyCell);
+        tbody.append(tr);
+        return;
+      }
+
+      result.days.forEach((d) => {
+        const tr = document.createElement("tr");
+        [
+          d.display,
+          String(Math.round(d.minutes)),
+          d.staffHours.toFixed(1),
+          d.ftes.toFixed(1)
+        ].forEach((val) => {
+          const td = document.createElement("td");
+          td.textContent = val;
+          tr.append(td);
+        });
+        tbody.append(tr);
+      });
     }
 
     function renderRoomRulesResults(result) {
