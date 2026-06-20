@@ -2712,7 +2712,19 @@
         const dv = parseDateCell(m[1]);
         if (Number.isFinite(dv.sort)) map.set(dv.sort, prodHours);
       }
-      return map;
+
+      // Console diagnostics for the 6/27 (Sat) / 6/28 (Sun) missing-row
+      // investigation: confirm whether the PDF text actually contains rows
+      // for those dates, and whether they made it past the regex/0.00 filter.
+      ["06/27/2026", "06/28/2026"].forEach((dateStr) => {
+        const dv = parseDateCell(dateStr);
+        console.log(`[staffing] PDF prod hours for ${dateStr}:`, map.get(dv.sort));
+      });
+
+      const reportDateMatch = /Report Date\s*:\s*(\d{2}\/\d{2}\/\d{4})/i.exec(text);
+      const reportDate = reportDateMatch ? parseDateCell(reportDateMatch[1]) : null;
+
+      return { map, reportDate };
     }
 
     // Independent wiring for the staffing tool: two file inputs (XLSX + PDF),
@@ -2779,9 +2791,9 @@
         setStatus("Reading files locally...");
         try {
           const rows = await readXlsxRows(xlsxFile, staffingColumns);
-          const prodHoursMap = await parseProductivityPdf(pdfFile);
+          const { map: prodHoursMap, reportDate } = await parseProductivityPdf(pdfFile);
           const result = auditStaffing(rows, prodHoursMap);
-          renderStaffingResults(result);
+          renderStaffingResults(result, reportDate);
           resultsPanel.hidden = false;
           setStatus(`Calculation complete. ${result.days.length} day${result.days.length === 1 ? "" : "s"} matched the productivity report.`);
           const heading = resultsPanel.querySelector("h2");
@@ -2858,6 +2870,15 @@
         byDate.set(key, entry);
       });
 
+      // Console diagnostics for the 6/27 (Sat) / 6/28 (Sun) missing-row
+      // investigation: confirm whether OR minutes exist for those dates
+      // before the productivity-report join below.
+      ["06/27/2026", "06/28/2026"].forEach((dateStr) => {
+        const dv = parseDateCell(dateStr);
+        const entry = byDate.get(dv.sort);
+        console.log(`[staffing] OR minutes for ${dateStr}:`, entry ? entry.minutes : 0);
+      });
+
       // Join each OR day to its productivity-report hours. Days with OR minutes
       // but no non-zero Prod. Hours entry are silently excluded.
       const days = [];
@@ -2902,9 +2923,20 @@
       td.classList.toggle("staffing-var-under", value >= -0.05); // under/neutral = green
     }
 
-    function renderStaffingResults(result) {
+    function renderStaffingResults(result, reportDate) {
       const tbody = document.getElementById("staffingTable");
       tbody.textContent = "";
+
+      const staleBanner = document.getElementById("staffingStaleBanner");
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const isStale = reportDate && Number.isFinite(reportDate.sort) && reportDate.sort !== todayMidnight.getTime();
+      if (isStale) {
+        staleBanner.textContent = `This productivity report is from ${reportDate.display} — data may not reflect today's actuals.`;
+        staleBanner.hidden = false;
+      } else {
+        staleBanner.hidden = true;
+      }
 
       if (!result.days.length) {
         const tr = document.createElement("tr");
@@ -2946,6 +2978,15 @@
       dateLine.className = "staffing-date-sub";
       dateLine.textContent = `${dt.getMonth() + 1}/${dt.getDate()}/${dt.getFullYear()}`;
       dateTd.append(weekdayLine, dateLine);
+
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      if (d.sortDate === todayMidnight.getTime()) {
+        const todayNote = document.createElement("span");
+        todayNote.className = "staffing-today-note";
+        todayNote.textContent = "⚠ Mix of actual & scheduled OR min";
+        dateTd.append(todayNote);
+      }
       tr.append(dateTd);
 
       appendText(String(Math.round(d.minutes)));   // OR Min
@@ -2956,9 +2997,16 @@
       appendText(d.fteSched.toFixed(1));            // FTE (scheduled)
 
       const fteVarTd = document.createElement("td");
-      setStaffingVariance(fteVarTd, d.fteVar);
       const hrsVarTd = document.createElement("td");
-      setStaffingVariance(hrsVarTd, d.hrsVar);
+      if (dow === 0 || dow === 6) {
+        // Weekend variance is not a meaningful budget signal — plain text, no color.
+        const signed = (value) => (Math.abs(value) < 0.05 ? "0.0" : (value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1)));
+        fteVarTd.textContent = signed(d.fteVar);
+        hrsVarTd.textContent = signed(d.hrsVar);
+      } else {
+        setStaffingVariance(fteVarTd, d.fteVar);
+        setStaffingVariance(hrsVarTd, d.hrsVar);
+      }
       tr.append(fteVarTd, hrsVarTd);
 
       return tr;

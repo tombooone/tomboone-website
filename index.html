@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.5.6">
+  <link rel="stylesheet" href="styles.css?v=1.5.7">
   <script>
   if (location.hostname === 'tomboonern.com') {
     var s = document.createElement('script');
@@ -441,6 +441,7 @@
           <div class="table-section">
             <h2>Staff hours and FTE by day</h2>
             <p style="color: var(--muted); font-size: 0.82rem; margin: -6px 0 10px;">Budgeted figures come from scheduled OR minutes; scheduled figures come from the productivity report. This is a planning aid, not a directive.</p>
+            <p id="staffingStaleBanner" class="staffing-stale-banner" hidden></p>
             <div class="table-wrap">
               <table class="staffing-table">
                 <thead>
@@ -459,6 +460,7 @@
                 <tbody id="staffingTable"></tbody>
               </table>
             </div>
+            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">Weekend variance reflects call coverage staffing against near-zero scheduled OR minutes and is not a meaningful budget indicator.</p>
           </div>
         </section>
       </section>
@@ -572,7 +574,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.5.6 · 2026-06-19</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.5.7 · 2026-06-20</p>
     </footer>
   </div>
 
@@ -592,7 +594,7 @@
     <a href="https://tomboonern.com" class="dev-gate-prod-link">Go to tomboonern.com</a>
   </div>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="rules-data.js?v=1.5.6"></script>
-  <script src="app.js?v=1.5.6"></script>
+  <script src="rules-data.js?v=1.5.7"></script>
+  <script src="app.js?v=1.5.7"></script>
 </body>
 </html>

@@ -453,6 +453,20 @@
     }
     .staffing-var-under { color: #1a7f4b; font-weight: 600; }
     .staffing-var-over { color: #b42318; font-weight: 600; }
+    .staffing-stale-banner {
+      background: var(--warn-soft);
+      color: var(--warn);
+      border-left: 4px solid var(--accent);
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      margin: 0 0 12px;
+    }
+    .staffing-today-note {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
 
     .accordion-section {
       border: 1px solid var(--line);
