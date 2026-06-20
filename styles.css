@@ -448,8 +448,15 @@
     .staffing-table tbody tr.staffing-weekend td {
       background: #f0f4f8;
     }
+    .staffing-table tbody tr.staffing-today-row td {
+      background: #dbeafe;
+    }
     .staffing-table tbody tr.staffing-sat-border td {
       border-bottom: 2px solid #94a3b8;
+    }
+    .staffing-table-wrap {
+      overflow-y: auto;
+      max-height: 520px;
     }
     .staffing-var-under { color: #1a7f4b; font-weight: 600; }
     .staffing-var-over { color: #b42318; font-weight: 600; }

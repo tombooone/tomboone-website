@@ -2713,14 +2713,6 @@
         if (Number.isFinite(dv.sort)) map.set(dv.sort, prodHours);
       }
 
-      // Console diagnostics for the 6/27 (Sat) / 6/28 (Sun) missing-row
-      // investigation: confirm whether the PDF text actually contains rows
-      // for those dates, and whether they made it past the regex/0.00 filter.
-      ["06/27/2026", "06/28/2026"].forEach((dateStr) => {
-        const dv = parseDateCell(dateStr);
-        console.log(`[staffing] PDF prod hours for ${dateStr}:`, map.get(dv.sort));
-      });
-
       const reportDateMatch = /Report Date\s*:\s*(\d{2}\/\d{2}\/\d{4})/i.exec(text);
       const reportDate = reportDateMatch ? parseDateCell(reportDateMatch[1]) : null;
 
@@ -2870,40 +2862,42 @@
         byDate.set(key, entry);
       });
 
-      // Console diagnostics for the 6/27 (Sat) / 6/28 (Sun) missing-row
-      // investigation: confirm whether OR minutes exist for those dates
-      // before the productivity-report join below.
-      ["06/27/2026", "06/28/2026"].forEach((dateStr) => {
-        const dv = parseDateCell(dateStr);
-        const entry = byDate.get(dv.sort);
-        console.log(`[staffing] OR minutes for ${dateStr}:`, entry ? entry.minutes : 0);
+      // Join each day to its productivity-report hours, scoped to the date
+      // range the productivity report actually covers (its earliest through
+      // latest non-zero Prod. Hours entry). Within that range, a day is
+      // included if it has OR minutes OR a non-zero Prod. Hours entry (so
+      // weekends with call-coverage hours but no scheduled cases still show).
+      let minDate = null;
+      let maxDate = null;
+      prodMap.forEach((prodHours, sortDate) => {
+        if (!(prodHours > 0)) return;
+        if (minDate === null || sortDate < minDate) minDate = sortDate;
+        if (maxDate === null || sortDate > maxDate) maxDate = sortDate;
       });
 
-      // Join each day to its productivity-report hours. Weekdays require both
-      // OR minutes > 0 and a non-zero Prod. Hours entry (unchanged). Weekends
-      // have no scheduled cases (0 OR minutes) but still carry call-coverage
-      // Prod. Hours, so they're included whenever a non-zero entry exists —
-      // pull those dates in from prodMap even if byDate has no entry for them.
-      const candidateDates = new Map(byDate);
-      prodMap.forEach((prodHours, sortDate) => {
-        if (candidateDates.has(sortDate)) return;
-        const dt = new Date(sortDate);
-        candidateDates.set(sortDate, {
-          display: `${dt.getMonth() + 1}/${dt.getDate()}/${dt.getFullYear()}`,
-          sortDate,
-          minutes: 0
+      const candidateDates = new Map();
+      if (minDate !== null) {
+        byDate.forEach((entry, sortDate) => {
+          if (sortDate >= minDate && sortDate <= maxDate) candidateDates.set(sortDate, entry);
         });
-      });
+        prodMap.forEach((prodHours, sortDate) => {
+          if (!(prodHours > 0)) return;
+          if (candidateDates.has(sortDate)) return;
+          const dt = new Date(sortDate);
+          candidateDates.set(sortDate, {
+            display: `${dt.getMonth() + 1}/${dt.getDate()}/${dt.getFullYear()}`,
+            sortDate,
+            minutes: 0
+          });
+        });
+      }
 
       const days = [];
       Array.from(candidateDates.values())
         .sort((a, b) => a.sortDate - b.sortDate)
         .forEach((d) => {
-          const dow = new Date(d.sortDate).getDay();
-          const isWeekend = dow === 0 || dow === 6;
-          const prodHours = prodMap.get(d.sortDate);
-          if (!isWeekend && !(d.minutes > 0)) return;
-          if (!(prodHours > 0)) return; // require a productivity match
+          const prodHours = prodMap.get(d.sortDate) || 0;
+          if (!(d.minutes > 0) && !(prodHours > 0)) return;
 
           const orHours = d.minutes / 60;
           const hrsBud  = d.minutes * STAFFING_CONFIG.whpuos;
@@ -2948,7 +2942,7 @@
       todayMidnight.setHours(0, 0, 0, 0);
       const isStale = reportDate && Number.isFinite(reportDate.sort) && reportDate.sort !== todayMidnight.getTime();
       if (isStale) {
-        staleBanner.textContent = `This productivity report is from ${reportDate.display} — data may not reflect today's actuals.`;
+        staleBanner.textContent = `This productivity report was generated on ${reportDate.display}. Data shown for dates on or before ${reportDate.display} reflects actual hours worked; later dates reflect scheduled hours.`;
         staleBanner.hidden = false;
       } else {
         staleBanner.hidden = true;
@@ -2980,6 +2974,15 @@
       if (dow === 0 || dow === 6) tr.classList.add("staffing-weekend");
       if (dow === 6) tr.classList.add("staffing-sat-border");
 
+      const todayMs = new Date();
+      todayMs.setHours(0, 0, 0, 0);
+      const todayMidnight = todayMs.getTime();
+      const isToday = d.sortDate === todayMidnight;
+      const isPast = d.sortDate < todayMidnight;
+      if (isToday) tr.classList.add("staffing-today-row");
+
+      const timelineColor = isPast ? "#10b981" : (isToday ? "#3b82f6" : "#f59e0b");
+
       const appendText = (text) => {
         const td = document.createElement("td");
         td.textContent = text;
@@ -2988,6 +2991,7 @@
 
       // Date cell: weekday name + M/D/YYYY on two lines
       const dateTd = document.createElement("td");
+      dateTd.style.borderLeft = `4px solid ${timelineColor}`;
       const weekdayLine = document.createElement("div");
       weekdayLine.textContent = dt.toLocaleDateString("en-US", { weekday: "long" });
       const dateLine = document.createElement("div");
@@ -2995,12 +2999,10 @@
       dateLine.textContent = `${dt.getMonth() + 1}/${dt.getDate()}/${dt.getFullYear()}`;
       dateTd.append(weekdayLine, dateLine);
 
-      const todayMidnight = new Date();
-      todayMidnight.setHours(0, 0, 0, 0);
-      if (d.sortDate === todayMidnight.getTime()) {
+      if (isToday) {
         const todayNote = document.createElement("span");
         todayNote.className = "staffing-today-note";
-        todayNote.textContent = "⚠ Mix of actual & scheduled OR min";
+        todayNote.textContent = "⚠ Today: includes actual and scheduled cases";
         dateTd.append(todayNote);
       }
       tr.append(dateTd);
