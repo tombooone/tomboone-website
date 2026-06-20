@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.5.5">
+  <link rel="stylesheet" href="styles.css?v=1.5.6">
   <script>
   if (location.hostname === 'tomboonern.com') {
     var s = document.createElement('script');
@@ -95,7 +95,7 @@
               </svg>
             </span>
             <span class="tool-title">OR Staffing Budget Calculator</span>
-            <span class="tool-copy">Compare budgeted staff hours and FTEs against your scheduled staffing for upcoming WBVC OR days.</span>
+            <span class="tool-copy">Compare budgeted staff hours and FTE against productivity-report hours for upcoming WBVC OR days.</span>
           </button>
 
         </div>
@@ -407,45 +407,53 @@
             <h2>Instructions</h2>
             <ol>
               <li>In Epic, run the report <strong>CPMC Scheduling Automation</strong> and export it as an .xlsx file.</li>
-              <li>Select the exported file and select Run audit.</li>
+              <li>Run the <strong>Productivity in Hours by Date</strong> report and save it as a PDF.</li>
+              <li>Select both files, then select Run.</li>
             </ol>
-            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">If you do not have access to this report, please email <a href="mailto:Thomas.Boone@SutterHealth.org" style="color: inherit;">Thomas.Boone@SutterHealth.org</a>.</p>
-            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">Staff hours are budgeted at 0.103 worked hours per scheduled OR minute. One FTE is 40 hours per week. Only upcoming days are shown.</p>
+            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">If you do not have access to these reports, please email <a href="mailto:Thomas.Boone@SutterHealth.org" style="color: inherit;">Thomas.Boone@SutterHealth.org</a>.</p>
+            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">Staff hours budget is calculated by multiplying OR minutes by 0.103. One FTE is 40 hours per week.</p>
           </aside>
 
           <section class="panel">
             <div class="upload-box">
               <label class="file-input">
                 <span>
-                  <strong>Select Epic Excel report</strong><br>
+                  <strong>Select OR Schedule export (XLSX)</strong><br>
                   <input id="staffingFileInput" type="file" accept=".xlsx,.xls,.xml,.html,.htm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/html,text/xml">
+                </span>
+              </label>
+              <label class="file-input">
+                <span>
+                  <strong>Select Productivity Report (PDF)</strong><br>
+                  <input id="staffingPdfInput" type="file" accept=".pdf,application/pdf">
                 </span>
               </label>
               <div class="actions">
                 <button class="primary-button" type="button" id="runStaffingAudit" disabled>Run audit</button>
                 <button class="secondary-button" type="button" id="clearStaffingAudit" disabled>Clear</button>
               </div>
-              <p id="staffingStatus" class="status" role="status">Waiting for a spreadsheet.</p>
+              <p id="staffingStatus" class="status" role="status">Waiting for the OR schedule and productivity report.</p>
             </div>
           </section>
         </div>
 
         <section id="staffingResultsPanel" class="panel result-panel" hidden>
           <div class="table-section">
-            <h2>Budgeted staff hours and FTEs by day</h2>
-            <p style="color: var(--muted); font-size: 0.82rem; margin: -6px 0 10px;">Enter the 8, 10, and 12-hour staff scheduled for each day to compare against the budgeted FTEs and hours. This is a planning aid, not a directive.</p>
+            <h2>Staff hours and FTE by day</h2>
+            <p style="color: var(--muted); font-size: 0.82rem; margin: -6px 0 10px;">Budgeted figures come from scheduled OR minutes; scheduled figures come from the productivity report. This is a planning aid, not a directive.</p>
             <div class="table-wrap">
               <table class="staffing-table">
                 <thead>
                   <tr>
                     <th>Date</th>
-                    <th>OR Minutes</th>
-                    <th>OR Hours</th>
-                    <th>Staff Hours Budgeted</th>
-                    <th>FTEs Budgeted</th>
-                    <th>FTEs Scheduled</th>
-                    <th>FTE Variance</th>
-                    <th>Hours Variance</th>
+                    <th>OR Min</th>
+                    <th>OR Hrs</th>
+                    <th>Hrs Bud</th>
+                    <th>FTE Bud</th>
+                    <th>Hours</th>
+                    <th>FTE</th>
+                    <th>FTE Var</th>
+                    <th>Hrs Var</th>
                   </tr>
                 </thead>
                 <tbody id="staffingTable"></tbody>
@@ -564,7 +572,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.5.5 · 2026-06-19</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.5.6 · 2026-06-19</p>
     </footer>
   </div>
 
@@ -583,7 +591,8 @@
   <div id="devGateOverlay" class="dev-gate-overlay" role="dialog" aria-modal="true" hidden>
     <a href="https://tomboonern.com" class="dev-gate-prod-link">Go to tomboonern.com</a>
   </div>
-  <script src="rules-data.js?v=1.5.5"></script>
-  <script src="app.js?v=1.5.5"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="rules-data.js?v=1.5.6"></script>
+  <script src="app.js?v=1.5.6"></script>
 </body>
 </html>

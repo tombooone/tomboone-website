@@ -296,15 +296,7 @@
       toolKey: "equipment",
     });
 
-    let _staffingTool = wireAuditTool({
-      fileInput: document.getElementById("staffingFileInput"),
-      runButton: document.getElementById("runStaffingAudit"),
-      clearButton: document.getElementById("clearStaffingAudit"),
-      statusEl: document.getElementById("staffingStatus"),
-      resultsPanel: document.getElementById("staffingResultsPanel"),
-      tables: [document.getElementById("staffingTable")],
-      toolKey: "staffing",
-    });
+    let _staffingTool = wireStaffingTool();
 
     function showView(viewName) {
       homeView.classList.toggle("active", viewName === "home");
@@ -426,13 +418,8 @@
         sharedAuditResults.roomRulesError = e.message || "Unable to run room rules audit on this file.";
       }
 
-      // Staffing budget
-      try {
-        sharedAuditResults.staffing = auditStaffing(rows);
-      } catch (e) {
-        sharedAuditResults.staffingError = e.message || "Unable to run staffing calculation on this file.";
-      }
-
+      // NOTE: the staffing tool is intentionally NOT part of _runAllAudits — it
+      // needs a second file (the Productivity PDF) and has its own wiring/Run.
     }
 
     function _showCachedResult(toolKey) {
@@ -488,23 +475,6 @@
         document.getElementById("runRoomRulesAudit").disabled = false;
         document.getElementById("clearRoomRulesAudit").disabled = false;
       }
-
-      if (toolKey === "staffing") {
-        const panel = document.getElementById("staffingResultsPanel");
-        const status = document.getElementById("staffingStatus");
-        if (sharedAuditResults.staffing) {
-          renderStaffingResults(sharedAuditResults.staffing);
-          panel.hidden = false;
-          const r = sharedAuditResults.staffing;
-          status.textContent = `Calculation complete. Reviewed ${r.totalRows} case${r.totalRows === 1 ? "" : "s"} across ${r.days.length} day${r.days.length === 1 ? "" : "s"}.`;
-          status.classList.remove("error");
-        } else if (sharedAuditResults.staffingError) {
-          status.textContent = sharedAuditResults.staffingError;
-          status.classList.add("error");
-        }
-        document.getElementById("runStaffingAudit").disabled = false;
-        document.getElementById("clearStaffingAudit").disabled = false;
-      }
     }
 
     // Campus codes used for display normalization and the audit filters
@@ -542,7 +512,12 @@
 
       const discrepancyRows = [];
       const inpatientRows = [];
-      const dataRows = populatedRows.slice(headerRowIndex + 1);
+      // Prospective only: drop rows dated before tomorrow's local midnight.
+      const tomorrowMidnight = new Date();
+      tomorrowMidnight.setHours(24, 0, 0, 0);
+      const tomorrowMs = tomorrowMidnight.getTime();
+      const dataRows = populatedRows.slice(headerRowIndex + 1)
+        .filter((row) => parseDateCell(cell(row, indexes.date)).sort >= tomorrowMs);
       const knownProblemSet = new Set(KNOWN_PROBLEM_CPTS.map((e) => e.code));
 
       dataRows.forEach((row, offset) => {
@@ -631,7 +606,12 @@
       const headerInfo = findHeaderInfoForColumns(populatedRows, equipmentRequiredColumns);
       if (!headerInfo) throw new Error("Could not find the required equipment audit columns: Case #, Special Needs, and Equipment.");
       const { indexes, headerRowIndex } = headerInfo;
-      const dataRows = populatedRows.slice(headerRowIndex + 1);
+      // Prospective only: drop rows dated before tomorrow's local midnight.
+      const tomorrowMidnight = new Date();
+      tomorrowMidnight.setHours(24, 0, 0, 0);
+      const tomorrowMs = tomorrowMidnight.getTime();
+      const dataRows = populatedRows.slice(headerRowIndex + 1)
+        .filter((row) => parseDateCell(cell(row, indexes.date)).sort >= tomorrowMs);
       const includedRows = [];
       dataRows.forEach((row) => {
         const caseNumber = cell(row, indexes.caseNumber);
@@ -2445,8 +2425,13 @@
       if (!headerInfo) throw new Error("Could not locate the header row in this spreadsheet.");
       const { indexes, headerRowIndex } = headerInfo;
       const roomPrefixRegex = new RegExp(CAMPUS_CONFIG.WBVC.roomPrefix.replace(/\s+/g, "\\s+") + "\\b", "i");
+      // Prospective only: drop rows dated before tomorrow's local midnight.
+      const tomorrowMidnight = new Date();
+      tomorrowMidnight.setHours(24, 0, 0, 0);
+      const tomorrowMs = tomorrowMidnight.getTime();
       const dataRows = populatedRows.slice(headerRowIndex + 1)
-        .filter((row) => roomPrefixRegex.test(cell(row, indexes.room)));
+        .filter((row) => roomPrefixRegex.test(cell(row, indexes.room))
+          && parseDateCell(cell(row, indexes.date)).sort >= tomorrowMs);
       const violations = [];
       const cases = [];
       const ruleMatchCounts = new Map();
@@ -2694,10 +2679,126 @@
     }
 
     // ── OR Staffing Budget Calculator ───────────────────────────────────────────
-    // Scoped to WBVC OR rooms (same room filter as the Room Rules tool) and to
-    // FUTURE days only (strictly after today's local midnight) so partial/today
-    // and past days don't leak in. Date, Proj Start Time, Proj End Time required;
-    // Room is optional (used for the WBVC OR scope filter when present).
+    // Two inputs: the OR Schedule export (XLSX, source of OR minutes, WBVC OR
+    // only) and the Productivity Report (PDF, source of actual/scheduled hours
+    // per day). The two are joined on date. This tool is independent of the
+    // shared _runAllAudits pipeline because it needs the second (PDF) file.
+
+    // Parse the Productivity-in-Hours PDF into a Map<sortDate, prodHours>.
+    // Each data row is "MM/DD/YYYY  <census>  <prodHours>  <budget>  <target>".
+    // Prod. Hours of 0.00 is treated as "no data" and skipped.
+    async function parseProductivityPdf(file) {
+      if (typeof pdfjsLib === "undefined") {
+        throw new Error("The PDF reader did not load. Check your connection and try again.");
+      }
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+      let text = "";
+      for (let p = 1; p <= pdf.numPages; p += 1) {
+        const page = await pdf.getPage(p);
+        const content = await page.getTextContent();
+        text += content.items.map((it) => it.str).join(" ") + " ";
+      }
+
+      const map = new Map(); // sortDate → prodHours
+      const rowPattern = /(\d{2}\/\d{2}\/\d{4})\s+[\d.]+\s+([\d.]+)\s+[\d.]+\s+[\d.]+/g;
+      let m;
+      while ((m = rowPattern.exec(text)) !== null) {
+        const prodHours = parseFloat(m[2]);
+        if (!(prodHours > 0)) continue; // 0.00 = no data
+        const dv = parseDateCell(m[1]);
+        if (Number.isFinite(dv.sort)) map.set(dv.sort, prodHours);
+      }
+      return map;
+    }
+
+    // Independent wiring for the staffing tool: two file inputs (XLSX + PDF),
+    // both required before Run is enabled; reads both files on Run.
+    function wireStaffingTool() {
+      const xlsxInput   = document.getElementById("staffingFileInput");
+      const pdfInput    = document.getElementById("staffingPdfInput");
+      const runButton   = document.getElementById("runStaffingAudit");
+      const clearButton = document.getElementById("clearStaffingAudit");
+      const statusEl    = document.getElementById("staffingStatus");
+      const resultsPanel = document.getElementById("staffingResultsPanel");
+      const table       = document.getElementById("staffingTable");
+
+      let xlsxFile = null;
+      let pdfFile = null;
+
+      const setStatus = (msg, isError = false) => {
+        statusEl.textContent = msg;
+        statusEl.classList.toggle("error", isError);
+      };
+      const bothReady = () => !!xlsxFile && !!pdfFile;
+      const updateButtons = () => {
+        runButton.disabled = !bothReady();
+        clearButton.disabled = !xlsxFile && !pdfFile;
+      };
+      const statusFromFiles = () => {
+        if (bothReady()) return `Ready: ${xlsxFile.name} + ${pdfFile.name}`;
+        if (xlsxFile) return "Add the Productivity Report (PDF) to continue.";
+        if (pdfFile) return "Add the OR Schedule export (XLSX) to continue.";
+        return "Waiting for the OR schedule and productivity report.";
+      };
+
+      function reset() {
+        xlsxFile = null;
+        pdfFile = null;
+        xlsxInput.value = "";
+        pdfInput.value = "";
+        runButton.disabled = true;
+        clearButton.disabled = true;
+        resultsPanel.hidden = true;
+        table.textContent = "";
+        setStatus("Cleared. No data is retained in this page.");
+      }
+
+      // Staffing is independent of the shared dataset; nothing to restore on nav.
+      function showFromShared() {}
+
+      xlsxInput.addEventListener("change", () => {
+        xlsxFile = xlsxInput.files[0] || null;
+        resultsPanel.hidden = true;
+        updateButtons();
+        setStatus(statusFromFiles());
+      });
+      pdfInput.addEventListener("change", () => {
+        pdfFile = pdfInput.files[0] || null;
+        resultsPanel.hidden = true;
+        updateButtons();
+        setStatus(statusFromFiles());
+      });
+
+      runButton.addEventListener("click", async () => {
+        if (!bothReady()) return;
+        runButton.disabled = true;
+        setStatus("Reading files locally...");
+        try {
+          const rows = await readXlsxRows(xlsxFile, staffingColumns);
+          const prodHoursMap = await parseProductivityPdf(pdfFile);
+          const result = auditStaffing(rows, prodHoursMap);
+          renderStaffingResults(result);
+          resultsPanel.hidden = false;
+          setStatus(`Calculation complete. ${result.days.length} day${result.days.length === 1 ? "" : "s"} matched the productivity report.`);
+          const heading = resultsPanel.querySelector("h2");
+          if (heading) { heading.tabIndex = -1; heading.focus(); }
+        } catch (error) {
+          console.error(error);
+          setStatus(error.message || "Unable to process these files.", true);
+        } finally {
+          updateButtons();
+        }
+      });
+
+      clearButton.addEventListener("click", reset);
+
+      return { reset, showFromShared };
+    }
+
     const staffingColumns = [
       { key: "date",      label: "Date",            accepted: ["date", "case/appt date", "surgery date", "procedure date"] },
       { key: "projStart", label: "Proj Start Time", accepted: ["proj start time", "case/appt projected start time (as scheduled)"] },
@@ -2705,7 +2806,8 @@
       { key: "room",      label: "Room",            accepted: ["room", "room (as scheduled)", "or room"], optional: true }
     ];
 
-    function auditStaffing(rows) {
+    function auditStaffing(rows, prodHoursMap) {
+      const prodMap = prodHoursMap || new Map();
       const populatedRows = rows.filter(hasData);
       if (populatedRows.length < 2) {
         throw new Error("The spreadsheet was readable, but no data rows were found.");
@@ -2721,32 +2823,23 @@
       const { indexes, headerRowIndex } = headerInfo;
       const dataRows = populatedRows.slice(headerRowIndex + 1);
 
-      // Only count FUTURE days — strictly after today's local midnight — so a
-      // partial current day or past dates don't appear as anomalous rows.
-      const todayMidnight = new Date();
-      todayMidnight.setHours(0, 0, 0, 0);
-      const todayMs = todayMidnight.getTime();
-
       // Same WBVC OR room scope as auditRoomRules. Applied only when a Room
       // column is present; if the export lacks one, fall back to all rooms.
+      // No date filter here — all dates are shown; the productivity-report join
+      // below limits results to days that actually have reported hours.
       const hasRoom = indexes.room !== -1 && indexes.room !== undefined;
       const roomPrefixRegex = new RegExp(CAMPUS_CONFIG.WBVC.roomPrefix.replace(/\s+/g, "\\s+") + "\\b", "i");
 
       // Sum OR minutes (Proj End − Proj Start) per day. Cases missing either
       // projected time are excluded from the sum (no note shown).
-      const byDate = new Map(); // sortDate → { display, sortDate, minutes, caseCount }
+      const byDate = new Map(); // sortDate → { display, sortDate, minutes }
       let totalRows = 0;
 
       dataRows.forEach((row) => {
         if (hasRoom && !roomPrefixRegex.test(cell(row, indexes.room))) return; // WBVC OR only
 
-        const dateValue = parseDateCell(cell(row, indexes.date));
-        if (!(dateValue.sort > todayMs)) return; // future days only
-
-        const rawStart = cell(row, indexes.projStart);
-        const rawEnd   = cell(row, indexes.projEnd);
-        const startMin = parseTimeToMinutes(rawStart);
-        const endMin   = parseTimeToMinutes(rawEnd);
+        const startMin = parseTimeToMinutes(cell(row, indexes.projStart));
+        const endMin   = parseTimeToMinutes(cell(row, indexes.projEnd));
         if (startMin === null || endMin === null) return; // exclude, silently
         const orMinutes = endMin - startMin;
         if (!(orMinutes > 0)) return; // skip non-positive / malformed spans
@@ -2758,26 +2851,42 @@
         // before adding to the day's running total. Leave orMinutes as the unit for now.
         const caseMinutes = orMinutes;
 
+        const dateValue = parseDateCell(cell(row, indexes.date));
         const key = dateValue.sort;
-        const entry = byDate.get(key) || { display: dateValue.display, sortDate: dateValue.sort, minutes: 0, caseCount: 0 };
+        const entry = byDate.get(key) || { display: dateValue.display, sortDate: dateValue.sort, minutes: 0 };
         entry.minutes += caseMinutes;
-        entry.caseCount += 1;
         byDate.set(key, entry);
       });
 
-      const days = Array.from(byDate.values())
+      // Join each OR day to its productivity-report hours. Days with OR minutes
+      // but no non-zero Prod. Hours entry are silently excluded.
+      const days = [];
+      Array.from(byDate.values())
         .sort((a, b) => a.sortDate - b.sortDate)
-        .map((d) => {
-          const staffHours = d.minutes * STAFFING_CONFIG.whpuos;
-          const ftes = staffHours / STAFFING_CONFIG.fteWeeklyHours;
-          return {
-            display:    d.display,
-            sortDate:   d.sortDate,
-            minutes:    d.minutes,
-            staffHours,
-            ftes,
-            caseCount:  d.caseCount
-          };
+        .forEach((d) => {
+          if (!(d.minutes > 0)) return;
+          const prodHours = prodMap.get(d.sortDate);
+          if (!(prodHours > 0)) return; // require a productivity match
+
+          const orHours = d.minutes / 60;
+          const hrsBud  = d.minutes * STAFFING_CONFIG.whpuos;
+          const fteBud  = hrsBud / STAFFING_CONFIG.fteWeeklyHours;
+          const fteSched = prodHours / STAFFING_CONFIG.fteWeeklyHours;
+          const fteVar  = fteBud - fteSched; // + = under budget, − = over
+          const hrsVar  = hrsBud - prodHours;
+
+          days.push({
+            display:  d.display,
+            sortDate: d.sortDate,
+            minutes:  d.minutes,
+            orHours,
+            hrsBud,
+            fteBud,
+            prodHours,
+            fteSched,
+            fteVar,
+            hrsVar
+          });
         });
 
       return { totalRows, days };
@@ -2801,8 +2910,8 @@
         const tr = document.createElement("tr");
         tr.className = "empty-row";
         const emptyCell = document.createElement("td");
-        emptyCell.colSpan = 8;
-        emptyCell.textContent = "No upcoming WBVC OR cases with projected start and end times were found.";
+        emptyCell.colSpan = 9;
+        emptyCell.textContent = "No WBVC OR days matched a non-zero entry in the productivity report.";
         tr.append(emptyCell);
         tbody.append(tr);
         return;
@@ -2813,13 +2922,15 @@
       });
     }
 
-    // Build one self-contained per-day row. The "FTEs Scheduled" cell holds three
-    // inputs (8/10/12-hr staff counts) whose live total + the row's two variance
-    // cells recompute on every input. Each row manages its own state independently.
+    // Build one per-day row. Budgeted figures come from OR minutes; scheduled
+    // figures (Hours / FTE) come from the joined productivity report. Weekend
+    // rows are shaded; Saturday rows get a thick bottom border before Sunday.
     function buildStaffingRow(d) {
       const tr = document.createElement("tr");
-      const budgetedStaffHours = d.staffHours;
-      const budgetedFte = d.ftes;
+      const dt = new Date(d.sortDate);
+      const dow = dt.getDay(); // 0 = Sun … 6 = Sat
+      if (dow === 0 || dow === 6) tr.classList.add("staffing-weekend");
+      if (dow === 6) tr.classList.add("staffing-sat-border");
 
       const appendText = (text) => {
         const td = document.createElement("td");
@@ -2827,66 +2938,28 @@
         tr.append(td);
       };
 
-      appendText(d.display);                              // Date
-      appendText(String(Math.round(d.minutes)));          // OR Minutes
-      appendText((d.minutes / 60).toFixed(1));            // OR Hours
-      appendText(budgetedStaffHours.toFixed(1));          // Staff Hours Budgeted
-      appendText(budgetedFte.toFixed(1));                 // FTEs Budgeted
+      // Date cell: weekday name + M/D/YYYY on two lines
+      const dateTd = document.createElement("td");
+      const weekdayLine = document.createElement("div");
+      weekdayLine.textContent = dt.toLocaleDateString("en-US", { weekday: "long" });
+      const dateLine = document.createElement("div");
+      dateLine.className = "staffing-date-sub";
+      dateLine.textContent = `${dt.getMonth() + 1}/${dt.getDate()}/${dt.getFullYear()}`;
+      dateTd.append(weekdayLine, dateLine);
+      tr.append(dateTd);
 
-      // FTEs Scheduled — compact input widget (8 / 10 / 12) + live total line
-      const schedTd = document.createElement("td");
-      schedTd.className = "staffing-sched-cell";
-      const inputsRow = document.createElement("div");
-      inputsRow.className = "staffing-sched-inputs";
-      const inputs = {};
-      [["eight", "8"], ["ten", "10"], ["twelve", "12"]].forEach(([key, label]) => {
-        const lab = document.createElement("label");
-        const span = document.createElement("span");
-        span.textContent = label;
-        const inp = document.createElement("input");
-        inp.type = "number";
-        inp.min = "0";
-        inp.step = "1";
-        inp.value = "0";
-        inp.inputMode = "numeric";
-        inp.setAttribute("aria-label", `${label}-hour staff`);
-        lab.append(span, inp);
-        inputsRow.append(lab);
-        inputs[key] = inp;
-      });
-      const totalLine = document.createElement("div");
-      totalLine.className = "staffing-sched-total";
-      schedTd.append(inputsRow, totalLine);
-      tr.append(schedTd);
+      appendText(String(Math.round(d.minutes)));   // OR Min
+      appendText(d.orHours.toFixed(1));             // OR Hrs
+      appendText(d.hrsBud.toFixed(1));              // Hrs Bud
+      appendText(d.fteBud.toFixed(1));              // FTE Bud
+      appendText(d.prodHours.toFixed(1));           // Hours (productivity report)
+      appendText(d.fteSched.toFixed(1));            // FTE (scheduled)
 
-      // FTE Variance + Hours Variance cells
       const fteVarTd = document.createElement("td");
-      const hoursVarTd = document.createElement("td");
-      tr.append(fteVarTd, hoursVarTd);
-
-      function recompute() {
-        const eight  = Math.max(0, Number(inputs.eight.value)  || 0);
-        const ten    = Math.max(0, Number(inputs.ten.value)    || 0);
-        const twelve = Math.max(0, Number(inputs.twelve.value) || 0);
-
-        const scheduledFte =
-          eight  * STAFFING_CONFIG.shiftFte.eight +
-          ten    * STAFFING_CONFIG.shiftFte.ten +
-          twelve * STAFFING_CONFIG.shiftFte.twelve;
-        const scheduledHours = eight * 8 + ten * 10 + twelve * 12;
-
-        totalLine.textContent = `${scheduledFte.toFixed(1)} FTEs / ${scheduledHours.toFixed(1)} hrs`;
-        setStaffingVariance(fteVarTd, budgetedFte - scheduledFte);
-        setStaffingVariance(hoursVarTd, budgetedStaffHours - scheduledHours);
-      }
-
-      Object.values(inputs).forEach((inp) => {
-        inp.addEventListener("input", recompute);
-        // Inputs are interactive controls inside the row; don't bubble to any
-        // future row-level click handler.
-        inp.addEventListener("click", (e) => e.stopPropagation());
-      });
-      recompute();
+      setStaffingVariance(fteVarTd, d.fteVar);
+      const hrsVarTd = document.createElement("td");
+      setStaffingVariance(hrsVarTd, d.hrsVar);
+      tr.append(fteVarTd, hrsVarTd);
 
       return tr;
     }
