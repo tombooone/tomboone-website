@@ -454,10 +454,6 @@
     .staffing-table tbody tr.staffing-sat-border td {
       border-bottom: 2px solid #94a3b8;
     }
-    .staffing-table-wrap {
-      overflow-y: auto;
-      max-height: 520px;
-    }
     .staffing-var-under { color: #1a7f4b; font-weight: 600; }
     .staffing-var-over { color: #b42318; font-weight: 600; }
     .staffing-stale-banner {
@@ -558,6 +554,9 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #ffffff;
+    }
+    .staffing-results-wrap {
+      overflow: visible;
     }
 
     table {
