@@ -2879,14 +2879,30 @@
         console.log(`[staffing] OR minutes for ${dateStr}:`, entry ? entry.minutes : 0);
       });
 
-      // Join each OR day to its productivity-report hours. Days with OR minutes
-      // but no non-zero Prod. Hours entry are silently excluded.
+      // Join each day to its productivity-report hours. Weekdays require both
+      // OR minutes > 0 and a non-zero Prod. Hours entry (unchanged). Weekends
+      // have no scheduled cases (0 OR minutes) but still carry call-coverage
+      // Prod. Hours, so they're included whenever a non-zero entry exists —
+      // pull those dates in from prodMap even if byDate has no entry for them.
+      const candidateDates = new Map(byDate);
+      prodMap.forEach((prodHours, sortDate) => {
+        if (candidateDates.has(sortDate)) return;
+        const dt = new Date(sortDate);
+        candidateDates.set(sortDate, {
+          display: `${dt.getMonth() + 1}/${dt.getDate()}/${dt.getFullYear()}`,
+          sortDate,
+          minutes: 0
+        });
+      });
+
       const days = [];
-      Array.from(byDate.values())
+      Array.from(candidateDates.values())
         .sort((a, b) => a.sortDate - b.sortDate)
         .forEach((d) => {
-          if (!(d.minutes > 0)) return;
+          const dow = new Date(d.sortDate).getDay();
+          const isWeekend = dow === 0 || dow === 6;
           const prodHours = prodMap.get(d.sortDate);
+          if (!isWeekend && !(d.minutes > 0)) return;
           if (!(prodHours > 0)) return; // require a productivity match
 
           const orHours = d.minutes / 60;
