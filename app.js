@@ -536,8 +536,6 @@
         const caseExtract = extractCodes(panelInfo);
         const orderList = orderExtract.codes;
         const caseList = caseExtract.codes;
-        const orderSet = new Set(orderList);
-        const caseSet = new Set(caseList);
 
         // Validity check runs first: invalid codes are bucketed with their origin
         // and excluded from the directional comparisons below
@@ -552,12 +550,23 @@
           if (!knownProblemSet.has(badCode)) invalidCodes.push({ code: badCode, origin: "order" });
         });
 
-        const missingCodes = orderList.filter(
-          (code) => validCptCodes.has(code) && !caseSet.has(code) && !knownProblemSet.has(code)
-        );
-        const notOnOrderCodes = caseList.filter(
-          (code) => validCptCodes.has(code) && !orderSet.has(code) && !knownProblemSet.has(code)
-        );
+        // Quantity-aware: a multiplier suffix (e.g. "15774x3") expands to a
+        // per-code count, so a code present on both sides at unequal counts
+        // still surfaces the difference as repeated individual entries.
+        const orderCounts = orderExtract.counts;
+        const caseCounts = caseExtract.counts;
+        const missingCodes = [];
+        orderList.forEach((code) => {
+          if (!validCptCodes.has(code) || knownProblemSet.has(code)) return;
+          const diff = (orderCounts[code] || 0) - (caseCounts[code] || 0);
+          for (let i = 0; i < diff; i++) missingCodes.push(code);
+        });
+        const notOnOrderCodes = [];
+        caseList.forEach((code) => {
+          if (!validCptCodes.has(code) || knownProblemSet.has(code)) return;
+          const diff = (caseCounts[code] || 0) - (orderCounts[code] || 0);
+          for (let i = 0; i < diff; i++) notOnOrderCodes.push(code);
+        });
         const inpatientMatches = orderList.filter((code) => inpatientOnlyCodes.has(code) && !knownProblemSet.has(code));
 
         if (missingCodes.length || notOnOrderCodes.length || invalidCodes.length) {
@@ -569,6 +578,8 @@
             campus,
             orderCodes: orderList,
             caseCodes: caseList,
+            orderDisplay: orderExtract.display,
+            caseDisplay: caseExtract.display,
             missingCodes,
             notOnOrderCodes,
             invalidCodes
@@ -934,10 +945,10 @@
       const invalidOrderSet = new Set(row.invalidCodes.filter((e) => e.origin === "order").map((e) => e.code));
       const invalidCaseSet = new Set(row.invalidCodes.filter((e) => e.origin === "case").map((e) => e.code));
 
-      const orderValue = buildCodeListValue(row.orderCodes, (code) =>
+      const orderValue = buildCodeListValue(row.orderCodes, row.orderDisplay, (code) =>
         invalidOrderSet.has(code) ? RED_MARK_CSS : missingSet.has(code) ? AMBER_MARK_CSS : null
       );
-      const caseValue = buildCodeListValue(row.caseCodes, (code) =>
+      const caseValue = buildCodeListValue(row.caseCodes, row.caseDisplay, (code) =>
         invalidCaseSet.has(code) ? RED_MARK_CSS : notOnOrderSet.has(code) ? BLUE_MARK_CSS : null
       );
 
@@ -947,7 +958,7 @@
       return detailTr;
     }
 
-    function buildCodeListValue(codes, markStyleFor) {
+    function buildCodeListValue(codes, displayCodes, markStyleFor) {
       const div = document.createElement("div");
       div.className = "equip-detail-value";
       if (!codes.length) {
@@ -956,11 +967,12 @@
       }
       codes.forEach((code, i) => {
         if (i > 0) div.append(document.createTextNode(", "));
+        const raw = (displayCodes && displayCodes[i]) || code;
         const style = markStyleFor(code);
         if (style) {
-          div.append(copyCodeMark(code, style, false));
+          div.append(copyCodeMark(code, style, false, raw));
         } else {
-          div.append(document.createTextNode(code));
+          div.append(document.createTextNode(raw));
         }
       });
       return div;
@@ -1416,10 +1428,10 @@
       return a;
     }
 
-    function copyCodeMark(code, styleCss, markVisited = true) {
+    function copyCodeMark(code, styleCss, markVisited = true, displayText) {
       const mark = document.createElement("mark");
       mark.style.cssText = styleCss + "cursor:pointer;";
-      mark.textContent = code;
+      mark.textContent = displayText || code;
       mark.addEventListener("click", (e) => {
         e.stopPropagation();
         if (markVisited) {
@@ -1625,19 +1637,45 @@
     }
 
     function extractCodes(text) {
-      const source = String(text || "").toUpperCase();
+      const original = String(text || "");
+      const source = original.toUpperCase();
       const codes = [];
+      const display = [];
       const errors = [];
       const seen = new Set();
+      const counts = {};
+      // A code may carry a quantity multiplier suffix, e.g. "15774X3" meaning
+      // three instances of CPT 15774. Detected first so the base code is
+      // still recognized (the trailing X would otherwise fail the boundary
+      // check below and the code would be missed entirely). The raw matched
+      // text (e.g. "15774x3") is kept in `display` for as-is rendering;
+      // `codes`/`counts` carry only the bare base code, used for comparison.
+      const multiplierPattern = /(\d{4,5})X(\d{1,3})\b/g;
       const codePattern = /[A-Z]\d{4}|\d{5}|\d{4}[A-Z]/g;
       const shortPattern = /\d{3,4}/g;
       let match;
+
+      while ((match = multiplierPattern.exec(source)) !== null) {
+        const code = match[1];
+        const qty = parseInt(match[2], 10);
+        const end = match.index + match[0].length;
+        if (qty > 0 && isCodeBoundary(source, match.index, end)) {
+          counts[code] = (counts[code] || 0) + qty;
+          if (!seen.has(code)) {
+            seen.add(code);
+            codes.push(code);
+            display.push(original.slice(match.index, end));
+          }
+        }
+      }
 
       while ((match = codePattern.exec(source)) !== null) {
         const code = match[0];
         if (isCodeBoundary(source, match.index, match.index + code.length) && !seen.has(code)) {
           seen.add(code);
           codes.push(code);
+          display.push(original.slice(match.index, match.index + code.length));
+          counts[code] = (counts[code] || 0) + 1;
         }
       }
 
@@ -1648,7 +1686,7 @@
         }
       }
 
-      return { codes, errors };
+      return { codes, errors, counts, display };
     }
 
     function isCodeBoundary(source, start, end, rejectHyphenBefore = false) {
