@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VNC Stocked Supply Item Search — CPMC Surgical and Periop Services Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=1.6.0">
+  <script>
+  if (location.hostname === 'tomboonern.com') {
+    var s = document.createElement('script');
+    s.defer = true;
+    s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+    s.setAttribute('data-cf-beacon', '{"token": "32d01d4d3deb4232a33bba1c2855cd99"}');
+    document.head.appendChild(s);
+  }
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand" aria-label="CPMC Surgical and Periop Services Tools">
+          <a href="index.html" class="brand-back-link" title="Back to all tools">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            All tools
+          </a>
+        </div>
+        <div class="topbar-meta">
+          <div class="privacy-pill" title="Catalog data is bundled with the site. No file upload, no network request.">
+            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span>Local browser processing only</span>
+          </div>
+          <div class="privacy-pill" title="No PHI or PII. Catalog contains only supply item numbers and descriptions.">
+            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+            <span>PHI + PII Safe</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="items-main">
+      <div class="page-heading">
+        <h1>VNC Stocked Supply Item Search</h1>
+        <p class="lede">Search the stocked supply catalog at CPMC Van Ness. Useful for confirming an item is available before adding it to a preference card.</p>
+      </div>
+
+      <div class="items-search-wrap">
+        <div class="items-search-box-wrap">
+          <svg class="items-search-icon" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+            <path d="m16.5 16.5 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="search"
+            id="itemSearch"
+            class="items-search-input"
+            placeholder="Search by keyword, size, brand, item number…"
+            autocomplete="off"
+            spellcheck="false"
+            autofocus
+          >
+          <button type="button" class="items-search-clear" id="itemSearchClear" aria-label="Clear search" hidden>
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <p class="items-catalog-line" id="catalogLine"></p>
+      </div>
+
+      <div id="itemsResultsArea">
+        <!-- populated by JS -->
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.6.0 · 2026-07-10</p>
+    </footer>
+  </div>
+
+  <div id="copyToast" aria-live="polite"></div>
+
+  <script src="items-data.js?v=1.6.0"></script>
+  <script>
+  (function () {
+    // ---------- catalog meta ----------
+    const meta = typeof CATALOG_META !== "undefined"
+      ? CATALOG_META
+      : { campus: "CPMC Van Ness", asOf: "unknown", count: 0 };
+    const catalog = typeof ITEM_CATALOG !== "undefined" ? ITEM_CATALOG : [];
+
+    // Format asOf date nicely: "2026-07-07" → "July 7, 2026"
+    function fmtDate(iso) {
+      if (!iso || iso === "unknown") return iso;
+      const d = new Date(iso + "T12:00:00");
+      if (isNaN(d)) return iso;
+      return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    }
+
+    document.getElementById("catalogLine").textContent =
+      `Catalog as of ${fmtDate(meta.asOf)} · ${meta.count.toLocaleString()} items · ${meta.campus} Campus`;
+
+    // ---------- search ----------
+    const MAX_RESULTS = 50;
+    const NUDGE_THRESHOLD = 25;
+
+    function buildSearchable(item) {
+      return [item.item, item.desc, item.desc3, item.unspsc, item.mfr, item.mfrItem]
+        .join(" ")
+        .toLowerCase();
+    }
+
+    // Pre-build searchable strings
+    const searchable = catalog.map(buildSearchable);
+
+    function score(item, searchStr, tokens) {
+      // Word-boundary bonus: count tokens matching at a word boundary in short desc
+      const descLow = item.desc.toLowerCase();
+      let wordBoundaryCount = 0;
+      let descMatchCount = 0;
+      for (const t of tokens) {
+        if (descLow.includes(t)) {
+          descMatchCount++;
+          // rough word-boundary check: preceded by non-word char or start
+          const re = new RegExp("(?:^|[^a-z0-9])" + t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+          if (re.test(descLow)) wordBoundaryCount++;
+        }
+      }
+      // Higher score = better rank. desc matches > verbose-only. word-boundary bonus on top.
+      return descMatchCount * 10 + wordBoundaryCount * 5;
+    }
+
+    function search(query) {
+      const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      if (!tokens.length) return null;
+
+      const hits = [];
+      for (let i = 0; i < catalog.length; i++) {
+        const s = searchable[i];
+        if (tokens.every((t) => s.includes(t))) {
+          hits.push({ item: catalog[i], rank: score(catalog[i], s, tokens) });
+        }
+      }
+
+      hits.sort((a, b) => {
+        if (b.rank !== a.rank) return b.rank - a.rank;
+        return a.item.desc.localeCompare(b.item.desc);
+      });
+
+      return hits.map((h) => h.item);
+    }
+
+    // ---------- rendering ----------
+    const resultsArea = document.getElementById("itemsResultsArea");
+    let expandedItems = new Set();
+
+    function showToast(msg) {
+      const toast = document.getElementById("copyToast");
+      toast.textContent = msg;
+      toast.classList.add("visible");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    function renderEmpty(query) {
+      resultsArea.innerHTML = "";
+      const div = document.createElement("div");
+      div.className = "items-empty";
+      div.innerHTML = `<p>No stocked items match <strong>${escHtml(query)}</strong> at Van Ness.</p>
+        <p class="items-empty-hint">Check spelling, try fewer or different words (brand vs. generic), or search by manufacturer item number.</p>
+        <div class="items-empty-phase2-slot"></div>`;
+      resultsArea.appendChild(div);
+    }
+
+    function renderResults(items, totalCount, query) {
+      resultsArea.innerHTML = "";
+
+      const capped = items.length < totalCount;
+      const countLine = document.createElement("p");
+      countLine.className = "items-count-line";
+      if (capped) {
+        countLine.textContent = `Showing ${items.length} of ${totalCount.toLocaleString()} matches — add detail to narrow`;
+      } else {
+        countLine.textContent = `${totalCount.toLocaleString()} match${totalCount !== 1 ? "es" : ""}`;
+      }
+      resultsArea.appendChild(countLine);
+
+      if (totalCount > NUDGE_THRESHOLD) {
+        const nudge = document.createElement("p");
+        nudge.className = "items-nudge";
+        nudge.textContent = "Lots of matches — add size, needle, length, or brand to narrow.";
+        resultsArea.appendChild(nudge);
+      }
+
+      const list = document.createElement("ul");
+      list.className = "items-list";
+
+      for (const item of items) {
+        const li = document.createElement("li");
+        li.className = "items-row";
+
+        const isExpanded = expandedItems.has(item.item);
+
+        li.innerHTML = `
+          <div class="items-row-main">
+            <div class="items-row-top">
+              <button class="items-item-num copy-case" data-item="${escHtml(item.item)}" title="Click to copy item number">${escHtml(item.item)}</button>
+              <span class="items-desc">${escHtml(item.desc)}</span>
+            </div>
+            ${item.desc3 ? `<div class="items-desc3-wrap ${isExpanded ? "expanded" : ""}">
+              <p class="items-desc3">${escHtml(item.desc3)}</p>
+              <button class="items-desc3-toggle ghost-button" type="button" data-item="${escHtml(item.item)}">
+                ${isExpanded ? "Show less" : "Show more"}
+              </button>
+            </div>` : ""}
+            <div class="items-row-meta">
+              ${item.mfr || item.mfrItem ? `<span class="items-mfr">${escHtml([item.mfr, item.mfrItem].filter(Boolean).join(" · "))}</span>` : ""}
+              ${item.unspsc ? `<span class="items-unspsc-chip">${escHtml(item.unspsc)}</span>` : ""}
+            </div>
+          </div>`;
+
+        list.appendChild(li);
+      }
+
+      resultsArea.appendChild(list);
+
+      // Event delegation for copy and expand
+      list.addEventListener("click", (e) => {
+        const copyBtn = e.target.closest(".items-item-num");
+        if (copyBtn) {
+          const num = copyBtn.dataset.item;
+          navigator.clipboard.writeText(num).then(() => showToast("Copied: " + num));
+          return;
+        }
+
+        const toggleBtn = e.target.closest(".items-desc3-toggle");
+        if (toggleBtn) {
+          const itemNum = toggleBtn.dataset.item;
+          const wrap = toggleBtn.closest(".items-desc3-wrap");
+          if (wrap.classList.toggle("expanded")) {
+            expandedItems.add(itemNum);
+            toggleBtn.textContent = "Show less";
+          } else {
+            expandedItems.delete(itemNum);
+            toggleBtn.textContent = "Show more";
+          }
+          return;
+        }
+      });
+    }
+
+    function renderIdle() {
+      resultsArea.innerHTML = "";
+      expandedItems.clear();
+    }
+
+    function escHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // ---------- input wiring ----------
+    const searchInput = document.getElementById("itemSearch");
+    const clearBtn = document.getElementById("itemSearchClear");
+    let debounceTimer;
+
+    function run() {
+      const query = searchInput.value;
+      clearBtn.hidden = !query;
+
+      if (!query.trim()) {
+        renderIdle();
+        return;
+      }
+
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const hits = search(query);
+        if (!hits) { renderIdle(); return; }
+        if (!hits.length) { renderEmpty(query); return; }
+        renderResults(hits.slice(0, MAX_RESULTS), hits.length, query);
+      }, 150);
+    }
+
+    searchInput.addEventListener("input", run);
+
+    clearBtn.addEventListener("click", () => {
+      searchInput.value = "";
+      clearBtn.hidden = true;
+      renderIdle();
+      searchInput.focus();
+    });
+
+  })();
+  </script>
+</body>
+</html>
