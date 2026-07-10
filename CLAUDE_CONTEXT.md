@@ -1,11 +1,11 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-06-20 (v1.5.10)
+## Last updated: 2026-07-10 (v1.6.0)
 
 ---
 
 ## CRITICAL RULES — READ FIRST
 
-- This is a **single HTML file** (`index.html`) deployed via **Cloudflare Pages**
+- The audit tools live in a **single HTML file** (`index.html`) deployed via **Cloudflare Pages**; the new item search tool is a separate standalone `items.html` in the same repo
 - **NEVER touch the existing CPT audit or equipment audit code** — those tools are live and working
 - All processing is **local browser only** — no server, no uploads, no external data storage
 - PHI-safe by design — the only unique identifier in schedule data is Case #
@@ -25,6 +25,7 @@ Home-screen tools (all **live and complete**):
 2. **Equipment Request Audit** ✅ complete (expand/collapse detail rows, amber keyword highlight, 19 keywords including NIM, Sonopet, CUSA, Aquamantys, Stealth, Ultrasound, Spy ICG, PTeye), do not touch
 3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag tier system; includes **Rule Management** sub-view with read-only rule cards, mailto flag-for-review, and mailto request-new-rule flows)
 4. **OR Staffing Budget Calculator** ✅ complete (v1.5.3–v1.5.5 history below; v1.5.6 introduced the two-file PDF-driven shape; v1.5.7 added display-only fixes — stale-report banner, today's-row mixed-data note, weekend variance suppression; v1.5.8 fixed the join so weekend days with zero scheduled OR cases still appear; v1.5.9 reworked the join to a date-range scope and added a per-row past/today/future timeline color bar + today-row highlight (its v1.5.9 "fixed-height scrollable table" sticky-header approach was wrong and was corrected in v1.5.10 — see Key Decisions); **v1.5.10** is the current shape, with the table header pinned to the browser viewport (not a mini scroll-box) as the page scrolls. Takes **two files** — the OR Schedule XLSX + the Productivity Report **PDF** — joins them on date, and shows a 9-column per-day table comparing budgeted vs. productivity-report hours/FTE for WBVC OR. Decoupled from the shared `_runAllAudits`. See Key Decisions.)
+5. **VNC Stocked Supply Item Search** ✅ complete (v1.6.0; standalone `items.html` — see below; linked from home grid as `<a class="tool-tile" href="items.html">`)
 
 Sub-views (not home-screen tiles):
 - **Equipment Terms view** ✅ complete (accessible via "View terms being checked" link in Equipment Request Audit; shows keyword pills; "Suggest equipment to check" button opens mailto pre-filled with suggestion template)
@@ -34,12 +35,12 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.5.10**
+- Current version: **v1.6.0**
 - Repo: github.com/tombooone/tomboone-website
-- File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration.
-- **Cache busting:** `styles.css`, `rules-data.js`, and `app.js` are loaded with `?v=X.X.XX` query strings in index.html. These version numbers **must be bumped in sync with the footer version badge** on every deploy.
-- Deploy: `git add index.html styles.css rules-data.js app.js && git commit -m "message" && git push`
-- Cloudflare Web Analytics: snippet added to `<head>` in index.html, wrapped in `location.hostname === 'tomboonern.com'` guard — fires only on tomboonern.com (production); tomboone.io (dev) and localhost are intentionally excluded
+- File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
+- **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
+- Deploy: `git add index.html styles.css rules-data.js app.js items.html items-data.js && git commit -m "message" && git push`
+- Cloudflare Web Analytics: snippet added to `<head>` in **both** `index.html` and `items.html`, wrapped in `location.hostname === 'tomboonern.com'` guard — fires only on tomboonern.com (production); tomboone.io (dev) and localhost are intentionally excluded
 - Cloudflare Pages: push to `main` auto-deploys tomboonern.com; push to `dev` auto-deploys tomboone.io
 
 ---
@@ -50,7 +51,7 @@ Sub-views (not home-screen tiles):
 - Only merge `dev` into `main` (which deploys tomboonern.com) when Tom explicitly says **"release"**
 - Releases happen via merging `dev` into `main` — no force pushes or rebases to `main`
 - Version bumps happen on every push, on both branches, as always
-- Most recent release: `dev` merged into `main` at v1.4.29 (2026-06-17), fast-forwarded — tomboonern.com is current through v1.4.29. v1.5.0 through v1.5.10 are on `dev` (tomboone.io) only, not yet released to `main`.
+- Most recent release: `dev` merged into `main` at v1.4.29 (2026-06-17), fast-forwarded — tomboonern.com is current through v1.4.29. v1.5.0 through v1.6.0 are on `dev` (tomboone.io) only, not yet released to `main`.
 - **External dependency (v1.5.6):** `index.html` loads **PDF.js** (`pdf.min.js` 3.11.174) from cdnjs via a `<script defer>` (worker `pdf.worker.min.js` set at parse time). This is library code only, fetched like the Google Fonts already are — the uploaded PDF is parsed **entirely in-browser** (PHI never leaves the device, so the privacy guarantee holds). If the CDN is unreachable the staffing PDF parse shows a friendly error and the rest of the app is unaffected.
 
 ### Dev Gate (tomboone.io only)
@@ -61,6 +62,39 @@ Sub-views (not home-screen tiles):
 - Dismissal: a keystroke buffer listener (independent of the worm easter egg's listener and buffer) watches for the typed sequence "fefe" anywhere outside an input/textarea. On match, the overlay is hidden and `sessionStorage.setItem('devUnlocked', 'true')` is set
 - On page load: if `sessionStorage.getItem('devUnlocked') === 'true'`, the overlay is skipped entirely (persists until the tab closes)
 - DEV badge: `#devBadge`, an amber pill in the topbar next to the privacy pills (`.dev-pill` class on `.privacy-pill`), shown once the gate has been passed on tomboone.io; hostname-keyed the same way, so it never renders on tomboonern.com or localhost
+
+---
+
+## VNC Stocked Supply Item Search (items.html)
+
+A standalone page (not embedded in `index.html`'s SPA shell) that lets OR nurses search the Infor supply catalog stocked at CPMC Van Ness by keyword.
+
+### Architecture
+
+- **Data file:** `items-data.js` — classic script (no IIFE, top-level consts, 4-space indent matching `rules-data.js`) defining:
+  - `CATALOG_META = { campus, asOf, count }` — metadata shown in the persistent catalog line under the search box
+  - `ITEM_CATALOG = [ { item, desc, desc3, unspsc, mfr, mfrItem }, ... ]` — array of item objects (2929 items as of 2026-07-07); fields: `item` (item number), `desc` (short description), `desc3` (verbose description), `unspsc` (category), `mfr` (manufacturer division), `mfrItem` (manufacturer item number)
+- **Build script:** `scripts/build-items.mjs` — Node ESM script; run manually on catalog refresh (see Catalog Refresh below). Uses the `xlsx` npm package (dev-only, not committed; run `npm install xlsx` first). Requires Node 18+.
+- **Search logic:** inline `<script>` in `items.html` — no `app.js` dependency, no shared state. On each `input` event (debounced 150ms): splits query on whitespace into tokens; keeps items where every token is a substring of the concatenated 6-field searchable string; ranks by short-desc match count + word-boundary bonus, tiebreaks alphabetical. Renders top 50 with a count line ("Showing 50 of N matches — add detail to narrow" when capped); shows refinement nudge when total matches > 25; empty-query → blank; zero-results → guidance text.
+- **Result rows:** item number as a copyable button (click-to-copy toast identical to audit suite pattern via `navigator.clipboard.writeText`), short desc as primary line, verbose desc3 truncated to 2 lines with expand-on-click ("Show more"/"Show less"), mfr + mfrItem as meta line, UNSPSC as a muted chip.
+- **Page chrome:** same `styles.css` + Google Fonts as `index.html`. Topbar has a "← All tools" back-link (`.brand-back-link`) instead of the SPA brand div. No dev gate (it's a separate page; `items.html` doesn't have the overlay markup or app.js). Same Cloudflare Analytics guard in `<head>`.
+- **No PHI:** catalog contains only supply item numbers and descriptions — no patient data, no Epic case numbers.
+
+### Catalog Refresh Procedure
+
+When a new Infor item master export is available:
+1. Install the build dependency (one-time per machine): `cd tomboone-website && npm install xlsx`
+2. Run the build script: `node scripts/build-items.mjs "<path-to-new-xlsx>"`
+   - The filename should contain a date pattern like `26_07_07` or `26.07.07` (YY[sep]MM[sep]DD) which the script parses for `CATALOG_META.asOf`. If absent, it falls back to today's date with a warning.
+   - The script reads the xlsx, deduplicates on Item number (keeps first occurrence), and writes `items-data.js` in the repo root.
+3. Bump the version in `items.html` (footer badge, `styles.css?v=`, `items-data.js?v=`) and in `index.html` (footer badge, all cache-busting strings).
+4. Commit: `git add items-data.js items.html index.html styles.css && git commit -m "vX.Y.Z: refresh VNC catalog to YYYY-MM-DD (N items)"` and push.
+
+### Expected XLSX columns (case-insensitive)
+`Item`, `Item Description`, `Item Description3`, `UNSPSC Description`, `Mfr Division Name`, `Mfr Item`. Stray null cells emit empty string. Fully duplicate rows (same Item#) are silently deduplicated.
+
+### Phase 2 placeholder
+A `.items-empty-phase2-slot` div is left inside the zero-results state for a future "copilot handoff" CTA (phase 2 not yet built).
 
 ---
 
