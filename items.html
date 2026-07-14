@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.6.0">
+  <link rel="stylesheet" href="styles.css?v=1.6.1">
   <script>
   if (location.hostname === 'tomboonern.com') {
     var s = document.createElement('script');
@@ -85,13 +85,13 @@
 
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.6.0 · 2026-07-10</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.6.1 · 2026-07-14</p>
     </footer>
   </div>
 
   <div id="copyToast" aria-live="polite"></div>
 
-  <script src="items-data.js?v=1.6.0"></script>
+  <script src="items-data.js?v=1.6.1"></script>
   <script>
   (function () {
     // ---------- catalog meta ----------
@@ -115,6 +115,33 @@
     const MAX_RESULTS = 50;
     const NUDGE_THRESHOLD = 25;
 
+    // Colloquial/brand -> catalog term. One-directional. Each mapping verified
+    // against real stocked items — do not add speculative entries.
+    const SYNONYMS = {
+      nylon: ["ethilon", "nurolon"],
+      betadine: ["providone", "povidone"],
+      esmarch: ["esmark"],
+      raytec: ["xry", "xray"],
+      bovie: ["electrosurgical", "cautery"],
+      kling: ["conforming"],
+      silk: ["perma-hand"],
+      cottonoid: ["neuro"],
+      patty: ["neuro"],
+      neuropatty: ["neuro"],
+    };
+
+    // Products genuinely not stocked at VNC under any name.
+    const KNOWN_ABSENT_TERMS = [
+      "gelfoam",
+      "surgicel",
+      "floseal",
+      "surgiflo",
+      "tegaderm",
+      "hemovac",
+      "jp drain",
+      "jackson pratt",
+    ];
+
     function buildSearchable(item) {
       return [item.item, item.desc, item.desc3, item.unspsc, item.mfr, item.mfrItem]
         .join(" ")
@@ -124,17 +151,45 @@
     // Pre-build searchable strings
     const searchable = catalog.map(buildSearchable);
 
+    function escapeRegex(str) {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    // Short (<=3 char) and purely numeric terms match only on a word boundary
+    // (hyphens/slashes are treated as non-boundary so sizes like "4-0" stay intact).
+    // Longer alphabetic terms keep the existing substring match.
+    function matchesTerm(haystackLower, term) {
+      const isNumeric = /^[0-9]+$/.test(term);
+      const isShort = term.length <= 3;
+      const hasLetter = /[a-z]/.test(term);
+      const escaped = escapeRegex(term);
+      if (isNumeric || isShort || !hasLetter) {
+        const re = new RegExp("(?<![a-z0-9])" + escaped + "(?![a-z0-9])");
+        return re.test(haystackLower);
+      }
+      return haystackLower.includes(term);
+    }
+
+    // A token matches directly, or (if it's a known synonym key) if any of its
+    // mapped catalog terms match.
+    function tokenMatches(haystackLower, token) {
+      if (matchesTerm(haystackLower, token)) return true;
+      const syns = SYNONYMS[token];
+      if (syns) {
+        return syns.some((term) => matchesTerm(haystackLower, term));
+      }
+      return false;
+    }
+
     function score(item, searchStr, tokens) {
       // Word-boundary bonus: count tokens matching at a word boundary in short desc
       const descLow = item.desc.toLowerCase();
       let wordBoundaryCount = 0;
       let descMatchCount = 0;
       for (const t of tokens) {
-        if (descLow.includes(t)) {
+        if (tokenMatches(descLow, t)) {
           descMatchCount++;
-          // rough word-boundary check: preceded by non-word char or start
-          const re = new RegExp("(?:^|[^a-z0-9])" + t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-          if (re.test(descLow)) wordBoundaryCount++;
+          wordBoundaryCount++;
         }
       }
       // Higher score = better rank. desc matches > verbose-only. word-boundary bonus on top.
@@ -148,7 +203,7 @@
       const hits = [];
       for (let i = 0; i < catalog.length; i++) {
         const s = searchable[i];
-        if (tokens.every((t) => s.includes(t))) {
+        if (tokens.every((t) => tokenMatches(s, t))) {
           hits.push({ item: catalog[i], rank: score(catalog[i], s, tokens) });
         }
       }
@@ -159,6 +214,11 @@
       });
 
       return hits.map((h) => h.item);
+    }
+
+    function findKnownAbsentTerm(query) {
+      const q = query.toLowerCase();
+      return KNOWN_ABSENT_TERMS.find((term) => q.includes(term)) || null;
     }
 
     // ---------- rendering ----------
@@ -177,9 +237,15 @@
       resultsArea.innerHTML = "";
       const div = document.createElement("div");
       div.className = "items-empty";
-      div.innerHTML = `<p>No stocked items match <strong>${escHtml(query)}</strong> at Van Ness.</p>
-        <p class="items-empty-hint">Check spelling, try fewer or different words (brand vs. generic), or search by manufacturer item number.</p>
-        <div class="items-empty-phase2-slot"></div>`;
+      const absentTerm = findKnownAbsentTerm(query);
+      if (absentTerm) {
+        div.innerHTML = `<p>No stocked match for '<strong>${escHtml(absentTerm)}</strong>' at Van Ness. This item may be carried under a different name, or an equivalent may be stocked. Try searching by material or function (for example the generic material name), or use the Copilot equivalence check (coming soon).</p>
+          <div class="items-empty-phase2-slot"></div>`;
+      } else {
+        div.innerHTML = `<p>No stocked items match <strong>${escHtml(query)}</strong> at Van Ness.</p>
+          <p class="items-empty-hint">Check spelling, try fewer or different words (brand vs. generic), or search by manufacturer item number.</p>
+          <div class="items-empty-phase2-slot"></div>`;
+      }
       resultsArea.appendChild(div);
     }
 
