@@ -550,22 +550,23 @@
           if (!knownProblemSet.has(badCode)) invalidCodes.push({ code: badCode, origin: "order" });
         });
 
-        // Quantity-aware: a multiplier suffix (e.g. "15774x3") expands to a
-        // per-code count, so a code present on both sides at unequal counts
-        // still surfaces the difference as repeated individual entries.
-        const orderCounts = orderExtract.counts;
-        const caseCounts = caseExtract.counts;
+        // Presence-based (set membership), not quantity-aware: the Epic export
+        // collapses duplicate CPTs to a single instance on the case side, so a
+        // count comparison against an order-side multiplier (e.g. "55715x12")
+        // would over-report. One case-side instance satisfies any order-side
+        // quantity, and vice versa. Multiplier text is still preserved for
+        // display via `orderExtract.display` / `caseExtract.display`.
+        const orderSet = new Set(orderList);
+        const caseSet = new Set(caseList);
         const missingCodes = [];
         orderList.forEach((code) => {
           if (!validCptCodes.has(code) || knownProblemSet.has(code)) return;
-          const diff = (orderCounts[code] || 0) - (caseCounts[code] || 0);
-          for (let i = 0; i < diff; i++) missingCodes.push(code);
+          if (!caseSet.has(code)) missingCodes.push(code);
         });
         const notOnOrderCodes = [];
         caseList.forEach((code) => {
           if (!validCptCodes.has(code) || knownProblemSet.has(code)) return;
-          const diff = (caseCounts[code] || 0) - (orderCounts[code] || 0);
-          for (let i = 0; i < diff; i++) notOnOrderCodes.push(code);
+          if (!orderSet.has(code)) notOnOrderCodes.push(code);
         });
         const inpatientMatches = orderList.filter((code) => inpatientOnlyCodes.has(code) && !knownProblemSet.has(code));
 
@@ -1643,13 +1644,12 @@
       const display = [];
       const errors = [];
       const seen = new Set();
-      const counts = {};
       // A code may carry a quantity multiplier suffix, e.g. "15774X3" meaning
       // three instances of CPT 15774. Detected first so the base code is
       // still recognized (the trailing X would otherwise fail the boundary
       // check below and the code would be missed entirely). The raw matched
-      // text (e.g. "15774x3") is kept in `display` for as-is rendering;
-      // `codes`/`counts` carry only the bare base code, used for comparison.
+      // text (e.g. "15774x3") is kept in `display` for as-is rendering; only
+      // the bare base code is used for presence-based comparison.
       const multiplierPattern = /(\d{4,5})X(\d{1,3})\b/g;
       const codePattern = /[A-Z]\d{4}|\d{5}|\d{4}[A-Z]/g;
       const shortPattern = /\d{3,4}/g;
@@ -1659,13 +1659,10 @@
         const code = match[1];
         const qty = parseInt(match[2], 10);
         const end = match.index + match[0].length;
-        if (qty > 0 && isCodeBoundary(source, match.index, end)) {
-          counts[code] = (counts[code] || 0) + qty;
-          if (!seen.has(code)) {
-            seen.add(code);
-            codes.push(code);
-            display.push(original.slice(match.index, end));
-          }
+        if (qty > 0 && isCodeBoundary(source, match.index, end) && !seen.has(code)) {
+          seen.add(code);
+          codes.push(code);
+          display.push(original.slice(match.index, end));
         }
       }
 
@@ -1675,7 +1672,6 @@
           seen.add(code);
           codes.push(code);
           display.push(original.slice(match.index, match.index + code.length));
-          counts[code] = (counts[code] || 0) + 1;
         }
       }
 
@@ -1686,7 +1682,7 @@
         }
       }
 
-      return { codes, errors, counts, display };
+      return { codes, errors, display };
     }
 
     function isCodeBoundary(source, start, end, rejectHyphenBefore = false) {
