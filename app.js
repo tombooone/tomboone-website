@@ -636,15 +636,36 @@
         const surgeonRaw = cell(row, indexes.surgeon);
         const dateValue = parseDateCell(cell(row, indexes.date));
         const foundTerms = findEquipmentTermsInText(specialNeeds);
-
         if (!foundTerms.length) return;
 
-        const missingTerm = foundTerms.find((term) => !containsEquipmentTerm(equipment, term));
-        if (!missingTerm) return;
+        const candidateMissing = foundTerms.filter((term) => !containsEquipmentTerm(equipment, term));
+        if (!candidateMissing.length) return;
 
-        const displayName = KEYWORD_DISPLAY_NAMES[missingTerm.keyword] || missingTerm.keyword;
+        // Classify each missing candidate; SUPPRESS becomes a trace instead of
+        // a flag, so the audit trail is preserved without inflating the count.
+        const suppressedTraces = [];
+        let missingTerm = null;
+        let questionable = false;
+        let questionableCue = null;
 
-        includedRows.push({
+        candidateMissing.forEach((term) => {
+          const negation = evaluateNegation(specialNeeds, term);
+          if (negation.state === "suppress") {
+            suppressedTraces.push({ keyword: term.keyword, cuePhrase: negation.cuePhrase });
+            return;
+          }
+          if (!missingTerm) {
+            missingTerm = term;
+            if (negation.state === "questionable") {
+              questionable = true;
+              questionableCue = negation.cuePhrase;
+            }
+          }
+        });
+
+        if (!missingTerm && !suppressedTraces.length) return;
+
+        const baseRow = {
           date: dateValue.display,
           sortDate: dateValue.sort,
           caseNumber,
@@ -654,11 +675,37 @@
           surgeonId: extractSurgeonId(surgeonRaw),
           specialNeeds,
           equipment,
-          keyword: missingTerm.keyword,
-          matchStart: missingTerm.startIndex,
-          matchEnd: missingTerm.startIndex + missingTerm.matchedText.length,
-          explanation: `${displayName} was listed in Special Needs but not added to Equipment`
-        });
+          suppressedTraces
+        };
+
+        if (missingTerm) {
+          const displayName = KEYWORD_DISPLAY_NAMES[missingTerm.keyword] || missingTerm.keyword;
+          includedRows.push({
+            ...baseRow,
+            flagged: true,
+            keyword: missingTerm.keyword,
+            matchStart: missingTerm.startIndex,
+            matchEnd: missingTerm.startIndex + missingTerm.matchedText.length,
+            questionable,
+            explanation: `${displayName} was listed in Special Needs but not added to Equipment`,
+            questionableNote: questionable
+              ? `${displayName} flagged, but negation wording ('${questionableCue}') appears nearby — review in context.`
+              : null
+          });
+        } else {
+          // Every candidate was suppressed — nothing is flagged, but the case
+          // still surfaces so the suppression trace is auditable in Details.
+          const first = suppressedTraces[0];
+          const displayName = KEYWORD_DISPLAY_NAMES[first.keyword] || first.keyword;
+          includedRows.push({
+            ...baseRow,
+            flagged: false,
+            keyword: null,
+            questionable: false,
+            explanation: `${displayName} mentioned with '${first.cuePhrase}' — not flagged`,
+            questionableNote: null
+          });
+        }
       });
 
       return {
@@ -1046,7 +1093,7 @@
     function renderEquipmentTable() {
       const result = lastEquipResult;
       equipmentTotalRowsEl.textContent = String(result.totalRows);
-      equipmentMissingCountEl.textContent = String(result.includedRows.length);
+      equipmentMissingCountEl.textContent = String(result.includedRows.filter((r) => r.flagged).length);
       equipmentKeywordCountEl.textContent = String(equipmentKeywords.length);
       equipmentMissingTable.textContent = "";
 
@@ -1085,13 +1132,7 @@
           tr.append(caseCell);
           tr.append(td(row.surgeon || ""));
           tr.append(td(row.specialNeeds));
-          const explCell = td(row.explanation);
-          explCell.style.cursor = "pointer";
-          explCell.addEventListener("click", (e) => {
-            e.stopPropagation();
-            navigator.clipboard.writeText(row.explanation || "").then(() => showToast("Copied"));
-          });
-          tr.append(explCell);
+          tr.append(buildEquipmentExplanationCell(row));
 
           // Detail row (hidden until expanded)
           const detailTr = document.createElement("tr");
@@ -1206,8 +1247,27 @@
             surgPrefSection.append(surgPrefLabel, surgPrefValue);
           }
 
+          // Suppressed-mentions trace — keeps the audit trail visible for any
+          // keyword that matched but was suppressed as an obvious negation.
+          let suppressedSection = null;
+          if (row.suppressedTraces && row.suppressedTraces.length) {
+            suppressedSection = document.createElement("div");
+            suppressedSection.style.cssText = "grid-column:1/-1;";
+            const suppressedLabel = document.createElement("div");
+            suppressedLabel.className = "equip-detail-label";
+            suppressedLabel.textContent = "Suppressed mentions";
+            const suppressedValue = document.createElement("div");
+            suppressedValue.className = "equip-detail-value";
+            suppressedValue.style.color = "var(--muted)";
+            suppressedValue.textContent = row.suppressedTraces
+              .map((t) => `${t.keyword} mentioned with '${t.cuePhrase}' — not flagged`)
+              .join("\n");
+            suppressedSection.append(suppressedLabel, suppressedValue);
+          }
+
           detailDiv.append(detailHeaderRow, snValue, eqValue);
           if (surgPrefSection) detailDiv.append(surgPrefSection);
+          if (suppressedSection) detailDiv.append(suppressedSection);
           detailCell.append(detailDiv);
           detailTr.append(detailCell);
 
@@ -1224,16 +1284,11 @@
       }
     }
 
-    // True if the word immediately before startIndex (skipping whitespace) is the standalone word "no"
-    function isPrecededByStandaloneNo(source, startIndex) {
-      let i = startIndex;
-      while (i > 0 && /\s/.test(source[i - 1])) i--;
-      if (i < 2) return false;
-      if (source.slice(i - 2, i).toLowerCase() !== "no") return false;
-      if (i - 2 === 0) return true;
-      return !/\w/.test(source[i - 3]);
-    }
-
+    // Note: negation ("no Ultrasound", "does not need Microscope", etc.) is
+    // NOT filtered here. Term-finding stays negation-agnostic; negation is
+    // evaluated downstream in auditEquipmentRows via evaluateNegation(), which
+    // produces an auditable SUPPRESS/QUESTIONABLE/NORMAL classification with a
+    // trace, rather than silently dropping the match.
     function findEquipmentTermsInText(text) {
       const source = String(text || "");
       const lowered = source.toLowerCase();
@@ -1245,15 +1300,13 @@
         let foundIndex = lowered.indexOf(search, startIndex);
 
         while (foundIndex !== -1) {
-          if (!isPrecededByStandaloneNo(source, foundIndex)) {
-            matches.push({
-              keyword,
-              keywordIndex,
-              startIndex: foundIndex,
-              matchedText: source.slice(foundIndex, foundIndex + keyword.length),
-              matchType: "exact"
-            });
-          }
+          matches.push({
+            keyword,
+            keywordIndex,
+            startIndex: foundIndex,
+            matchedText: source.slice(foundIndex, foundIndex + keyword.length),
+            matchType: "exact"
+          });
           startIndex = foundIndex + 1;
           foundIndex = lowered.indexOf(search, startIndex);
         }
@@ -1262,21 +1315,15 @@
           const kwOpts = KEYWORD_OPTIONS[keyword];
           const sepMatch = findSeparatorInsensitiveMatch(source, keyword);
           if (sepMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, sepMatch.startIndex, sepMatch.matchedText, kwOpts.requiresPrefix))) {
-            if (!isPrecededByStandaloneNo(source, sepMatch.startIndex)) {
-              matches.push({ keyword, keywordIndex, startIndex: sepMatch.startIndex, matchedText: sepMatch.matchedText, matchType: "separator" });
-            }
+            matches.push({ keyword, keywordIndex, startIndex: sepMatch.startIndex, matchedText: sepMatch.matchedText, matchType: "separator" });
           } else {
             const prefixMatch = findPrefixTokenMatch(source, keyword);
             if (prefixMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, prefixMatch.startIndex, prefixMatch.matchedText, kwOpts.requiresPrefix))) {
-              if (!isPrecededByStandaloneNo(source, prefixMatch.startIndex)) {
-                matches.push({ keyword, keywordIndex, startIndex: prefixMatch.startIndex, matchedText: prefixMatch.matchedText, matchType: "prefix" });
-              }
+              matches.push({ keyword, keywordIndex, startIndex: prefixMatch.startIndex, matchedText: prefixMatch.matchedText, matchType: "prefix" });
             } else {
               const fuzzyMatch = findBestFuzzyEquipmentMatch(source, keyword);
               if (fuzzyMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, fuzzyMatch.startIndex, fuzzyMatch.matchedText, kwOpts.requiresPrefix))) {
-                if (!isPrecededByStandaloneNo(source, fuzzyMatch.startIndex)) {
-                  matches.push({ keyword, keywordIndex, startIndex: fuzzyMatch.startIndex, matchedText: fuzzyMatch.matchedText, matchType: "fuzzy", score: fuzzyMatch.score });
-                }
+                matches.push({ keyword, keywordIndex, startIndex: fuzzyMatch.startIndex, matchedText: fuzzyMatch.matchedText, matchType: "fuzzy", score: fuzzyMatch.score });
               }
             }
           }
@@ -1287,6 +1334,92 @@
         if (a.startIndex !== b.startIndex) return a.startIndex - b.startIndex;
         return a.keywordIndex - b.keywordIndex;
       });
+    }
+
+    // ── Equipment negation detection ────────────────────────────────────────
+    // Three-state classification for a keyword that matched in Special Needs
+    // but is absent from Equipment: SUPPRESS (obvious negation, tightly bound
+    // to the keyword — not flagged, traced instead), QUESTIONABLE (a negation
+    // cue is present but its scope over the keyword is uncertain — still
+    // flagged, but marked for review), or NORMAL (no negation — flagged as
+    // today). Evaluated on the ORIGINAL Special Needs text (not the
+    // separator-normalized form) so word distance and sentence/list scope are
+    // meaningful.
+    const NEGATION_CUES = [
+      "does not need", "doesn't need", "do not need", "don't need",
+      "no need for", "not needed", "not required", "discontinue",
+      "declined", "decline", "cancelled", "canceled", "cancel",
+      "without", "w/o", "d/c", "not", "no"
+    ];
+
+    const SCOPE_BREAKER_PHRASES = [
+      "however", "although", "though", "will need", "will require",
+      "but", "except", "still", "needs"
+    ];
+
+    function phraseBoundaryPattern(phrase) {
+      return "(?<![a-z0-9])" + escapeRegExp(phrase).replace(/ /g, "\\s+") + "(?![a-z0-9])";
+    }
+
+    // All whole-word/phrase occurrences of any negation cue in `text`, case-insensitive.
+    function findAllNegationCueMatches(text) {
+      const results = [];
+      NEGATION_CUES.forEach((phrase) => {
+        const re = new RegExp(phraseBoundaryPattern(phrase), "gi");
+        let m;
+        while ((m = re.exec(text)) !== null) {
+          results.push({ phrase: text.slice(m.index, m.index + m[0].length), start: m.index, end: m.index + m[0].length });
+          if (re.lastIndex === m.index) re.lastIndex += 1;
+        }
+      });
+      return results;
+    }
+
+    // True if `gapText` (the span between a negation cue and the keyword)
+    // breaks the cue's scope: a sentence boundary, a list separator/new list
+    // item, or one of the explicit scope-breaker phrases.
+    function hasScopeBreaker(gapText) {
+      if (/[.;,\n]/.test(gapText)) return true;
+      return SCOPE_BREAKER_PHRASES.some((phrase) => new RegExp(phraseBoundaryPattern(phrase), "i").test(gapText));
+    }
+
+    // "Tightly bound" = cue within 4 word-tokens of the keyword, no scope-breaker in between.
+    function classifyGap(gapText) {
+      const tokenCount = (gapText.match(/\S+/g) || []).length;
+      if (tokenCount > 4) return "questionable";
+      if (hasScopeBreaker(gapText)) return "questionable";
+      return "suppress";
+    }
+
+    // Looks for a negation cue both before and after the keyword (some cues,
+    // like "not needed"/"not required"/"declined", read naturally as
+    // suffixes: "Microscope not needed"). Uses whichever side yields the
+    // more confident (suppress > questionable) result; the nearest cue on
+    // each side is the one considered, since a closer cue always dominates.
+    function evaluateNegation(text, termMatch) {
+      const kwStart = termMatch.startIndex;
+      const kwEnd = termMatch.startIndex + termMatch.matchedText.length;
+
+      const beforeText = text.slice(0, kwStart);
+      let beforeCue = null;
+      findAllNegationCueMatches(beforeText).forEach((m) => {
+        if (!beforeCue || m.end > beforeCue.end || (m.end === beforeCue.end && m.phrase.length > beforeCue.phrase.length)) beforeCue = m;
+      });
+
+      const afterText = text.slice(kwEnd);
+      let afterCue = null;
+      findAllNegationCueMatches(afterText).forEach((m) => {
+        if (!afterCue || m.start < afterCue.start || (m.start === afterCue.start && m.phrase.length > afterCue.phrase.length)) afterCue = m;
+      });
+
+      const beforeState = beforeCue ? classifyGap(text.slice(beforeCue.end, kwStart)) : null;
+      const afterState = afterCue ? classifyGap(afterText.slice(0, afterCue.start)) : null;
+
+      if (beforeState === "suppress") return { state: "suppress", cuePhrase: beforeCue.phrase };
+      if (afterState === "suppress") return { state: "suppress", cuePhrase: afterCue.phrase };
+      if (beforeState === "questionable") return { state: "questionable", cuePhrase: beforeCue.phrase };
+      if (afterState === "questionable") return { state: "questionable", cuePhrase: afterCue.phrase };
+      return { state: "normal", cuePhrase: null };
     }
 
     function containsEquipmentTerm(text, termMatch) {
@@ -1480,6 +1613,61 @@
       const el = document.createElement("td");
       el.textContent = text || "";
       if (className) el.className = className;
+      return el;
+    }
+
+    // Amber warning-triangle icon for QUESTIONABLE-negation rows — catchable at a glance.
+    function buildQuestionableIcon() {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "15");
+      svg.setAttribute("height", "15");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("fill", "none");
+      svg.setAttribute("aria-hidden", "true");
+      svg.style.cssText = "flex-shrink:0; margin-right:5px; vertical-align:-2px;";
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", "M12 3.5 22 20.5H2L12 3.5Z");
+      path.setAttribute("stroke", "var(--warn)");
+      path.setAttribute("stroke-width", "2");
+      path.setAttribute("stroke-linejoin", "round");
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", "12"); line.setAttribute("y1", "10");
+      line.setAttribute("x2", "12"); line.setAttribute("y2", "14.5");
+      line.setAttribute("stroke", "var(--warn)");
+      line.setAttribute("stroke-width", "2");
+      line.setAttribute("stroke-linecap", "round");
+      const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      dot.setAttribute("cx", "12"); dot.setAttribute("cy", "17.2"); dot.setAttribute("r", "1.1");
+      dot.setAttribute("fill", "var(--warn)");
+      svg.append(path, line, dot);
+      return svg;
+    }
+
+    // Equipment audit Explanation cell: plain text normally; for QUESTIONABLE
+    // rows, prepends a ⚠ icon and appends an amber review note.
+    function buildEquipmentExplanationCell(row) {
+      const el = document.createElement("td");
+      el.style.cursor = "pointer";
+      if (row.questionable) {
+        const iconWrap = document.createElement("span");
+        iconWrap.title = "Negation wording nearby — review in context";
+        iconWrap.append(buildQuestionableIcon());
+        el.append(iconWrap);
+      }
+      el.append(document.createTextNode(row.explanation || ""));
+      if (row.questionable && row.questionableNote) {
+        const note = document.createElement("div");
+        note.style.cssText = "color: var(--warn); margin-top: 4px; font-size: 0.82rem;";
+        note.textContent = row.questionableNote;
+        el.append(note);
+      }
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const copyText = row.questionable && row.questionableNote
+          ? `${row.explanation} ${row.questionableNote}`
+          : (row.explanation || "");
+        navigator.clipboard.writeText(copyText).then(() => showToast("Copied"));
+      });
       return el;
     }
 
