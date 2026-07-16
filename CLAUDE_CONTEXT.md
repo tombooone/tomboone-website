@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-07-16 (v1.6.7)
+## Last updated: 2026-07-16 (v1.6.8)
 
 ---
 
@@ -35,7 +35,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.6.7**
+- Current version: **v1.6.8**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
@@ -124,6 +124,8 @@ The tool flags cases where any of these terms appear in Special Needs but are NO
 4. Fuzzy/Levenshtein window match
 
 **"No [keyword]" suppression:** In `findEquipmentTermsInText()`, a candidate match (exact, prefix, or fuzzy) is discarded if the word immediately preceding it (skipping whitespace) is the standalone word "no" — e.g. "no Ultrasound" does not flag. Implemented via `isPrecededByStandaloneNo()`. Not applied inside `containsEquipmentTerm()`.
+
+**Separator-insensitive matching (v1.6.8):** A new tier, `findSeparatorInsensitiveMatch()`, runs between the exact-substring tier and the prefix-token tier in both `findEquipmentTermsInText()` and `containsEquipmentTerm()`. It lowercases and strips spaces/hyphens from the keyword (`collapseSeparators()`) and compares that to the concatenation of one or more whole adjacent source tokens (window sizes = keyword's own token count ±1, same convention as the existing fuzzy matcher) — so "C-arm", "C arm", and "CARM" all reduce to `carm` and match each other in either direction, and a hypothetical multi-word keyword like "Cell Saver" would match a fully collapsed "cellsaver" in the text and vice versa. It only ever concatenates **whole tokens**, never a substring carved out of one longer token, so short keywords (NIM → `nim`, CUSA → `cusa` — the two flagged as collision-risky in the v1.6.8 investigation) can't fire inside an unrelated word like "minimum" or "Cusack". Note: the original, untouched exact-substring tier (`lowered.indexOf(search)`) has **no such boundary guard** and already had this exact collision risk before v1.6.8 — that's a pre-existing characteristic of the oldest matching tier, not something introduced or fixed by this change. Respects the existing `KEYWORD_OPTIONS.requiresPrefix` gate and "no [keyword]" suppression exactly like the prefix/fuzzy tiers. Fixed a real miss: case 4124561 (Zhang, WBMB) had Special Needs "CARM" (no separator), which none of the four original tiers matched against keyword "C-arm".
 
 **Expand/collapse rows:** Clicking a result row reveals Special Needs (with matched term highlighted amber) and Equipment List (with "([keyword] not found)" label in red).
 
