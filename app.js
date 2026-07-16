@@ -2491,6 +2491,63 @@
         const procStartMin   = parseTimeToMinutes(cell(row, indexes.procStart));
         const procEndMin     = parseTimeToMinutes(cell(row, indexes.procEnd));
 
+        const ctx = { equipmentText, proceduresText, patientAge, serviceText, surgeonId, laterality };
+
+        const firedRules = ROOM_RULES.filter((rule) => ruleTriggersForCase(rule, ctx));
+
+        firedRules.forEach((rule) => {
+          ruleMatchCounts.set(rule.id, (ruleMatchCounts.get(rule.id) || 0) + 1);
+        });
+
+        // Explicit suppression (e.g. hard-2 SP Robot suppresses hard-1 DV5 when
+        // compliant): tracked as a Map so the specific governing rule is known,
+        // not just that suppression happened.
+        const suppressedByRuleMap = new Map(); // suppressedId -> governing rule
+        firedRules.forEach((rule) => {
+          if (rule.suppressesWhenCompliant && rule.allowedRooms.includes(normalizedRoom)) {
+            rule.suppressesWhenCompliant.forEach((id) => suppressedByRuleMap.set(id, rule));
+          }
+        });
+
+        const compliantTier12 = firedRules.filter(
+          (rule) => rule.tier <= 2 && rule.allowedRooms.includes(normalizedRoom)
+        );
+        const hasTier12Compliant = compliantTier12.length > 0;
+
+        // Applied rules that are compliant on their own merits ("satisfied"),
+        // and applied rules silenced by a compliant higher-tier rule
+        // ("suppressed by hierarchy") — explicit suppressor takes precedence
+        // over the blanket tier<=2-compliant catch-all as the named governor.
+        const appliedSatisfied = [];
+        const appliedSuppressed = [];
+        firedRules.forEach((rule) => {
+          if (rule.allowedRooms.includes(normalizedRoom)) {
+            appliedSatisfied.push({
+              ruleId:    rule.id,
+              ruleLabel: rule.label,
+              ruleTier:  rule.tier,
+              reason:    describeMatch(rule)
+            });
+            return;
+          }
+          const explicitGovernor = suppressedByRuleMap.get(rule.id);
+          if (explicitGovernor) {
+            appliedSuppressed.push({
+              ruleId:     rule.id,
+              ruleLabel:  rule.label,
+              ruleTier:   rule.tier,
+              governedBy: explicitGovernor.label
+            });
+          } else if (hasTier12Compliant && rule.tier >= 3) {
+            appliedSuppressed.push({
+              ruleId:     rule.id,
+              ruleLabel:  rule.label,
+              ruleTier:   rule.tier,
+              governedBy: compliantTier12.map((r) => r.label).join(" and ")
+            });
+          }
+        });
+
         cases.push({
           caseNumber,
           date:         dateValue.display,
@@ -2504,30 +2561,13 @@
           startMin,
           endMin,
           procStartMin,
-          procEndMin
+          procEndMin,
+          appliedSatisfied,
+          appliedSuppressed
         });
 
-        const ctx = { equipmentText, proceduresText, patientAge, serviceText, surgeonId, laterality };
-
-        const firedRules = ROOM_RULES.filter((rule) => ruleTriggersForCase(rule, ctx));
-
         firedRules.forEach((rule) => {
-          ruleMatchCounts.set(rule.id, (ruleMatchCounts.get(rule.id) || 0) + 1);
-        });
-
-        const suppressedIds = new Set();
-        firedRules.forEach((rule) => {
-          if (rule.suppressesWhenCompliant && rule.allowedRooms.includes(normalizedRoom)) {
-            rule.suppressesWhenCompliant.forEach((id) => suppressedIds.add(id));
-          }
-        });
-
-        const hasTier12Compliant = firedRules.some(
-          (rule) => rule.tier <= 2 && rule.allowedRooms.includes(normalizedRoom)
-        );
-
-        firedRules.forEach((rule) => {
-          if (suppressedIds.has(rule.id)) return;
+          if (suppressedByRuleMap.has(rule.id)) return;
           if (hasTier12Compliant && rule.tier >= 3) return;
           if (!rule.allowedRooms.includes(normalizedRoom)) {
             violations.push({
@@ -3681,6 +3721,64 @@
           vSection.append(item);
         });
         content.append(vSection);
+      }
+
+      const satisfied = c.appliedSatisfied || [];
+      if (satisfied.length) {
+        const sSection = document.createElement("div");
+        sSection.className = "sb-rule-status sb-rule-satisfied";
+        const h4 = document.createElement("h4");
+        h4.textContent = "Rules satisfied (" + satisfied.length + ")";
+        sSection.append(h4);
+        satisfied.forEach((r) => {
+          const item = document.createElement("div");
+          item.className = "sb-rule-item";
+          const icon = document.createElement("span");
+          icon.className = "sb-rule-icon sb-rule-icon-ok";
+          icon.textContent = "✓";
+          icon.setAttribute("aria-hidden", "true");
+          const text = document.createElement("div");
+          text.className = "sb-rule-text";
+          const name = document.createElement("div");
+          name.className = "sb-rule-name";
+          name.textContent = r.ruleLabel;
+          const reason = document.createElement("div");
+          reason.className = "sb-rule-reason";
+          reason.textContent = r.reason;
+          text.append(name, reason);
+          item.append(icon, text);
+          sSection.append(item);
+        });
+        content.append(sSection);
+      }
+
+      const suppressed = c.appliedSuppressed || [];
+      if (suppressed.length) {
+        const spSection = document.createElement("div");
+        spSection.className = "sb-rule-status sb-rule-suppressed";
+        const h4 = document.createElement("h4");
+        h4.textContent = "Rules suppressed by hierarchy (" + suppressed.length + ")";
+        spSection.append(h4);
+        suppressed.forEach((r) => {
+          const item = document.createElement("div");
+          item.className = "sb-rule-item";
+          const icon = document.createElement("span");
+          icon.className = "sb-rule-icon sb-rule-icon-neutral";
+          icon.textContent = "–";
+          icon.setAttribute("aria-hidden", "true");
+          const text = document.createElement("div");
+          text.className = "sb-rule-text";
+          const name = document.createElement("div");
+          name.className = "sb-rule-name";
+          name.textContent = r.ruleLabel;
+          const reason = document.createElement("div");
+          reason.className = "sb-rule-reason";
+          reason.textContent = "Superseded by " + r.governedBy + " room compliance";
+          text.append(name, reason);
+          item.append(icon, text);
+          spSection.append(item);
+        });
+        content.append(spSection);
       }
 
       sb.hidden = false;

@@ -1061,6 +1061,15 @@
     .gantt-sidebar .sb-violations h4 { font-size: 0.82rem; color: var(--muted); margin: 0 0 10px; }
     .gantt-sidebar .sb-viol-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
     .gantt-sidebar .sb-viol-text { font-size: 0.82rem; color: var(--ink); line-height: 1.4; }
+    .gantt-sidebar .sb-rule-status { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; }
+    .gantt-sidebar .sb-rule-status h4 { font-size: 0.82rem; color: var(--muted); margin: 0 0 10px; }
+    .gantt-sidebar .sb-rule-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+    .gantt-sidebar .sb-rule-name { font-size: 0.82rem; color: var(--ink); line-height: 1.4; font-weight: 500; }
+    .gantt-sidebar .sb-rule-reason { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+    .gantt-sidebar .sb-rule-icon { flex-shrink: 0; font-size: 0.82rem; line-height: 1.4; width: 16px; text-align: center; }
+    .gantt-sidebar .sb-rule-icon-ok { color: var(--brand-dark); }
+    .gantt-sidebar .sb-rule-icon-neutral { color: var(--muted); }
+    .gantt-sidebar .sb-rule-satisfied .sb-rule-icon-ok { background: var(--ok-soft); border-radius: 50%; }
     .gantt-sidebar .sb-view-btn {
       display: block;
       width: 100%;
