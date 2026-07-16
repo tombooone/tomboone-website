@@ -1260,16 +1260,23 @@
 
         if (!matches.some((match) => match.keywordIndex === keywordIndex)) {
           const kwOpts = KEYWORD_OPTIONS[keyword];
-          const prefixMatch = findPrefixTokenMatch(source, keyword);
-          if (prefixMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, prefixMatch.startIndex, prefixMatch.matchedText, kwOpts.requiresPrefix))) {
-            if (!isPrecededByStandaloneNo(source, prefixMatch.startIndex)) {
-              matches.push({ keyword, keywordIndex, startIndex: prefixMatch.startIndex, matchedText: prefixMatch.matchedText, matchType: "prefix" });
+          const sepMatch = findSeparatorInsensitiveMatch(source, keyword);
+          if (sepMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, sepMatch.startIndex, sepMatch.matchedText, kwOpts.requiresPrefix))) {
+            if (!isPrecededByStandaloneNo(source, sepMatch.startIndex)) {
+              matches.push({ keyword, keywordIndex, startIndex: sepMatch.startIndex, matchedText: sepMatch.matchedText, matchType: "separator" });
             }
           } else {
-            const fuzzyMatch = findBestFuzzyEquipmentMatch(source, keyword);
-            if (fuzzyMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, fuzzyMatch.startIndex, fuzzyMatch.matchedText, kwOpts.requiresPrefix))) {
-              if (!isPrecededByStandaloneNo(source, fuzzyMatch.startIndex)) {
-                matches.push({ keyword, keywordIndex, startIndex: fuzzyMatch.startIndex, matchedText: fuzzyMatch.matchedText, matchType: "fuzzy", score: fuzzyMatch.score });
+            const prefixMatch = findPrefixTokenMatch(source, keyword);
+            if (prefixMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, prefixMatch.startIndex, prefixMatch.matchedText, kwOpts.requiresPrefix))) {
+              if (!isPrecededByStandaloneNo(source, prefixMatch.startIndex)) {
+                matches.push({ keyword, keywordIndex, startIndex: prefixMatch.startIndex, matchedText: prefixMatch.matchedText, matchType: "prefix" });
+              }
+            } else {
+              const fuzzyMatch = findBestFuzzyEquipmentMatch(source, keyword);
+              if (fuzzyMatch && (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, fuzzyMatch.startIndex, fuzzyMatch.matchedText, kwOpts.requiresPrefix))) {
+                if (!isPrecededByStandaloneNo(source, fuzzyMatch.startIndex)) {
+                  matches.push({ keyword, keywordIndex, startIndex: fuzzyMatch.startIndex, matchedText: fuzzyMatch.matchedText, matchType: "fuzzy", score: fuzzyMatch.score });
+                }
               }
             }
           }
@@ -1291,6 +1298,10 @@
       }
       if (source.toLowerCase().includes(termMatch.keyword.toLowerCase())) return true;
       const kwOpts = KEYWORD_OPTIONS[termMatch.keyword];
+      const sepResult = findSeparatorInsensitiveMatch(source, termMatch.keyword);
+      if (sepResult) {
+        if (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, sepResult.startIndex, sepResult.matchedText, kwOpts.requiresPrefix)) return true;
+      }
       const prefixResult = findPrefixTokenMatch(source, termMatch.keyword);
       if (prefixResult) {
         if (!kwOpts?.requiresPrefix || matchSatisfiesPrefix(source, prefixResult.startIndex, prefixResult.matchedText, kwOpts.requiresPrefix)) return true;
@@ -1317,6 +1328,48 @@
       return kwTokens.every((kt) =>
         srcTokens.some((st) => st === kt || st.startsWith(kt))
       );
+    }
+
+    // Lowercase and strip spaces/hyphens so "C-arm", "C arm", and "CARM" all
+    // reduce to the same string for comparison.
+    function collapseSeparators(str) {
+      return String(str || "").toLowerCase().replace(/[\s-]+/g, "");
+    }
+
+    // Finds a run of whole adjacent source tokens whose concatenation equals
+    // the keyword once both sides are collapsed (spaces/hyphens removed) —
+    // e.g. one token "carm" or two tokens "c"+"arm" both match keyword
+    // "C-arm"; one token "cellsaver" or two tokens "cell"+"saver" both match
+    // a hypothetical "Cell Saver" keyword. Window sizing mirrors
+    // findBestFuzzyEquipmentMatch's (keyword token count -1/+1) so a keyword
+    // matches whether the text spells it as one collapsed word or several.
+    // Only whole tokens are ever concatenated — never a substring carved out
+    // of a single longer token — so a short keyword like "NIM" can't fire
+    // inside an unrelated word like "minimum".
+    function findSeparatorInsensitiveMatch(text, keyword) {
+      const source = String(text || "");
+      const target = collapseSeparators(keyword);
+      if (!target) return null;
+      const sourceTokens = tokenSpans(source);
+      if (!sourceTokens.length) return null;
+
+      const keywordTokenCount = normalizedTokens(keyword).length || 1;
+      const minSize = Math.max(1, keywordTokenCount - 1);
+      const maxSize = Math.min(sourceTokens.length, keywordTokenCount + 1);
+
+      for (let size = minSize; size <= maxSize; size += 1) {
+        for (let start = 0; start <= sourceTokens.length - size; start += 1) {
+          const windowTokens = sourceTokens.slice(start, start + size);
+          const joined = windowTokens.map((t) => t.normalized).join("");
+          if (joined === target) {
+            return {
+              startIndex: windowTokens[0].startIndex,
+              matchedText: source.slice(windowTokens[0].startIndex, windowTokens[windowTokens.length - 1].endIndex)
+            };
+          }
+        }
+      }
+      return null;
     }
 
     function findPrefixTokenMatch(sourceText, keyword) {
