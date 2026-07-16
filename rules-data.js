@@ -427,8 +427,6 @@
 
     const KNOWN_PROBLEM_CPTS = [
       { code: "J7296", description: "Levonorgestrel-releasing intrauterine contraceptive system (Kyleena), 19.5 mg", dateAdded: "2026-06-17", ticket: "Pending" },
-      { code: "J7297", description: "Levonorgestrel-releasing intrauterine contraceptive system (Liletta), 52 mg", dateAdded: "2026-06-17", ticket: "Pending" },
-      { code: "J7298", description: "Levonorgestrel-releasing intrauterine contraceptive system (Mirena), 52 mg", dateAdded: "2026-06-17", ticket: "Pending" },
       { code: "J7301", description: "Levonorgestrel-releasing intrauterine contraceptive system (Skyla), 13.5 mg", dateAdded: "2026-06-17", ticket: "Pending" },
       { code: "Q0091", description: "Screening Papanicolaou smear; obtaining, preparing and conveyance of cervical or vaginal smear to laboratory", dateAdded: "2026-06-17", ticket: "Pending" },
       { code: "Q9967", description: "Low osmolar contrast material, 300-399 mg/ml iodine concentration, per ml", dateAdded: "2026-06-17", ticket: "Pending" },
