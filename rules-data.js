@@ -432,6 +432,5 @@
       { code: "J7301", description: "Levonorgestrel-releasing intrauterine contraceptive system (Skyla), 13.5 mg", dateAdded: "2026-06-17", ticket: "Pending" },
       { code: "Q0091", description: "Screening Papanicolaou smear; obtaining, preparing and conveyance of cervical or vaginal smear to laboratory", dateAdded: "2026-06-17", ticket: "Pending" },
       { code: "Q9967", description: "Low osmolar contrast material, 300-399 mg/ml iodine concentration, per ml", dateAdded: "2026-06-17", ticket: "Pending" },
-      { code: "45386", description: "Colonoscopy, flexible; with transendoscopic balloon dilation", dateAdded: "2026-06-17", ticket: "Pending" },
       { code: "44394", description: "Colonoscopy through stoma; with removal of tumor(s), polyp(s), or other lesion(s) by snare technique", dateAdded: "2026-06-17", ticket: "Pending" }
     ];
