@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-07-15 (v1.6.2)
+## Last updated: 2026-07-16 (v1.6.3)
 
 ---
 
@@ -35,7 +35,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.6.2**
+- Current version: **v1.6.3**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
@@ -302,7 +302,7 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 
 - Integrated into OR Schedule Audit view — above violations table
 - X axis: 06:30 to 19:00
-- Y axis: OR1 through OR14, all 14 always shown
+- Y axis: driven directly by `CAMPUS_CONFIG.WBVC.rooms` (`rules-data.js`) — OR1 through OR14, skipping OR13 (13 rooms total), all always shown
 - Case blocks: Proj Start Time (left edge) to Proj End Time (right edge)
 - Darker beige for setup/cleanup (Proj Start→Proc Start and Proc End→Proj End)
 - Lighter beige for procedure time (Proc Start to Proc End)
@@ -341,7 +341,7 @@ Accessed via "How this works" button in Rule Management heading. Back button ret
 ## Facility Facts
 
 - Campus: WBVC (West Bay Van Ness Campus)
-- Rooms: OR1–OR14 (no OR13)
+- Rooms: OR1–OR14 (**no OR13** — skipped per WBVC room-numbering convention, room does not exist; do not reintroduce it into `CAMPUS_CONFIG.WBVC.rooms` in `rules-data.js` or any room-list/mapping. Confirmed v1.6.3: "OR 13" had been erroneously present in the `rooms` array since some earlier version, was removed, and a repo-wide grep confirmed it was the only reference — no room rule, suppressor, or Gantt column referenced it separately, since the Gantt reads `CAMPUS_CONFIG.WBVC.rooms` directly)
 - OR14: Primary hybrid/cath lab
 - OR7: Also hybrid capable, primarily standard cardiac
 - OR start: 0730 standard; 0900 every other Friday (biweekly starting 5/29/2026)
