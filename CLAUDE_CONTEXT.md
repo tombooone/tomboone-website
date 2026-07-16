@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-07-16 (v1.6.3)
+## Last updated: 2026-07-16 (v1.6.4)
 
 ---
 
@@ -35,7 +35,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.6.3**
+- Current version: **v1.6.4**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
@@ -311,6 +311,7 @@ Peds explanation: "OR4 is the designated pediatric room. Please move this case t
 - Reference line: dashed vertical at 07:30. Every other Friday starting 5/29/2026, line moves to 09:00 (biweekly: 5/29, 6/12, 6/26, 7/10...)
 - Hover tooltip: shows surgeon, time range, lists each alert/flag with rule label and explanation
 - Click tile: opens right sidebar with full case details and per-violation tier badges. Clicking outside sidebar closes it (except clicking another tile opens that tile's sidebar instead)
+- **Sidebar "Rules satisfied" / "Rules suppressed by hierarchy" (v1.6.4):** below the existing alerts/flags block, the sidebar shows two more sections, each rendered only when non-empty. Data is computed per case in `auditRoomRules()`'s evaluation loop (not derived at render time) and attached directly to each `cases[]` entry as `appliedSatisfied[]`/`appliedSuppressed[]` — `{ ruleId, ruleLabel, ruleTier, reason }` for satisfied (reason = `describeMatch(rule)`, the same trigger-description helper used in Rule Management), `{ ruleId, ruleLabel, ruleTier, governedBy }` for suppressed. A rule is **applied** if `ruleTriggersForCase()` matched (regardless of outcome); of applied rules, **satisfied** = compliant with its own `allowedRooms` for the case's actual room; **suppressed** = not compliant on its own but silenced by a compliant Tier 1-2 rule — either the explicit `suppressesWhenCompliant` link (governor = the specific rule that names it, e.g. hard-2 SP Robot naming hard-1 DV5) or the blanket "any compliant Tier 1-2 rule silences all Tier 3+ rules" rule (governor = the compliant Tier 1-2 rule(s), joined with "and" if more than one) — explicit governor takes precedence when both could apply. **Suppression behavior itself is unchanged**: suppressed rules still never appear as alerts/flags or in `violations`, exactly as before — this only makes the existing silencing visible in its own section rather than the rule disappearing with no trace. The separate T3/ops-2 "no feasible prime-time slot" post-processing suppression (a different, infeasibility-based mechanism) is intentionally NOT surfaced in "Rules suppressed by hierarchy" — those still just don't appear, unrelabeled, since attributing them to a governing rule would misstate why they didn't fire. Sidebar DOM: `.sb-rule-status`/`.sb-rule-satisfied`/`.sb-rule-suppressed` sections, `.sb-rule-item`/`.sb-rule-icon`/`.sb-rule-name`/`.sb-rule-reason`; satisfied rows show a green check (`--ok-soft`/`--brand-dark`), suppressed rows show a neutral dash (`--muted`) with reason text "Superseded by [governor] room compliance".
 - Calendar: single month view with prev/next month arrows AND prev/next day arrows. Fixed height regardless of week count. Positioned to LEFT of metric stack. Days color-coded: red=Tier 1-2 alert, amber=Tier 3-5 flag, green=clean, no style=no cases.
 - Metrics (Cases reviewed, Tier 1-2 alerts, Tier 3-5 flags): stacked vertically to RIGHT of calendar
 - Legend panel: to the right of the metrics stack (`.panel.gantt-legend`, fixed 140px wide); 6 swatch+label entries: Tier 1–5 colors + "No violations" beige; uses `.gantt-legend-swatch` (18×12px rounded rect)
