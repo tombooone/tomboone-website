@@ -667,7 +667,8 @@
       };
     }
 
-    function makeAccordionSection(title, count, buildBody) {
+    function makeAccordionSection(title, count, buildBody, opts = {}) {
+      const { initiallyOpen = false, onToggle } = opts;
       const section = document.createElement("div");
       section.className = "accordion-section";
 
@@ -690,12 +691,15 @@
 
       const body = document.createElement("div");
       body.className = "accordion-body";
-      body.hidden = true;
+      body.hidden = !initiallyOpen;
       buildBody(body);
+
+      if (initiallyOpen) header.classList.add("open");
 
       header.addEventListener("click", () => {
         body.hidden = !body.hidden;
         header.classList.toggle("open", !body.hidden);
+        if (onToggle) onToggle(!body.hidden);
       });
 
       section.append(header, body);
@@ -739,6 +743,13 @@
     let cptCampusFilter = "all";
     let cptFlagFilter = "all";
 
+    // Table 2 session state, held independent of current filter visibility so a
+    // filter change never resets it. Keyed by case number (stable per-row id).
+    // Filtering only decides which rows are shown — it must not touch this.
+    let cptTable2AccordionOpen = false;
+    const cptVisitedCaseIds = new Set();
+    const cptOpenDetailCaseIds = new Set();
+
     function getCptFilteredRows(result) {
       let inpatientRows = result.inpatientRows;
       let discrepancyRows = result.discrepancyRows;
@@ -758,6 +769,10 @@
       lastCptResult = result;
       cptCampusFilter = "all";
       cptFlagFilter = "all";
+      // Fresh audit run (not a filter change) — session state resets.
+      cptTable2AccordionOpen = false;
+      cptVisitedCaseIds.clear();
+      cptOpenDetailCaseIds.clear();
       renderCptFilterControls(result);
       renderCptTables();
     }
@@ -852,8 +867,21 @@
           const tbody = document.createElement("tbody");
           if (t2Rows.length) {
             t2Rows.forEach((row) => {
+              const caseNum = String(row.caseNumber);
               const tr = document.createElement("tr");
               tr.className = "equip-row-main";
+              tr.dataset.caseNum = caseNum;
+              if (cptVisitedCaseIds.has(caseNum)) tr.classList.add("row-visited");
+
+              // Capture-phase so it still fires when a descendant (code mark,
+              // copy button, link) calls stopPropagation() in its own handler —
+              // deferred check runs after that synchronous handler has already
+              // applied row-visited, if it's going to.
+              tr.addEventListener("click", () => {
+                setTimeout(() => {
+                  if (tr.classList.contains("row-visited")) cptVisitedCaseIds.add(caseNum);
+                }, 0);
+              }, true);
 
               const dateCell = document.createElement("td");
               dateCell.append(document.createTextNode(row.date || ""));
@@ -885,11 +913,17 @@
               tr.append(invalidCodesTd(row.invalidCodes));
 
               const detailTr = buildCptDetailRow(row);
+              if (cptOpenDetailCaseIds.has(caseNum)) {
+                detailTr.hidden = false;
+                tr.classList.add("expanded");
+              }
 
               tr.addEventListener("click", () => {
                 const nowHidden = detailTr.hidden;
                 detailTr.hidden = !nowHidden;
                 tr.classList.toggle("expanded", nowHidden);
+                if (nowHidden) cptOpenDetailCaseIds.add(caseNum);
+                else cptOpenDetailCaseIds.delete(caseNum);
               });
 
               tbody.append(tr, detailTr);
@@ -900,6 +934,10 @@
           table.append(tbody);
           wrap.append(table);
           body.append(wrap);
+        },
+        {
+          initiallyOpen: cptTable2AccordionOpen,
+          onToggle: (isOpen) => { cptTable2AccordionOpen = isOpen; }
         }
       ));
     }
