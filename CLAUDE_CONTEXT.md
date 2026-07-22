@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-07-16 (v1.6.9)
+## Last updated: 2026-07-22 (v1.6.10)
 
 ---
 
@@ -35,7 +35,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.6.9**
+- Current version: **v1.6.10**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
@@ -237,9 +237,11 @@ Both historical and prospective Epic reports share the same columns:
 | ID | Label | Trigger | Rooms |
 |----|-------|---------|-------|
 | OPS-1 | Ophthalmology Equipment | equipmentContainsAny: ["Unit Phaco Centurion", "Microscope Zeiss Eye", "Microscope Leica Eye", "Suction Irrigation System ROSI", "Cart Eye", "Gurney Eye", "Unit MIRA Diathermy", "Unit MIRA Transilluminator", "Wristrest Chan", "Tower Video Eye", "Ophthalmoscope Indirect Omega", "Unit Vitrectomy Constellation", "Machine Optiwave Refractive Analysis (ORA)", "Cart Vitrectomy"] | OR5, OR10 |
-| OPS-2 | Pediatric Room | equipmentContainsAny: ["Cart Pediatric", "Warmer Overhead (French Fry)"] OR patientAgeUnder: 18 — overridden by OPS-1 | OR4 |
+| OPS-2 | Pediatric Room | equipmentContainsAny: ["Cart Pediatric", "Warmer Overhead (French Fry)"] OR patientAgeUnder: 18 — overridden by OPS-1 | OR4, OR3, OR5 |
 
-Peds explanation: "OR4 is the designated pediatric room. Please move this case to OR4 if available."
+Peds explanation (`buildExplanation()`, `app.js`): "Pediatric cases belong in OR 4. If unavailable, consider OR 3 or OR 5."
+
+**v1.6.10 — sanctioned-fallback compliance (not availability logic):** OPS-2's `allowedRooms` in `rules-data.js` was `["OR 4"]` only, which meant a pediatric case correctly placed in OR 3 or OR 5 — rooms the rule's own alert text already names as acceptable fallbacks — still fired the Tier 1-2 alert (false positive; case 4077877, Wu adenotonsillectomy, OR 3). Fixed by widening `allowedRooms` to `["OR 4", "OR 3", "OR 5"]`, so all three are now statically compliant (silent, no alert/flag) via the same array-membership check every other room rule already uses (`rule.allowedRooms.includes(normalizedRoom)`) — no new mechanism. OR 4 remains the stated preferred room in the explanation text; OR 3/OR 5 are fallbacks, unchanged in meaning. This is distinct from the **pre-existing** availability-aware suppression block further down in `app.js` (`ops2Suppressed`, added earlier) that suppresses the alert for cases in *other* rooms when OR4/OR3/OR5 all lack a feasible prime-time slot that day — that block is untouched and still applies only to non-OR4/3/5 placements. Room-availability/occupancy-aware compliance (checking whether OR 4 was actually open) remains a separate, not-yet-built future item.
 
 ### Tier 3 — Service Preference (Flag) — 9 rules
 
