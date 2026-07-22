@@ -147,7 +147,7 @@
         label: "Pediatric Room",
         description: "Pediatric cases should be in OR 4.",
         match: { anyOf: [{ equipmentContainsAny: ["Cart Pediatric", "Warmer Overhead (French Fry)"] }, { patientAgeUnder: 18 }] },
-        allowedRooms: ["OR 4"]
+        allowedRooms: ["OR 4", "OR 3", "OR 5"]
       },
       // ── Tier 3: Service Preference ────────────────────────────────────────
       {
