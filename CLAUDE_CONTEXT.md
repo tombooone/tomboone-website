@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-07-27 (v1.6.12)
+## Last updated: 2026-07-27 (v1.6.13)
 
 ---
 
@@ -44,7 +44,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.6.12**
+- Current version: **v1.6.13**
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
@@ -71,6 +71,29 @@ Sub-views (not home-screen tiles):
 - Dismissal: a keystroke buffer listener (independent of the worm easter egg's listener and buffer) watches for the typed sequence "fefe" anywhere outside an input/textarea. On match, the overlay is hidden and `sessionStorage.setItem('devUnlocked', 'true')` is set
 - On page load: if `sessionStorage.getItem('devUnlocked') === 'true'`, the overlay is skipped entirely (persists until the tab closes)
 - DEV badge: `#devBadge`, an amber pill in the topbar next to the privacy pills (`.dev-pill` class on `.privacy-pill`), shown once the gate has been passed on tomboone.io; hostname-keyed the same way, so it never renders on tomboonern.com or localhost
+
+### Data Vintage & Staleness Warnings (v1.6.13)
+
+Tracks how current three dated data sources are, and warns **only on dev** when they're old enough to need a refresh before promoting to `main`. `KNOWN_PROBLEM_CPTS` is deliberately **not** part of this — it's a live-maintained exclusion list, not a dated code set (see its own entry in Key Decisions).
+
+- **`DATA_VERSIONS`** (`rules-data.js`, declared right after `CAMPUS_CONFIG`):
+  ```js
+  const DATA_VERSIONS = {
+    cptValiditySet:        { sourcedDate: "2026-04-26", coveredYear: 2026 },
+    inpatientOnlyList:     { coveredYear: 2026 },
+    roomRulesSurgeonPrefs: { derivedDate: "2026-06-27" }
+  };
+  ```
+  `cptValiditySet` tracks `validCptCodes` (the CPT/HCPCS validity Set, `app.js`); `inpatientOnlyList` tracks `inpatientOnlyCodes` (the CMS IPO Set, `app.js`); `roomRulesSurgeonPrefs` tracks `ROOM_RULES`/`SURGEON_PREFS` (`rules-data.js`). Updating any of these hardcoded data sets should update the matching `DATA_VERSIONS` entry in the same commit — that's the whole point of tracking it separately from the data itself.
+- **Passive "as of" lines** — render identically on dev and main, always, regardless of staleness. Populated by `initDataVintage()` (a standalone IIFE in `app.js`, placed right after the equipment-keyword count line near the top of the file, so it runs on every page load alongside the rest of init):
+  - CPT Audit page (`#cptDataVintageLine`, `.data-vintage-line`): `"CPT/HCPCS code set: current as of 4/26/2026 (CY2026) · CMS Inpatient-Only list: CY2026"`.
+  - Room Rules Audit page (`#roomRulesDataVintageLine`, `.data-vintage-line`): `"Room rules and surgeon preferences derived from Epic case history: 6/27/2026"`.
+  - Styling matches the VNC catalog's `.items-catalog-line` pattern (muted, small, factual — not a banner).
+- **Staleness thresholds and rationale:**
+  - CPT/HCPCS set and CMS Inpatient-Only list are each checked **independently** against the current calendar year (`new Date().getFullYear() > coveredYear`) — CMS publishes both on an annual cycle, and they don't necessarily get refreshed in the same commit, so either one can go stale on its own.
+  - Room Rules/Surgeon Prefs uses a **12-month** elapsed threshold from `derivedDate` (calendar-month arithmetic, not just year rollover) — these are derived from Epic case-history review, an irregular/manual process rather than an annual publication, so a fixed "months since last derived" window is the more meaningful staleness signal than a calendar-year check.
+- **Dev-only gating:** reuses the codebase's existing hostname convention (`window.location.hostname === "tomboone.io"`, the same check the Dev Gate IIFE above uses) rather than inventing a new one. The warning-banner elements (`#cptStaleBanner`, `#roomRulesStaleBanner`, both `.dev-stale-banner` `<div>`s, `hidden` by default in `index.html`) exist in the markup on every hostname — same pattern as `#devBadge`/`.dev-pill` — but `initDataVintage()` only ever populates their text and clears `hidden` inside an `if (isDevHostname)` branch; on any non-`tomboone.io` hostname (including `tomboonern.com` and localhost) that whole branch never executes, so the banner is never populated or unhidden, not just CSS-suppressed. Verified in headless Chrome (Playwright) with deliberately forced-stale `DATA_VERSIONS` values that the banners render with correct text on `tomboone.io` and stay completely inert on `tomboonern.com`; with the real 2026-07-27 values, both banners are correctly dormant on both hosts (current year still CY2026 for both code sets; ~1 month since the 6/27/2026 room-rules derivation).
+- **Banner text**, when triggered: `"⚠ Dev only: CPT/HCPCS code set is for CY[year] and may be out of date — verify before promoting to production."` and/or `"⚠ Dev only: CMS Inpatient-Only list is for CY[year] and may be out of date — verify before promoting to production."` (both can render together as separate lines in `#cptStaleBanner` if both are stale); `"⚠ Dev only: Room rules and surgeon preferences are over 12 months old — consider re-deriving from current Epic history before promoting to production."` in `#roomRulesStaleBanner`.
 
 ---
 
