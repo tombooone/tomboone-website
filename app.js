@@ -269,6 +269,82 @@
 
     equipmentKeywordCountEl.textContent = String(equipmentKeywords.length);
 
+    // ── Data-vintage display + dev-only staleness warnings ───────────────────
+    // Passive "as of" lines render identically on dev and main. Staleness
+    // banners are gated on the hostname, reusing the same convention as the
+    // existing dev-gate IIFE below (window.location.hostname === "tomboone.io"
+    // = dev; anything else, including tomboonern.com and localhost, is
+    // treated as non-dev and the banner code path never runs, so there's no
+    // CSS-hidden element for a caching/styling bug to accidentally reveal).
+    // KNOWN_PROBLEM_CPTS is intentionally excluded — no tracking here.
+    (function initDataVintage() {
+      const isDevHostname = window.location.hostname === "tomboone.io";
+
+      function fmtUsDate(iso) {
+        const d = new Date(iso + "T12:00:00");
+        return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+      }
+
+      // CPT Audit page: passive line (both branches)
+      const cptLine = document.getElementById("cptDataVintageLine");
+      if (cptLine) {
+        const cpt = DATA_VERSIONS.cptValiditySet;
+        const ipo = DATA_VERSIONS.inpatientOnlyList;
+        cptLine.textContent =
+          `CPT/HCPCS code set: current as of ${fmtUsDate(cpt.sourcedDate)} (CY${cpt.coveredYear}) · CMS Inpatient-Only list: CY${ipo.coveredYear}`;
+      }
+
+      // CPT Audit page: dev-only staleness banner
+      if (isDevHostname) {
+        const cptBanner = document.getElementById("cptStaleBanner");
+        if (cptBanner) {
+          const currentYear = new Date().getFullYear();
+          const cpt = DATA_VERSIONS.cptValiditySet;
+          const ipo = DATA_VERSIONS.inpatientOnlyList;
+          const lines = [];
+          if (currentYear > cpt.coveredYear) {
+            lines.push(`⚠ Dev only: CPT/HCPCS code set is for CY${cpt.coveredYear} and may be out of date — verify before promoting to production.`);
+          }
+          if (currentYear > ipo.coveredYear) {
+            lines.push(`⚠ Dev only: CMS Inpatient-Only list is for CY${ipo.coveredYear} and may be out of date — verify before promoting to production.`);
+          }
+          if (lines.length) {
+            lines.forEach((text) => {
+              const div = document.createElement("div");
+              div.textContent = text;
+              cptBanner.append(div);
+            });
+            cptBanner.hidden = false;
+          }
+        }
+      }
+
+      // Room Rules Audit page: passive line (both branches)
+      const roomRulesLine = document.getElementById("roomRulesDataVintageLine");
+      if (roomRulesLine) {
+        const rr = DATA_VERSIONS.roomRulesSurgeonPrefs;
+        roomRulesLine.textContent =
+          `Room rules and surgeon preferences derived from Epic case history: ${fmtUsDate(rr.derivedDate)}`;
+      }
+
+      // Room Rules Audit page: dev-only staleness banner
+      if (isDevHostname) {
+        const roomRulesBanner = document.getElementById("roomRulesStaleBanner");
+        if (roomRulesBanner) {
+          const rr = DATA_VERSIONS.roomRulesSurgeonPrefs;
+          const derived = new Date(rr.derivedDate + "T12:00:00");
+          const now = new Date();
+          let monthsElapsed = (now.getFullYear() - derived.getFullYear()) * 12 + (now.getMonth() - derived.getMonth());
+          if (now.getDate() < derived.getDate()) monthsElapsed -= 1;
+          if (monthsElapsed > 12) {
+            roomRulesBanner.textContent =
+              "⚠ Dev only: Room rules and surgeon preferences are over 12 months old — consider re-deriving from current Epic history before promoting to production.";
+            roomRulesBanner.hidden = false;
+          }
+        }
+      }
+    })();
+
     document.getElementById("openAuditTool").addEventListener("click", () => showView("audit"));
     document.getElementById("openEquipmentTool").addEventListener("click", () => showView("equipment"));
     document.getElementById("backHome").addEventListener("click", () => showView("home"));

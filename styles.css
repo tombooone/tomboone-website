@@ -1315,6 +1315,25 @@
     }
     .dev-pill[hidden] { display: none; }
 
+    /* Data-vintage line (CPT/HCPCS set, Inpatient-Only list, Room Rules/Surgeon
+       Prefs) — passive, factual, identical on dev and main. */
+    .data-vintage-line {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin: 6px 0 0;
+    }
+    /* Dev-only staleness warning — only ever populated/unhidden by JS gated on
+       the tomboone.io hostname; never rendered at all on main. */
+    .dev-stale-banner {
+      background: var(--warn-soft);
+      color: var(--warn);
+      border-left: 4px solid var(--accent);
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      margin: 10px 0 0;
+    }
+    .dev-stale-banner[hidden] { display: none; }
+
     /* Audit result filters (CPT campus + flag type, Equipment campus) */
     .audit-filters {
       display: flex;

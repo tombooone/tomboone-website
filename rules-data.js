@@ -19,6 +19,15 @@
       }
     };
 
+    // Data-vintage tracking for staleness checks (dev only — see app.js).
+    // KNOWN_PROBLEM_CPTS is intentionally excluded: it's a live-maintained
+    // exclusion list, not a dated code set.
+    const DATA_VERSIONS = {
+      cptValiditySet:        { sourcedDate: "2026-04-26", coveredYear: 2026 },
+      inpatientOnlyList:     { coveredYear: 2026 },
+      roomRulesSurgeonPrefs: { derivedDate: "2026-06-27" }
+    };
+
     const SURGEON_PREFS = [
       { name: "Jossart",    id: "105751",   rooms: ["OR 10"] },
       { name: "Zakaria",    id: "20144424", rooms: ["OR 11", "OR 12"] },
