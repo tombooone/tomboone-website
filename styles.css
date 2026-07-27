@@ -427,54 +427,6 @@
       margin-top: 24px;
     }
 
-    /* OR Staffing Budget Calculator — fixed-layout per-day table (XLSX + PDF join) */
-    .upload-box .file-input + .file-input {
-      margin-top: 10px;
-    }
-    .staffing-table {
-      table-layout: fixed;
-    }
-    .staffing-table th,
-    .staffing-table td {
-      width: calc(100% / 9);
-      vertical-align: middle;
-    }
-    .staffing-table thead th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: #eaf5f8;
-    }
-    .staffing-date-sub {
-      color: var(--muted);
-      font-size: 0.8rem;
-    }
-    .staffing-table tbody tr.staffing-weekend td {
-      background: #f0f4f8;
-    }
-    .staffing-table tbody tr.staffing-today-row td {
-      background: #dbeafe;
-    }
-    .staffing-table tbody tr.staffing-sat-border td {
-      border-bottom: 2px solid #94a3b8;
-    }
-    .staffing-var-under { color: #1a7f4b; font-weight: 600; }
-    .staffing-var-over { color: #b42318; font-weight: 600; }
-    .staffing-stale-banner {
-      background: var(--warn-soft);
-      color: var(--warn);
-      border-left: 4px solid var(--accent);
-      padding: 8px 12px;
-      font-size: 0.9rem;
-      margin: 0 0 12px;
-    }
-    .staffing-today-note {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
     .accordion-section {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -559,10 +511,6 @@
       border-radius: 8px;
       background: #ffffff;
     }
-    .staffing-results-wrap {
-      overflow: visible;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;

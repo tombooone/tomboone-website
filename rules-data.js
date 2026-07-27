@@ -19,17 +19,6 @@
       }
     };
 
-    // OR Staffing Budget Calculator constants.
-    const STAFFING_CONFIG = {
-      whpuos: 0.103,       // worked hours per unit of service (OR minute)
-      fteWeeklyHours: 40,  // 1 FTE = 40 hours/week; daily FTEs = staff hours ÷ 40
-      shiftFte: {
-        eight:  0.2,        // 8hr shift ÷ 40
-        ten:    0.25,       // 10hr shift ÷ 40
-        twelve: 0.3,        // 12hr shift ÷ 40
-      }
-    };
-
     const SURGEON_PREFS = [
       { name: "Jossart",    id: "105751",   rooms: ["OR 10"] },
       { name: "Zakaria",    id: "20144424", rooms: ["OR 11", "OR 12"] },

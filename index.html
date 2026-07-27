@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.6.11">
+  <link rel="stylesheet" href="styles.css?v=1.6.12">
   <script>
   if (location.hostname === 'tomboonern.com') {
     var s = document.createElement('script');
@@ -84,18 +84,6 @@
             </span>
             <span class="tool-title">OR Schedule and Room Assignment Audit</span>
             <span class="tool-copy">Check an upcoming OR schedule for room assignment conflicts and suggestions based on equipment requirements, service lines, and surgeon preferences.</span>
-          </button>
-
-          <button class="tool-tile" type="button" id="openStaffingTool">
-            <span class="tool-icon" aria-hidden="true">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/>
-                <path d="M3 20v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                <path d="M16 5h5M16 9h5M18.5 3v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </span>
-            <span class="tool-title">OR Staffing Budget Calculator</span>
-            <span class="tool-copy">Compare budgeted staff hours and FTE against productivity-report hours for upcoming WBVC OR days.</span>
           </button>
 
           <a class="tool-tile" href="items.html">
@@ -398,85 +386,6 @@
         </div>
       </section>
 
-      <section id="staffingView" class="view" aria-labelledby="staffingTitle">
-        <div class="back-row">
-          <button class="ghost-button" type="button" id="staffingBackHome">
-            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>Back to tools</span>
-          </button>
-        </div>
-
-        <div class="page-heading">
-          <h1 id="staffingTitle">OR Staffing Budget Calculator</h1>
-          <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 12px;">Currently configured for CPMC Van Ness (WBVC OR) only</p>
-          <p class="lede">The calculation runs locally in this browser tab. No file is uploaded or stored.</p>
-        </div>
-
-        <div class="workspace">
-          <aside class="panel instructions">
-            <h2>Instructions</h2>
-            <ol>
-              <li>In Epic, run the report <strong>CPMC Scheduling Automation</strong> and export it as an .xlsx file.</li>
-              <li>Run the <strong>Productivity in Hours by Date</strong> report and save it as a PDF.</li>
-              <li>Select both files, then select Run.</li>
-            </ol>
-            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">If you do not have access to these reports, please email <a href="mailto:Thomas.Boone@SutterHealth.org" style="color: inherit;">Thomas.Boone@SutterHealth.org</a>.</p>
-            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">Staff hours budget is calculated by multiplying OR minutes by 0.103. One FTE is 40 hours per week.</p>
-          </aside>
-
-          <section class="panel">
-            <div class="upload-box">
-              <label class="file-input">
-                <span>
-                  <strong>Select OR Schedule export (XLSX)</strong><br>
-                  <input id="staffingFileInput" type="file" accept=".xlsx,.xls,.xml,.html,.htm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/html,text/xml">
-                </span>
-              </label>
-              <label class="file-input">
-                <span>
-                  <strong>Select Productivity Report (PDF)</strong><br>
-                  <input id="staffingPdfInput" type="file" accept=".pdf,application/pdf">
-                </span>
-              </label>
-              <div class="actions">
-                <button class="primary-button" type="button" id="runStaffingAudit" disabled>Run audit</button>
-                <button class="secondary-button" type="button" id="clearStaffingAudit" disabled>Clear</button>
-              </div>
-              <p id="staffingStatus" class="status" role="status">Waiting for the OR schedule and productivity report.</p>
-            </div>
-          </section>
-        </div>
-
-        <section id="staffingResultsPanel" class="panel result-panel" hidden>
-          <div class="table-section">
-            <h2>Staff hours and FTE by day</h2>
-            <p style="color: var(--muted); font-size: 0.82rem; margin: -6px 0 10px;">Budgeted figures come from scheduled OR minutes; scheduled figures come from the productivity report. This is a planning aid, not a directive.</p>
-            <p id="staffingStaleBanner" class="staffing-stale-banner" hidden></p>
-            <div class="table-wrap staffing-results-wrap">
-              <table class="staffing-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>OR Min</th>
-                    <th>OR Hrs</th>
-                    <th>Hrs Bud</th>
-                    <th>FTE Bud</th>
-                    <th>Hours</th>
-                    <th>FTE</th>
-                    <th>FTE Var</th>
-                    <th>Hrs Var</th>
-                  </tr>
-                </thead>
-                <tbody id="staffingTable"></tbody>
-              </table>
-            </div>
-            <p style="color: var(--muted); font-size: 0.78rem; margin-top: 8px;">Weekend staffing reflects standing call coverage; variance is expected and is not a budget concern.</p>
-          </div>
-        </section>
-      </section>
-
       <section id="ruleManagementView" class="view" aria-labelledby="ruleManagementTitle">
         <div class="back-row">
           <button class="ghost-button" type="button" id="ruleManagementBackHome">
@@ -586,7 +495,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.6.11 · 2026-07-27</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.6.12 · 2026-07-27</p>
     </footer>
   </div>
 
@@ -605,8 +514,7 @@
   <div id="devGateOverlay" class="dev-gate-overlay" role="dialog" aria-modal="true" hidden>
     <a href="https://tomboonern.com" class="dev-gate-prod-link">Go to tomboonern.com</a>
   </div>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="rules-data.js?v=1.6.11"></script>
-  <script src="app.js?v=1.6.11"></script>
+  <script src="rules-data.js?v=1.6.12"></script>
+  <script src="app.js?v=1.6.12"></script>
 </body>
 </html>
