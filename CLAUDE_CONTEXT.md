@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-07-27 (v1.6.13)
+## Last updated: 2026-07-29 (v1.6.13 — live on both dev and main)
 
 ---
 
@@ -25,7 +25,7 @@ Home-screen tools (all **live and complete**):
 2. **Equipment Request Audit** ✅ complete (expand/collapse detail rows, amber keyword highlight, 19 keywords including NIM, Sonopet, CUSA, Aquamantys, Stealth, Ultrasound, Spy ICG, PTeye), do not touch
 3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag tier system; includes **Rule Management** sub-view with read-only rule cards, mailto flag-for-review, and mailto request-new-rule flows)
 4. ~~**OR Staffing Budget Calculator**~~ 🗄️ **ARCHIVED (v1.6.12, 2026-07-27)** — removed from active use at Tom's request, no timeline for restoration. No longer a home-screen tile. See **Archived Tools** section below for the recovery branch and a summary of what it did.
-5. **VNC Stocked Supply Item Search** ✅ complete (v1.6.0; standalone `items.html` — see below; linked from home grid as `<a class="tool-tile" href="items.html">`; **v1.6.1** improved match quality — whole-word matching for short/numeric tokens, a synonym map, and a tailored empty state for known-absent products)
+5. **VNC Stocked Supply Item Search** ✅ complete, **live on both dev and main as of the v1.6.13 release (2026-07-29)** (added v1.6.0; standalone `items.html` — see below; linked from home grid as `<a class="tool-tile" href="items.html">`; **v1.6.1** improved match quality — whole-word matching for short/numeric tokens, a synonym map, and a tailored empty state for known-absent products)
 
 Sub-views (not home-screen tiles):
 - **Equipment Terms view** ✅ complete (accessible via "View terms being checked" link in Equipment Request Audit; shows keyword pills; "Suggest equipment to check" button opens mailto pre-filled with suggestion template)
@@ -60,8 +60,20 @@ Sub-views (not home-screen tiles):
 - Only merge `dev` into `main` (which deploys tomboonern.com) when Tom explicitly says **"release"**
 - Releases happen via merging `dev` into `main` — no force pushes or rebases to `main`
 - Version bumps happen on every push, on both branches, as always
-- Most recent release: `dev` merged into `main` at v1.4.29 (2026-06-17), fast-forwarded — tomboonern.com is current through v1.4.29. v1.5.0 through v1.6.0 are on `dev` (tomboone.io) only, not yet released to `main`.
+- **Most recent release: `dev` merged into `main` at v1.6.13 (2026-07-29), fast-forwarded** (main had zero unique commits, so this was a clean fast-forward with no merge commit) — tomboonern.com and tomboone.io are now both current through v1.6.13. This closed the gap that had been open since the v1.4.29 release: everything from v1.5.0 through v1.6.13 (VNC Item Search, the OR Staffing Budget Calculator's full add-then-archive lifecycle, equipment negation detection, the pediatric room fallback fix, the Room Rules sidebar satisfied/suppressed sections, CPT Table 2 filter-state persistence, and the DATA_VERSIONS staleness infrastructure) is now live on production. See **v1.6.13 Release Summary** below for what a user-facing audit of this release covers.
 - **No external script dependencies as of v1.6.12.** `index.html` previously loaded **PDF.js** from cdnjs (added v1.5.6) solely for the OR Staffing Budget Calculator's PDF parsing; it was removed along with that tool's archival — see Archived Tools.
+
+#### v1.6.13 Release Summary (2026-07-29)
+
+What shipped to production in this release, for anyone auditing "what changed since v1.4.29":
+- **VNC Stocked Supply Item Search** (`items.html`) — a brand-new standalone tool, its first appearance on `main`. Verified functional pre-release: catalog loads (2,929 items), live search and the known-absent-term tailored messaging both work correctly.
+- **Equipment Request Audit — three-state negation detection (v1.6.9)**: "not needed"/"declined"-style phrasing near a keyword now suppresses or downgrades a flag instead of always firing one. See the Equipment Request Audit — Keywords section above.
+- **Room Rules — pediatric OR 3/OR 5 fallback compliance (v1.6.10)**: a pediatric case placed in the rule's own stated fallback rooms no longer false-positives. See Active Rule Set → Tier 2.
+- **Room Rules — sidebar satisfied/suppressed sections (v1.6.4)**: the per-case sidebar (reachable via a Gantt tile, including cases with zero violations) shows which rules were satisfied and which lower-tier rules were suppressed by hierarchy, not just which ones fired.
+- **CPT Audit — Table 2 filter-state persistence (v1.6.5)**: applying/clearing a Table 2 filter chip no longer collapses already-expanded detail rows or resets visited state.
+- **DATA_VERSIONS staleness infrastructure (v1.6.13)** — see the new section below. Ships dormant (today's real dates are within all thresholds); the passive "as of" lines are live on both dev and main, the amber staleness banners will only ever activate on `tomboone.io`, never `main`.
+- **OR Staffing Budget Calculator — added, then archived, entirely within `dev`.** Built in v1.5.3, iterated through v1.5.10, then removed from active use in v1.6.12 at Tom's request (see Archived Tools). Because it never appeared in a prior release, **it never existed on `main` and this release does not introduce it** — confirmed by checking the merge added no staffing tile/view/code (the `dev`→`main` diff is additive-only per the file list above; nothing staffing-related is present in current `dev`, so nothing staffing-related landed on `main`).
+- Pre-release regression pass (headless Chrome/Playwright) confirmed no regressions in CPT, Equipment, or Room Rules from any of the above — including a direct check of the satisfied/suppressed data layer and a forced-stale test proving the DATA_VERSIONS banners are genuinely hostname-gated, not just quiet due to today's dates.
 
 ### Dev Gate (tomboone.io only)
 
