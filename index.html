@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.7.1">
+  <link rel="stylesheet" href="styles.css?v=1.7.2">
   <script>
   if (location.hostname === 'tomboonern.com') {
     var s = document.createElement('script');
@@ -256,6 +256,7 @@
                     <th>Surgeon</th>
                     <th>Special Needs</th>
                     <th>Explanation</th>
+                    <th>Creation User</th>
                   </tr>
                 </thead>
                 <tbody id="equipmentMissingTable"></tbody>
@@ -311,7 +312,7 @@
           <div class="summary-grid" aria-label="CME approval audit summary">
             <div class="metric">
               <span class="metric-value" id="cmeTotalRows">0</span>
-              <span class="metric-label">Rows reviewed</span>
+              <span class="metric-label">F64 diagnosis cases</span>
             </div>
             <div class="metric">
               <span class="metric-value" id="cmeUnapprovedCount">0</span>
@@ -323,48 +324,9 @@
             </div>
           </div>
 
-          <div class="table-section">
-            <h2>Missing CME Approval</h2>
-            <p style="color: var(--muted); font-size: 0.82rem; margin: -6px 0 10px;">Cases with a gender identity disorder diagnosis (ICD-10 F64.x) whose Special Needs field does not contain the exact phrase "approved by CME". Rows with CME-related text that doesn't match the required phrase are marked for manual review.</p>
-            <div class="table-wrap">
-              <table class="cme-approval-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th>Case #</th>
-                    <th>Age</th>
-                    <th>Procedures Scheduled</th>
-                    <th>Creation User</th>
-                    <th>Special Needs</th>
-                    <th>Explanation</th>
-                  </tr>
-                </thead>
-                <tbody id="cmeUnapprovedTable"></tbody>
-              </table>
-            </div>
-          </div>
+          <div id="cmeFilters" class="audit-filters"></div>
 
-          <div class="table-section">
-            <h2>CME Approved</h2>
-            <div class="table-wrap">
-              <table class="cme-approval-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Location</th>
-                    <th>Case #</th>
-                    <th>Age</th>
-                    <th>Procedures Scheduled</th>
-                    <th>Creation User</th>
-                    <th>Special Needs</th>
-                    <th>Explanation</th>
-                  </tr>
-                </thead>
-                <tbody id="cmeApprovedTable"></tbody>
-              </table>
-            </div>
-          </div>
+          <div id="cmeAccordion"></div>
         </section>
       </section>
 
@@ -613,7 +575,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.7.1 · 2026-08-18</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.7.2 · 2026-08-18</p>
     </footer>
   </div>
 
@@ -632,7 +594,7 @@
   <div id="devGateOverlay" class="dev-gate-overlay" role="dialog" aria-modal="true" hidden>
     <a href="https://tomboonern.com" class="dev-gate-prod-link">Go to tomboonern.com</a>
   </div>
-  <script src="rules-data.js?v=1.7.1"></script>
-  <script src="app.js?v=1.7.1"></script>
+  <script src="rules-data.js?v=1.7.2"></script>
+  <script src="app.js?v=1.7.2"></script>
 </body>
 </html>

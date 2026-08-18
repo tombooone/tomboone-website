@@ -498,12 +498,13 @@
     .cpt-discrepancy-table th:nth-child(5) { width: 25%; }
     .cpt-discrepancy-table th:nth-child(6) { width: 23%; }
 
-    .equipment-missing-table th:nth-child(1) { width: 8%; }
-    .equipment-missing-table th:nth-child(2) { width: 12%; }
-    .equipment-missing-table th:nth-child(3) { width: 9%; }
-    .equipment-missing-table th:nth-child(4) { width: 11%; }
-    .equipment-missing-table th:nth-child(5) { width: 28%; }
-    .equipment-missing-table th:nth-child(6) { width: 32%; }
+    .equipment-missing-table th:nth-child(1) { width: 7%; }
+    .equipment-missing-table th:nth-child(2) { width: 10%; }
+    .equipment-missing-table th:nth-child(3) { width: 8%; }
+    .equipment-missing-table th:nth-child(4) { width: 10%; }
+    .equipment-missing-table th:nth-child(5) { width: 25%; }
+    .equipment-missing-table th:nth-child(6) { width: 28%; }
+    .equipment-missing-table th:nth-child(7) { width: 12%; }
 
     .cme-approval-table { table-layout: fixed; }
     .cme-approval-table th:nth-child(1) { width: 7%; }
@@ -511,9 +512,10 @@
     .cme-approval-table th:nth-child(3) { width: 7%; }
     .cme-approval-table th:nth-child(4) { width: 5%; }
     .cme-approval-table th:nth-child(5) { width: 16%; }
-    .cme-approval-table th:nth-child(6) { width: 12%; }
+    .cme-approval-table th:nth-child(6) { width: 22%; }
     .cme-approval-table th:nth-child(7) { width: 22%; }
-    .cme-approval-table th:nth-child(8) { width: 22%; }
+    .cme-approval-table th:nth-child(8) { width: 12%; }
+    .cme-approval-table td:nth-child(2) { white-space: nowrap; }
 
     .table-wrap {
       overflow-x: auto;

@@ -102,6 +102,11 @@
         label: "Location",
         optional: true,
         accepted: ["location", "department location", "or location"]
+      },
+      {
+        key: "creationUser",
+        label: "Creation User",
+        accepted: ["creation user"]
       }
     ];
 
@@ -182,8 +187,8 @@
     const equipmentKeywordCountEl = document.getElementById("equipmentKeywordCount");
 
     // DOM refs for CME approval audit results (used by renderCmeResults)
-    const cmeUnapprovedTable = document.getElementById("cmeUnapprovedTable");
-    const cmeApprovedTable = document.getElementById("cmeApprovedTable");
+    const cmeAccordion = document.getElementById("cmeAccordion");
+    const cmeFilters = document.getElementById("cmeFilters");
     const cmeTotalRowsEl = document.getElementById("cmeTotalRows");
     const cmeUnapprovedCountEl = document.getElementById("cmeUnapprovedCount");
     const cmeApprovedCountEl = document.getElementById("cmeApprovedCount");
@@ -447,7 +452,7 @@
       clearButton: document.getElementById("clearCmeAudit"),
       statusEl: document.getElementById("cmeStatus"),
       resultsPanel: document.getElementById("cmeResultsPanel"),
-      tables: [cmeUnapprovedTable, cmeApprovedTable],
+      tables: [cmeAccordion],
       toolKey: "cme",
     });
 
@@ -798,7 +803,7 @@
       }
 
       const headerInfo = findHeaderInfoForColumns(populatedRows, equipmentRequiredColumns);
-      if (!headerInfo) throw new Error("Could not find the required equipment audit columns: Case #, Special Needs, and Equipment.");
+      if (!headerInfo) throw new Error("Could not find the required equipment audit columns: Case #, Special Needs, Equipment, and Creation User.");
       const { indexes, headerRowIndex } = headerInfo;
       // Prospective only: drop rows dated before tomorrow's local midnight.
       const tomorrowMidnight = new Date();
@@ -855,6 +860,7 @@
           campus,
           surgeon: parseSurgeonLastName(surgeonRaw),
           surgeonId: extractSurgeonId(surgeonRaw),
+          creationUser: formatCreationUser(cell(row, indexes.creationUser)),
           specialNeeds,
           equipment,
           suppressedTraces
@@ -1317,6 +1323,7 @@
           tr.append(td(row.surgeon || ""));
           tr.append(td(row.specialNeeds));
           tr.append(buildEquipmentExplanationCell(row));
+          tr.append(td(row.creationUser || ""));
 
           // Detail row (hidden until expanded)
           const detailTr = document.createElement("tr");
@@ -1324,7 +1331,7 @@
           detailTr.hidden = true;
 
           const detailCell = document.createElement("td");
-          detailCell.colSpan = 6;
+          detailCell.colSpan = 7;
 
           const detailDiv = document.createElement("div");
           detailDiv.className = "equip-detail";
@@ -1464,7 +1471,7 @@
           equipmentMissingTable.append(tr, detailTr);
         });
       } else {
-        equipmentMissingTable.append(emptyRow(6, "No matching equipment request discrepancies found."));
+        equipmentMissingTable.append(emptyRow(7, "No matching equipment request discrepancies found."));
       }
     }
 
@@ -2515,7 +2522,7 @@
           sortDate: dateValue.sort,
           caseNumber: cell(row, indexes.caseNumber),
           location,
-          age: cell(row, indexes.patientAge),
+          age: parsePatientAge(cell(row, indexes.patientAge)),
           procedures: cell(row, indexes.proceduresScheduled),
           creationUser: formatCreationUser(cell(row, indexes.creationUser)),
           specialNeeds,
@@ -2554,25 +2561,109 @@
       };
     }
 
+    // Age filter state — buckets mirror the CPT/Equipment campus-filter chip
+    // pattern (buildFilterGroup) but bucket on parsePatientAge()'s parsed
+    // integer rather than a raw column value. Cases with unparseable/blank
+    // age (ageBucket returns null) only ever match "all".
+    let cmeAgeFilter = "all";
+
+    function ageBucket(ageNum) {
+      if (ageNum === null || ageNum === undefined) return null;
+      if (ageNum < 18) return "under18";
+      if (ageNum <= 19) return "18-19";
+      return "over19";
+    }
+
+    function getCmeFilteredRows(result) {
+      const matches = (row) => cmeAgeFilter === "all" || ageBucket(row.age) === cmeAgeFilter;
+      return {
+        unapprovedRows: result.unapprovedRows.filter(matches),
+        approvedRows: result.approvedRows.filter(matches)
+      };
+    }
+
     function renderCmeResults(result) {
       lastCmeResult = result;
-      cmeTotalRowsEl.textContent = String(result.totalRows);
+      cmeAgeFilter = "all";
+      renderCmeFilterControls();
+      renderCmeTables();
+    }
+
+    function renderCmeFilterControls() {
+      cmeFilters.textContent = "";
+      const ageOptions = [
+        { value: "all", label: "All ages" },
+        { value: "under18", label: "<18" },
+        { value: "18-19", label: "18-19" },
+        { value: "over19", label: ">19" }
+      ];
+      cmeFilters.append(buildFilterGroup("Age", ageOptions, () => cmeAgeFilter, (v) => {
+        cmeAgeFilter = v;
+        renderCmeTables();
+        renderCmeFilterControls();
+      }));
+    }
+
+    function renderCmeTables() {
+      const result = lastCmeResult;
+      // Top summary tiles always reflect the FULL (unfiltered) audit — the
+      // total F64-diagnosed population this tool evaluates, not the raw
+      // spreadsheet row count — same convention as CPT's summary metrics.
+      // Accordion badge counts reflect the currently filtered rows shown.
+      cmeTotalRowsEl.textContent = String(result.unapprovedRows.length + result.approvedRows.length);
       cmeUnapprovedCountEl.textContent = String(result.unapprovedRows.length);
       cmeApprovedCountEl.textContent = String(result.approvedRows.length);
 
-      cmeUnapprovedTable.textContent = "";
-      if (result.unapprovedRows.length) {
-        result.unapprovedRows.forEach((row) => cmeUnapprovedTable.append(buildCmeRow(row)));
-      } else {
-        cmeUnapprovedTable.append(emptyRow(8, "No gender reassignment surgery cases are missing CME approval documentation."));
-      }
+      const filtered = getCmeFilteredRows(result);
 
-      cmeApprovedTable.textContent = "";
-      if (result.approvedRows.length) {
-        result.approvedRows.forEach((row) => cmeApprovedTable.append(buildCmeRow(row)));
-      } else {
-        cmeApprovedTable.append(emptyRow(8, "No CME-approved gender reassignment surgery cases found."));
-      }
+      cmeAccordion.textContent = "";
+
+      cmeAccordion.append(makeAccordionSection(
+        "Missing CME Approval",
+        filtered.unapprovedRows.length,
+        (body) => {
+          const note = document.createElement("p");
+          note.style.cssText = "color: var(--muted); font-size: 0.82rem; margin: 0 0 10px;";
+          note.textContent = `Cases with a gender identity disorder diagnosis (ICD-10 F64.x) whose Special Needs field does NOT contain the exact phrase "approved by CME". Rows with CME-related text that doesn't match the required phrase are marked for manual review.`;
+          body.append(note);
+
+          const wrap = document.createElement("div");
+          wrap.className = "table-wrap";
+          const table = document.createElement("table");
+          table.className = "cme-approval-table";
+          table.append(makeTableHead("Date", "Location", "Case #", "Age", "Procedures Scheduled", "Special Needs", "Explanation", "Creation User"));
+          const tbody = document.createElement("tbody");
+          if (filtered.unapprovedRows.length) {
+            filtered.unapprovedRows.forEach((row) => tbody.append(buildCmeRow(row)));
+          } else {
+            tbody.append(emptyRow(8, "No gender reassignment surgery cases are missing CME approval documentation."));
+          }
+          table.append(tbody);
+          wrap.append(table);
+          body.append(wrap);
+        }
+      ));
+
+      cmeAccordion.append(makeAccordionSection(
+        "CME Approved",
+        filtered.approvedRows.length,
+        (body) => {
+          const wrap = document.createElement("div");
+          wrap.className = "table-wrap";
+          const table = document.createElement("table");
+          table.className = "cme-approval-table";
+          table.append(makeTableHead("Date", "Location", "Case #", "Age", "Procedures Scheduled", "Special Needs", "Explanation", "Creation User"));
+          const tbody = document.createElement("tbody");
+          if (filtered.approvedRows.length) {
+            filtered.approvedRows.forEach((row) => tbody.append(buildCmeRow(row)));
+          } else {
+            tbody.append(emptyRow(8, "No CME-approved gender reassignment surgery cases found."));
+          }
+          table.append(tbody);
+          wrap.append(table);
+          body.append(wrap);
+        }
+      ));
     }
 
     function buildCmeRow(row) {
@@ -2588,15 +2679,15 @@
       caseCell.append(caseSpan);
       tr.append(caseCell);
 
-      tr.append(td(row.age || ""));
+      tr.append(td(row.age !== null && row.age !== undefined ? String(row.age) : ""));
       tr.append(td(row.procedures || ""));
-      tr.append(td(row.creationUser || ""));
 
       const snCell = document.createElement("td");
       appendCmeHighlightedText(snCell, row.specialNeeds || "", row.matchStart, row.matchEnd);
       tr.append(snCell);
 
       tr.append(buildCmeExplanationCell(row));
+      tr.append(td(row.creationUser || ""));
 
       return tr;
     }
