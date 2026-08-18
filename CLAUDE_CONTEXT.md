@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-08-18 (v1.6.14 — live on dev, not yet on main)
+## Last updated: 2026-08-18 (v1.6.15 — live on dev, not yet on main)
 
 ---
 
@@ -21,7 +21,7 @@ A PHI-safe OR scheduling audit web tool, deployed as two environments via Cloudf
 - **tomboone.io** is **dev/staging**, tracking the `dev` branch, and is gated behind a dev overlay (see Dev Gate below)
 
 Home-screen tools (all **live and complete**):
-1. **CPT Audit Tool** ✅ complete (v1.6.2 reverted the missing/not-on-order comparison to presence-based — see Data Schema section note below; **v1.6.14** added a Creation User column to Table 1, sourced from the required "Creation User" export column and stripped of its trailing bracketed Epic user ID (e.g. "HARRIS, JESHURUN [S271161]" → "HARRIS, JESHURUN") via `formatCreationUser()` in `app.js`; otherwise do not touch)
+1. **CPT Audit Tool** ✅ complete (v1.6.2 reverted the missing/not-on-order comparison to presence-based — see Data Schema section note below; **v1.6.14** added a Creation User column to Table 1, sourced from the required "Creation User" export column and stripped of its trailing bracketed Epic user ID (e.g. "HARRIS, JESHURUN [S271161]" → "HARRIS, JESHURUN") via `formatCreationUser()` in `app.js`; **v1.6.15** reordered Table 1 to Date, Location, Case #, Explanation, Creation User (rightmost) and gave the table a `cpt-inpatient-table` class so Location (`td:nth-child(2)`) gets `white-space: nowrap` in `styles.css`, matching the existing `.equip-row-main td:nth-child(2)` pattern — Explanation still wraps normally; otherwise do not touch)
 2. **Equipment Request Audit** ✅ complete (expand/collapse detail rows, amber keyword highlight, 19 keywords including NIM, Sonopet, CUSA, Aquamantys, Stealth, Ultrasound, Spy ICG, PTeye), do not touch
 3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag tier system; includes **Rule Management** sub-view with read-only rule cards, mailto flag-for-review, and mailto request-new-rule flows)
 4. ~~**OR Staffing Budget Calculator**~~ 🗄️ **ARCHIVED (v1.6.12, 2026-07-27)** — removed from active use at Tom's request, no timeline for restoration. No longer a home-screen tile. See **Archived Tools** section below for the recovery branch and a summary of what it did.
@@ -44,7 +44,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.6.14** (dev only)
+- Current version: **v1.6.15** (dev only)
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
