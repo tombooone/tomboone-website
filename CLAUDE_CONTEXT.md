@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-08-18 (v1.6.15 — live on dev, not yet on main)
+## Last updated: 2026-08-18 (v1.7.0 — live on dev, not yet on main)
 
 ---
 
@@ -24,8 +24,9 @@ Home-screen tools (all **live and complete**):
 1. **CPT Audit Tool** ✅ complete (v1.6.2 reverted the missing/not-on-order comparison to presence-based — see Data Schema section note below; **v1.6.14** added a Creation User column to Table 1, sourced from the required "Creation User" export column and stripped of its trailing bracketed Epic user ID (e.g. "HARRIS, JESHURUN [S271161]" → "HARRIS, JESHURUN") via `formatCreationUser()` in `app.js`; **v1.6.15** reordered Table 1 to Date, Location, Case #, Explanation, Creation User (rightmost) and gave the table a `cpt-inpatient-table` class so Location (`td:nth-child(2)`) gets `white-space: nowrap` in `styles.css`, matching the existing `.equip-row-main td:nth-child(2)` pattern — Explanation still wraps normally; otherwise do not touch)
 2. **Equipment Request Audit** ✅ complete (expand/collapse detail rows, amber keyword highlight, 19 keywords including NIM, Sonopet, CUSA, Aquamantys, Stealth, Ultrasound, Spy ICG, PTeye), do not touch
 3. **OR Schedule and Room Assignment Audit** ✅ complete (Gantt, calendar, sidebar, alert/flag tier system; includes **Rule Management** sub-view with read-only rule cards, mailto flag-for-review, and mailto request-new-rule flows)
-4. ~~**OR Staffing Budget Calculator**~~ 🗄️ **ARCHIVED (v1.6.12, 2026-07-27)** — removed from active use at Tom's request, no timeline for restoration. No longer a home-screen tile. See **Archived Tools** section below for the recovery branch and a summary of what it did.
-5. **VNC Stocked Supply Item Search** ✅ complete, **live on both dev and main as of the v1.6.13 release (2026-07-29)** (added v1.6.0; standalone `items.html` — see below; linked from home grid as `<a class="tool-tile" href="items.html">`; **v1.6.1** improved match quality — whole-word matching for short/numeric tokens, a synonym map, and a tailored empty state for known-absent products)
+4. **Gender Reassignment Surgery CME Approval Audit** ✅ complete, **added v1.7.0 (2026-08-18), live on dev only** — home-grid tile sits between OR Schedule/Room Assignment Audit and VNC Stocked Supply Item Search. See its own section below for architecture, matching logic, and privacy notes.
+5. ~~**OR Staffing Budget Calculator**~~ 🗄️ **ARCHIVED (v1.6.12, 2026-07-27)** — removed from active use at Tom's request, no timeline for restoration. No longer a home-screen tile. See **Archived Tools** section below for the recovery branch and a summary of what it did.
+6. **VNC Stocked Supply Item Search** ✅ complete, **live on both dev and main as of the v1.6.13 release (2026-07-29)** (added v1.6.0; standalone `items.html` — see below; linked from home grid as `<a class="tool-tile" href="items.html">`; **v1.6.1** improved match quality — whole-word matching for short/numeric tokens, a synonym map, and a tailored empty state for known-absent products)
 
 Sub-views (not home-screen tiles):
 - **Equipment Terms view** ✅ complete (accessible via "View terms being checked" link in Equipment Request Audit; shows keyword pills; "Suggest equipment to check" button opens mailto pre-filled with suggestion template)
@@ -44,7 +45,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.6.15** (live on both dev and main)
+- Current version: **v1.7.0** (live on dev only, not yet on main)
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
@@ -60,7 +61,7 @@ Sub-views (not home-screen tiles):
 - Only merge `dev` into `main` (which deploys tomboonern.com) when Tom explicitly says **"release"**
 - Releases happen via merging `dev` into `main` — no force pushes or rebases to `main`
 - Version bumps happen on every push, on both branches, as always
-- **Most recent release: `dev` merged into `main` at v1.6.15 (2026-08-18), fast-forwarded** (main had zero unique commits, so this was a clean fast-forward with no merge commit) — tomboonern.com and tomboone.io are now both current through v1.6.15. This brings the CPT Audit Table 1 Creation User column (v1.6.14) and its rightmost-column reorder + Location nowrap fix (v1.6.15) to production, on top of everything through v1.6.13 (see that release's summary below).
+- **Most recent release to main: v1.6.15 (2026-08-18), fast-forwarded.** `dev` is now ahead of `main` at **v1.7.0** (2026-08-18, same day) — the new Gender Reassignment Surgery CME Approval Audit tool (see its own section below) has **not** been released to production yet; it exists only on `dev`/tomboone.io until Tom says "release."
 - **No external script dependencies as of v1.6.12.** `index.html` previously loaded **PDF.js** from cdnjs (added v1.5.6) solely for the OR Staffing Budget Calculator's PDF parsing; it was removed along with that tool's archival — see Archived Tools.
 
 #### v1.6.13 Release Summary (2026-07-29)
@@ -142,6 +143,37 @@ When a new Infor item master export is available:
 
 ### Phase 2 placeholder
 A `.items-empty-phase2-slot` div is left inside the zero-results state for a future "copilot handoff" CTA (phase 2 not yet built).
+
+---
+
+## Gender Reassignment Surgery CME Approval Audit (v1.7.0)
+
+New policy: gender reassignment surgeries require Chief Medical Executive approval, documented as the exact phrase "approved by CME" in the Special Needs field. This tool flags F64.x-diagnosed cases missing that exact language so gaps can be caught before the case happens. Highly sensitive (gender-identity-linked diagnosis data) — see Privacy note below.
+
+### Architecture
+
+- Fourth tile joined to the **same shared upload/prospective-date pipeline** as CPT/Equipment/Room Rules (`_runAllAudits`, `sharedAuditData`/`sharedAuditResults`, `wireAuditTool({ toolKey: "cme" })`) — one file upload runs all four audits. `renderCmeResults`/`buildCmeRow`/etc. live in a dedicated "CME Approval Audit" section in `app.js`, placed immediately before the "─── Room Rules ───" section comment; `cmeRequiredColumns` is declared alongside `requiredColumns`/`equipmentRequiredColumns` near the top of the file.
+- Home-grid tile (`#openCmeTool`) sits between "OR Schedule and Room Assignment Audit" and "VNC Stocked Supply Item Search" in `index.html`'s `.tool-grid` — a deliberate reorder, not an append.
+- **Required columns** (`cmeRequiredColumns`, `app.js`): Date, Case #, Diagnosis Codes (new — free text, ICD-10 codes bracketed inline e.g. "Gender identity disorder, unspecified [F64.9]"), Special Needs, Flightboard Procedures (new — the ORP, sourced as "Procedures Scheduled" in the UI, distinct from the free-text "Case Procedures"/"Procedures" column used elsewhere), Patient Age, Creation User (reuses the existing `formatCreationUser()` helper — same trailing-bracket-strip logic as the CPT tool's Table 1 column); Room/Department/Location optional, same three-way fallback (`formatRoomDisplay`) as CPT/Equipment. No campus filter — all campuses are in scope (unlike Room Rules' WBVC-only restriction).
+- Same prospective-only date filter as CPT/Equipment/Room Rules: drop rows dated before tomorrow's local midnight, computed at runtime (`tomorrowMidnight.setHours(24,0,0,0)`).
+
+### Matching logic (three-state)
+
+1. **Diagnosis match** (`auditCmeRows`, `app.js`): a case is in scope only if `Diagnosis Codes` contains the substring `F64` anywhere, case-insensitive (`/F64/i`) — catches all F64.x subtypes without an exhaustive code list. Non-matching cases are excluded from this tool entirely, regardless of Special Needs content. The actual bracketed code is extracted via `extractF64Code()` (first `[...]` bracket group containing "F64"; falls back to a bare `F64(?:\.\d+)?` match if no bracket is present) and used in the explanation text.
+2. **Approval match** (`findCmeApprovalMatch()`): evaluated against Special Needs.
+   - **CLEARLY APPROVED**: exact phrase `approved\s+by\s+cme` (case-insensitive, whitespace-tolerant only — deliberately not fuzzy, so "approved by the CME committee" does NOT match) → case goes in the bottom **CME Approved** table, matched phrase highlighted amber, no distinguishing marker beyond the highlight itself.
+   - **NEEDS REVIEW**: no exact-phrase match, but a standalone `\bcme\b` mention exists elsewhere in Special Needs (e.g. "CME notified but pending") → case goes in the top **Missing CME Approval** table. The surrounding delimited clause (split on `.`/`;`/`,`/newline, trimmed) is highlighted amber as the review span. Gets the SAME amber ⚠ "questionable" treatment the Equipment Request Audit already uses for uncertain negation matches — `buildQuestionableIcon()` (the reused SVG triangle helper) prefixed to the Explanation cell, plus the explanation text itself colored `var(--warn)`. *(Note: the original spec for this tool described reusing an "amber synonym-match highlight" from the VNC Stocked Supply Item Search tool — no such mechanism actually exists in `items.html`; VNC has no highlight-on-match feature at all. The Equipment Request Audit's QUESTIONABLE-state amber icon/mark pattern was substituted as the closest real, already-shipped analog, since it already highlights matched text within a Special Needs field.)*
+   - **CLEARLY UNAPPROVED**: no CME mention at all → top table, standard row, no icon/highlight.
+3. Both tables sorted ascending by procedure date (soonest first) via the existing `sortAuditRows()`.
+
+### Output columns
+Date, Location, Case #, Age, Procedures Scheduled, Creation User, Special Needs (full text, amber `<mark>` inline via `appendCmeHighlightedText()` reusing the shared `AMBER_MARK_CSS` constant), Explanation. `.cme-approval-table` (`styles.css`) sets `table-layout: fixed` with 8 column-width rules. Explanation text templates: `"Diagnosis code {code} present; 'approved by CME' not found in Special Needs."` (clearly unapproved), `"Diagnosis code {code} present; CME-related text found but does not match required approval phrase — review manually."` (needs review), `"Diagnosis code {code} present; case is CME approved."` (approved).
+
+### Privacy — no session persistence
+This tool touches gender-identity-linked diagnosis data. Same local-only browser processing as every other tool (no upload, nothing leaves the browser). Deliberately does **not** implement CPT Table 2's sticky filter/expand-state pattern (`cptVisitedCaseIds`-style Sets that survive re-renders within a session) — `lastCmeResult` is just a plain render-cache variable overwritten on every fresh `renderCmeResults()` call, same as `lastEquipResult`. No localStorage/sessionStorage use anywhere in this tool. Nothing survives a real page reload for any tool in this app (all state is in-memory JS, not persisted to disk) — this tool adds no exception to that.
+
+### Verified (headless Chrome, CDP, synthetic fixture)
+F64.9 + "approved by CME" → bottom table, amber-highlighted phrase, no review marker. F64.1 + no CME mention → top table, clearly unapproved, no highlight. F64.9 + "CME notified but pending" → top table, needs review, ⚠ icon + amber explanation + amber-highlighted clause. Non-F64 diagnosis → excluded from both tables regardless of Special Needs. Past-dated F64+approved case → excluded by the prospective filter. Whitespace-variant phrase ("Approved   BY   cme") → still matches as approved. Zero console errors.
 
 ---
 
