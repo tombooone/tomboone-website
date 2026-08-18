@@ -105,10 +105,67 @@
       }
     ];
 
+    const cmeRequiredColumns = [
+      {
+        key: "date",
+        label: "Date",
+        accepted: ["date", "case/appt date", "surgery date", "procedure date"]
+      },
+      {
+        key: "caseNumber",
+        label: "Case #",
+        accepted: ["case #", "case id", "case number"]
+      },
+      {
+        key: "diagnosisCodes",
+        label: "Diagnosis Codes",
+        accepted: ["diagnosis codes", "diagnosis code"]
+      },
+      {
+        key: "specialNeeds",
+        label: "Special Needs",
+        accepted: ["special needs", "special needs (as scheduled)", "special need"]
+      },
+      {
+        key: "proceduresScheduled",
+        label: "Flightboard Procedures",
+        accepted: ["flightboard procedures", "flightboard procedure"]
+      },
+      {
+        key: "patientAge",
+        label: "Patient Age",
+        accepted: ["patient age", "patient age in years"]
+      },
+      {
+        key: "creationUser",
+        label: "Creation User",
+        accepted: ["creation user"]
+      },
+      {
+        key: "room",
+        label: "Room",
+        optional: true,
+        accepted: ["room", "room (as scheduled)", "or room", "location"]
+      },
+      {
+        key: "department",
+        label: "Department",
+        optional: true,
+        accepted: ["department", "department name", "or department"]
+      },
+      {
+        key: "location",
+        label: "Location",
+        optional: true,
+        accepted: ["location", "department location", "or location"]
+      }
+    ];
+
     // DOM refs for navigation
     const homeView = document.getElementById("homeView");
     const auditView = document.getElementById("auditView");
     const equipmentView = document.getElementById("equipmentView");
+    const cmeView = document.getElementById("cmeView");
 
     // DOM refs for CPT audit results (used by renderResults)
     const cptAccordion = document.getElementById("cptAccordion");
@@ -123,6 +180,13 @@
     const equipmentTotalRowsEl = document.getElementById("equipmentTotalRows");
     const equipmentMissingCountEl = document.getElementById("equipmentMissingCount");
     const equipmentKeywordCountEl = document.getElementById("equipmentKeywordCount");
+
+    // DOM refs for CME approval audit results (used by renderCmeResults)
+    const cmeUnapprovedTable = document.getElementById("cmeUnapprovedTable");
+    const cmeApprovedTable = document.getElementById("cmeApprovedTable");
+    const cmeTotalRowsEl = document.getElementById("cmeTotalRows");
+    const cmeUnapprovedCountEl = document.getElementById("cmeUnapprovedCount");
+    const cmeApprovedCountEl = document.getElementById("cmeApprovedCount");
 
     const inpatientOnlyCodes = new Set([
       "00176","00211","00214","00215","00524","00540","00542","00546","00560","00561",
@@ -352,8 +416,10 @@
 
     document.getElementById("openAuditTool").addEventListener("click", () => showView("audit"));
     document.getElementById("openEquipmentTool").addEventListener("click", () => showView("equipment"));
+    document.getElementById("openCmeTool").addEventListener("click", () => showView("cme"));
     document.getElementById("backHome").addEventListener("click", () => showView("home"));
     document.getElementById("equipmentBackHome").addEventListener("click", () => showView("home"));
+    document.getElementById("cmeBackHome").addEventListener("click", () => showView("home"));
 
     let _cptTool = wireAuditTool({
       fileInput: document.getElementById("fileInput"),
@@ -375,10 +441,21 @@
       toolKey: "equipment",
     });
 
+    let _cmeTool = wireAuditTool({
+      fileInput: document.getElementById("cmeFileInput"),
+      runButton: document.getElementById("runCmeAudit"),
+      clearButton: document.getElementById("clearCmeAudit"),
+      statusEl: document.getElementById("cmeStatus"),
+      resultsPanel: document.getElementById("cmeResultsPanel"),
+      tables: [cmeUnapprovedTable, cmeApprovedTable],
+      toolKey: "cme",
+    });
+
     function showView(viewName) {
       homeView.classList.toggle("active", viewName === "home");
       auditView.classList.toggle("active", viewName === "audit");
       equipmentView.classList.toggle("active", viewName === "equipment");
+      cmeView.classList.toggle("active", viewName === "cme");
       document.getElementById("roomRulesView").classList.toggle("active", viewName === "roomRules");
       document.getElementById("ruleManagementView").classList.toggle("active", viewName === "ruleManagement");
       document.getElementById("equipmentTermsView").classList.toggle("active", viewName === "equipmentTerms");
@@ -386,6 +463,7 @@
       document.getElementById("knownProblemCptsView").classList.toggle("active", viewName === "knownProblemCpts");
       if (viewName === "audit" && _cptTool) _cptTool.showFromShared();
       if (viewName === "equipment" && _equipTool) _equipTool.showFromShared();
+      if (viewName === "cme" && _cmeTool) _cmeTool.showFromShared();
       if (viewName === "roomRules" && _roomRulesTool) _roomRulesTool.showFromShared();
       if (viewName === "ruleManagement") buildRuleManagementView();
       if (viewName === "equipmentTerms") buildEquipmentTermsView();
@@ -451,6 +529,7 @@
         sharedAuditResults = null;
         if (_cptTool) _cptTool.reset();
         if (_equipTool) _equipTool.reset();
+        if (_cmeTool) _cmeTool.reset();
         if (_roomRulesTool) _roomRulesTool.reset();
         const sb = document.getElementById("ganttSidebar");
         if (sb) sb.hidden = true;
@@ -483,6 +562,13 @@
         sharedAuditResults.equipment = auditEquipmentRows(rows);
       } catch (e) {
         sharedAuditResults.equipmentError = e.message || "Unable to run equipment audit on this file.";
+      }
+
+      // CME approval audit
+      try {
+        sharedAuditResults.cme = auditCmeRows(rows);
+      } catch (e) {
+        sharedAuditResults.cmeError = e.message || "Unable to run CME approval audit on this file.";
       }
 
       // Room rules audit
@@ -528,6 +614,23 @@
         }
         document.getElementById("runEquipmentAudit").disabled = false;
         document.getElementById("clearEquipmentAudit").disabled = false;
+      }
+
+      if (toolKey === "cme") {
+        const panel = document.getElementById("cmeResultsPanel");
+        const status = document.getElementById("cmeStatus");
+        if (sharedAuditResults.cme) {
+          renderCmeResults(sharedAuditResults.cme);
+          panel.hidden = false;
+          const r = sharedAuditResults.cme;
+          status.textContent = `Audit complete. Reviewed ${r.totalRows} data row${r.totalRows === 1 ? "" : "s"}.`;
+          status.classList.remove("error");
+        } else if (sharedAuditResults.cmeError) {
+          status.textContent = sharedAuditResults.cmeError;
+          status.classList.add("error");
+        }
+        document.getElementById("runCmeAudit").disabled = false;
+        document.getElementById("clearCmeAudit").disabled = false;
       }
 
       if (toolKey === "roomRules") {
@@ -2316,6 +2419,234 @@
         index = index * 26 + ref.charCodeAt(i) - 64;
       }
       return index - 1;
+    }
+
+    // ─── CME Approval Audit (Gender Reassignment Surgery) ─────────────────────
+    // Flags cases with an F64.x (gender identity disorder) diagnosis whose
+    // Special Needs field is missing the exact required approval phrase
+    // "approved by CME". Three-state outcome per case:
+    //   - approved: exact phrase found -> CME Approved table
+    //   - unapproved: no CME mention at all -> Missing CME Approval table
+    //   - review: "CME" appears but not as the exact required phrase (e.g.
+    //     "CME notified", "pending CME") -> Missing CME Approval table,
+    //     marked with the same amber ⚠ "questionable" treatment the Equipment
+    //     Request Audit uses for uncertain negation matches (buildQuestionableIcon()).
+    let lastCmeResult = null;
+
+    // Extracts the bracketed diagnosis code containing "F64" from free text
+    // like "Gender identity disorder, unspecified [F64.9]". Falls back to a
+    // bare F64(.x) match if no bracket is present.
+    function extractF64Code(diagnosisText) {
+      const text = String(diagnosisText || "");
+      const bracketMatches = text.match(/\[([^\]]+)\]/g) || [];
+      for (const b of bracketMatches) {
+        const inner = b.slice(1, -1).trim();
+        if (/F64/i.test(inner)) return inner;
+      }
+      const fallback = text.match(/F64(?:\.\d+)?/i);
+      return fallback ? fallback[0].toUpperCase() : "F64";
+    }
+
+    // Classifies a case's CME approval state from its Special Needs text.
+    // "approved by CME" is matched case-insensitively, tolerant only of
+    // whitespace variation between the words (intentionally not fuzzy —
+    // typos or reworded phrasing do not count). If that exact phrase isn't
+    // present but a standalone "CME" mention is, the surrounding delimited
+    // clause (split on . ; , or newline) is returned as the highlight span
+    // for manual review.
+    function findCmeApprovalMatch(specialNeedsText) {
+      const text = String(specialNeedsText || "");
+      const approvedRe = /approved\s+by\s+cme/i;
+      const approvedMatch = approvedRe.exec(text);
+      if (approvedMatch) {
+        return { state: "approved", start: approvedMatch.index, end: approvedMatch.index + approvedMatch[0].length };
+      }
+
+      const cmeRe = /\bcme\b/i;
+      const cmeMatch = cmeRe.exec(text);
+      if (!cmeMatch) return { state: "unapproved" };
+
+      const before = text.slice(0, cmeMatch.index);
+      const after = text.slice(cmeMatch.index + cmeMatch[0].length);
+      const leftBreak = Math.max(before.lastIndexOf("."), before.lastIndexOf(";"), before.lastIndexOf(","), before.lastIndexOf("\n"));
+      const rightBreakRel = after.search(/[.;,\n]/);
+      let start = leftBreak + 1;
+      let end = rightBreakRel === -1 ? text.length : cmeMatch.index + cmeMatch[0].length + rightBreakRel;
+      while (start < end && /\s/.test(text[start])) start += 1;
+      while (end > start && /\s/.test(text[end - 1])) end -= 1;
+      return { state: "review", start, end };
+    }
+
+    function auditCmeRows(rows) {
+      const populatedRows = rows.filter(hasData);
+
+      if (populatedRows.length < 2) {
+        throw new Error("The spreadsheet was readable, but no worksheet with data rows was found.");
+      }
+
+      const headerInfo = findHeaderInfoForColumns(populatedRows, cmeRequiredColumns);
+      if (!headerInfo) throw new Error("Could not find the required CME approval audit columns: Diagnosis Codes, Special Needs, Flightboard Procedures, Patient Age, and Creation User.");
+      const { indexes, headerRowIndex } = headerInfo;
+
+      // Prospective only: drop rows dated before tomorrow's local midnight.
+      const tomorrowMidnight = new Date();
+      tomorrowMidnight.setHours(24, 0, 0, 0);
+      const tomorrowMs = tomorrowMidnight.getTime();
+      const dataRows = populatedRows.slice(headerRowIndex + 1)
+        .filter((row) => parseDateCell(cell(row, indexes.date)).sort >= tomorrowMs);
+
+      const unapprovedRows = [];
+      const approvedRows = [];
+
+      dataRows.forEach((row) => {
+        const diagnosisCodes = cell(row, indexes.diagnosisCodes);
+        if (!/F64/i.test(diagnosisCodes)) return;
+
+        const code = extractF64Code(diagnosisCodes);
+        const specialNeeds = cell(row, indexes.specialNeeds);
+        const match = findCmeApprovalMatch(specialNeeds);
+        const dateValue = parseDateCell(cell(row, indexes.date));
+        const rawRoom = cell(row, indexes.room);
+        const rawLocation = (indexes.location != null && cell(row, indexes.location)) || cell(row, indexes.department) || rawRoom;
+        const location = formatRoomDisplay(rawRoom, rawLocation);
+
+        const baseRow = {
+          date: dateValue.display,
+          sortDate: dateValue.sort,
+          caseNumber: cell(row, indexes.caseNumber),
+          location,
+          age: cell(row, indexes.patientAge),
+          procedures: cell(row, indexes.proceduresScheduled),
+          creationUser: formatCreationUser(cell(row, indexes.creationUser)),
+          specialNeeds,
+          code
+        };
+
+        if (match.state === "approved") {
+          approvedRows.push({
+            ...baseRow,
+            needsReview: false,
+            matchStart: match.start,
+            matchEnd: match.end,
+            explanation: `Diagnosis code ${code} present; case is CME approved.`
+          });
+        } else if (match.state === "review") {
+          unapprovedRows.push({
+            ...baseRow,
+            needsReview: true,
+            matchStart: match.start,
+            matchEnd: match.end,
+            explanation: `Diagnosis code ${code} present; CME-related text found but does not match required approval phrase — review manually.`
+          });
+        } else {
+          unapprovedRows.push({
+            ...baseRow,
+            needsReview: false,
+            explanation: `Diagnosis code ${code} present; 'approved by CME' not found in Special Needs.`
+          });
+        }
+      });
+
+      return {
+        totalRows: dataRows.length,
+        unapprovedRows: sortAuditRows(unapprovedRows),
+        approvedRows: sortAuditRows(approvedRows)
+      };
+    }
+
+    function renderCmeResults(result) {
+      lastCmeResult = result;
+      cmeTotalRowsEl.textContent = String(result.totalRows);
+      cmeUnapprovedCountEl.textContent = String(result.unapprovedRows.length);
+      cmeApprovedCountEl.textContent = String(result.approvedRows.length);
+
+      cmeUnapprovedTable.textContent = "";
+      if (result.unapprovedRows.length) {
+        result.unapprovedRows.forEach((row) => cmeUnapprovedTable.append(buildCmeRow(row)));
+      } else {
+        cmeUnapprovedTable.append(emptyRow(8, "No gender reassignment surgery cases are missing CME approval documentation."));
+      }
+
+      cmeApprovedTable.textContent = "";
+      if (result.approvedRows.length) {
+        result.approvedRows.forEach((row) => cmeApprovedTable.append(buildCmeRow(row)));
+      } else {
+        cmeApprovedTable.append(emptyRow(8, "No CME-approved gender reassignment surgery cases found."));
+      }
+    }
+
+    function buildCmeRow(row) {
+      const tr = document.createElement("tr");
+      tr.append(td(row.date || ""));
+      tr.append(td(row.location || ""));
+
+      const caseCell = document.createElement("td");
+      const caseSpan = document.createElement("span");
+      caseSpan.textContent = row.caseNumber || "";
+      caseSpan.style.fontWeight = "700";
+      makeCopyable(caseSpan, row.caseNumber);
+      caseCell.append(caseSpan);
+      tr.append(caseCell);
+
+      tr.append(td(row.age || ""));
+      tr.append(td(row.procedures || ""));
+      tr.append(td(row.creationUser || ""));
+
+      const snCell = document.createElement("td");
+      appendCmeHighlightedText(snCell, row.specialNeeds || "", row.matchStart, row.matchEnd);
+      tr.append(snCell);
+
+      tr.append(buildCmeExplanationCell(row));
+
+      return tr;
+    }
+
+    // Inline amber highlight for the matched approval phrase (or, for a
+    // needs-review row, the surrounding CME-adjacent clause) within the
+    // Special Needs cell — reuses AMBER_MARK_CSS, the same mark styling the
+    // Equipment Request Audit and CPT Table 2 already use to highlight
+    // matched text in place.
+    function appendCmeHighlightedText(el, text, matchStart, matchEnd) {
+      if (matchStart !== undefined && matchEnd !== undefined && matchEnd <= text.length) {
+        el.append(document.createTextNode(text.slice(0, matchStart)));
+        const mark = document.createElement("mark");
+        mark.style.cssText = AMBER_MARK_CSS + "cursor:pointer;";
+        mark.textContent = text.slice(matchStart, matchEnd);
+        mark.addEventListener("click", (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(mark.textContent).then(() => showToast("Copied: " + mark.textContent));
+        });
+        el.append(mark);
+        el.append(document.createTextNode(text.slice(matchEnd)));
+      } else {
+        el.textContent = text;
+      }
+    }
+
+    // Needs-review rows get the same amber ⚠ triangle treatment as the
+    // Equipment Request Audit's QUESTIONABLE state (buildQuestionableIcon()):
+    // icon prefix plus amber-colored explanation text, distinguishing an
+    // attempted-but-malformed approval note from a clean non-match.
+    function buildCmeExplanationCell(row) {
+      const el = document.createElement("td");
+      el.style.cursor = "pointer";
+      if (row.needsReview) {
+        const iconWrap = document.createElement("span");
+        iconWrap.title = "CME-related text found but does not match the required approval phrase — review in context";
+        iconWrap.append(buildQuestionableIcon());
+        el.append(iconWrap);
+        const text = document.createElement("span");
+        text.style.color = "var(--warn)";
+        text.textContent = row.explanation || "";
+        el.append(text);
+      } else {
+        el.append(document.createTextNode(row.explanation || ""));
+      }
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(row.explanation || "").then(() => showToast("Copied"));
+      });
+      return el;
     }
 
     // ─── Room Rules ───────────────────────────────────────────────────────────

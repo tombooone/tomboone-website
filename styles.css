@@ -505,6 +505,16 @@
     .equipment-missing-table th:nth-child(5) { width: 28%; }
     .equipment-missing-table th:nth-child(6) { width: 32%; }
 
+    .cme-approval-table { table-layout: fixed; }
+    .cme-approval-table th:nth-child(1) { width: 7%; }
+    .cme-approval-table th:nth-child(2) { width: 9%; }
+    .cme-approval-table th:nth-child(3) { width: 7%; }
+    .cme-approval-table th:nth-child(4) { width: 5%; }
+    .cme-approval-table th:nth-child(5) { width: 16%; }
+    .cme-approval-table th:nth-child(6) { width: 12%; }
+    .cme-approval-table th:nth-child(7) { width: 22%; }
+    .cme-approval-table th:nth-child(8) { width: 22%; }
+
     .table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
