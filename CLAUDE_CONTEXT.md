@@ -44,7 +44,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.6.15** (dev only)
+- Current version: **v1.6.15** (live on both dev and main)
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
@@ -60,7 +60,7 @@ Sub-views (not home-screen tiles):
 - Only merge `dev` into `main` (which deploys tomboonern.com) when Tom explicitly says **"release"**
 - Releases happen via merging `dev` into `main` — no force pushes or rebases to `main`
 - Version bumps happen on every push, on both branches, as always
-- **Most recent release: `dev` merged into `main` at v1.6.13 (2026-07-29), fast-forwarded** (main had zero unique commits, so this was a clean fast-forward with no merge commit) — tomboonern.com and tomboone.io are now both current through v1.6.13. This closed the gap that had been open since the v1.4.29 release: everything from v1.5.0 through v1.6.13 (VNC Item Search, the OR Staffing Budget Calculator's full add-then-archive lifecycle, equipment negation detection, the pediatric room fallback fix, the Room Rules sidebar satisfied/suppressed sections, CPT Table 2 filter-state persistence, and the DATA_VERSIONS staleness infrastructure) is now live on production. See **v1.6.13 Release Summary** below for what a user-facing audit of this release covers.
+- **Most recent release: `dev` merged into `main` at v1.6.15 (2026-08-18), fast-forwarded** (main had zero unique commits, so this was a clean fast-forward with no merge commit) — tomboonern.com and tomboone.io are now both current through v1.6.15. This brings the CPT Audit Table 1 Creation User column (v1.6.14) and its rightmost-column reorder + Location nowrap fix (v1.6.15) to production, on top of everything through v1.6.13 (see that release's summary below).
 - **No external script dependencies as of v1.6.12.** `index.html` previously loaded **PDF.js** from cdnjs (added v1.5.6) solely for the OR Staffing Budget Calculator's PDF parsing; it was removed along with that tool's archival — see Archived Tools.
 
 #### v1.6.13 Release Summary (2026-07-29)
