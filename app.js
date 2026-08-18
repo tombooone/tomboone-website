@@ -2535,7 +2535,7 @@
             needsReview: false,
             matchStart: match.start,
             matchEnd: match.end,
-            explanation: `Diagnosis code ${code} present; case is CME approved.`
+            explanation: code
           });
         } else if (match.state === "review") {
           unapprovedRows.push({
@@ -2543,13 +2543,13 @@
             needsReview: true,
             matchStart: match.start,
             matchEnd: match.end,
-            explanation: `Diagnosis code ${code} present; CME-related text found but does not match required approval phrase — review manually.`
+            explanation: code
           });
         } else {
           unapprovedRows.push({
             ...baseRow,
             needsReview: false,
-            explanation: `Diagnosis code ${code} present; 'approved by CME' not found in Special Needs.`
+            explanation: code
           });
         }
       });
@@ -2631,7 +2631,7 @@
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.className = "cme-approval-table";
-          table.append(makeTableHead("Date", "Location", "Case #", "Age", "Procedures Scheduled", "Special Needs", "Explanation", "Creation User"));
+          table.append(makeTableHead("Date", "Location", "Case #", "Age", "Procedures Scheduled", "Special Needs", "ICD-10", "Creation User"));
           const tbody = document.createElement("tbody");
           if (filtered.unapprovedRows.length) {
             filtered.unapprovedRows.forEach((row) => tbody.append(buildCmeRow(row)));
@@ -2652,7 +2652,7 @@
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.className = "cme-approval-table";
-          table.append(makeTableHead("Date", "Location", "Case #", "Age", "Procedures Scheduled", "Special Needs", "Explanation", "Creation User"));
+          table.append(makeTableHead("Date", "Location", "Case #", "Age", "Procedures Scheduled", "Special Needs", "ICD-10", "Creation User"));
           const tbody = document.createElement("tbody");
           if (filtered.approvedRows.length) {
             filtered.approvedRows.forEach((row) => tbody.append(buildCmeRow(row)));

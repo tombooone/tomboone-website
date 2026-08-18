@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-08-18 (v1.7.2 — live on dev, not yet on main)
+## Last updated: 2026-08-18 (v1.7.3 — live on dev, not yet on main)
 
 ---
 
@@ -45,7 +45,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.7.2** (live on dev only, not yet on main)
+- Current version: **v1.7.3** (live on dev only, not yet on main)
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
@@ -61,7 +61,7 @@ Sub-views (not home-screen tiles):
 - Only merge `dev` into `main` (which deploys tomboonern.com) when Tom explicitly says **"release"**
 - Releases happen via merging `dev` into `main` — no force pushes or rebases to `main`
 - Version bumps happen on every push, on both branches, as always
-- **Most recent release to main: v1.6.15 (2026-08-18), fast-forwarded.** `dev` is now ahead of `main` at **v1.7.2** (2026-08-18, same day) — the new Gender Reassignment Surgery CME Approval Audit tool, added at v1.7.0, patched at v1.7.1 for a header-matching bug, and refined at v1.7.2 (accordion structure, age filters, column reorder — see its own section below), plus a v1.7.2 Equipment Request Audit Creation User column, have **not** been released to production yet; they exist only on `dev`/tomboone.io until Tom says "release."
+- **Most recent release to main: v1.6.15 (2026-08-18), fast-forwarded.** `dev` is now ahead of `main` at **v1.7.3** (2026-08-18, same day) — the new Gender Reassignment Surgery CME Approval Audit tool, added at v1.7.0, patched at v1.7.1 for a header-matching bug, refined at v1.7.2 (accordion structure, age filters, column reorder), and simplified at v1.7.3 (Explanation column reduced to bare ICD-10 code — see its own section below), plus a v1.7.2 Equipment Request Audit Creation User column, have **not** been released to production yet; they exist only on `dev`/tomboone.io until Tom says "release."
 - **No external script dependencies as of v1.6.12.** `index.html` previously loaded **PDF.js** from cdnjs (added v1.5.6) solely for the OR Staffing Budget Calculator's PDF parsing; it was removed along with that tool's archival — see Archived Tools.
 
 #### v1.6.13 Release Summary (2026-07-29)
@@ -146,7 +146,7 @@ A `.items-empty-phase2-slot` div is left inside the zero-results state for a fut
 
 ---
 
-## Gender Reassignment Surgery CME Approval Audit (v1.7.0, patched v1.7.1/v1.7.2)
+## Gender Reassignment Surgery CME Approval Audit (v1.7.0, patched v1.7.1/v1.7.2/v1.7.3)
 
 New policy: gender reassignment surgeries require Chief Medical Executive approval, documented as the exact phrase "approved by CME" in the Special Needs field. This tool flags F64.x-diagnosed cases missing that exact language so gaps can be caught before the case happens. Highly sensitive (gender-identity-linked diagnosis data) — see Privacy note below.
 
@@ -168,7 +168,8 @@ New policy: gender reassignment surgeries require Chief Medical Executive approv
 3. Both tables sorted ascending by procedure date (soonest first) via the existing `sortAuditRows()`.
 
 ### Output columns
-Date, Location, Case #, Age, Procedures Scheduled, Special Needs (full text, amber `<mark>` inline via `appendCmeHighlightedText()` reusing the shared `AMBER_MARK_CSS` constant), Explanation, Creation User (**v1.7.2**: moved to rightmost, matching CPT Table 1 and the v1.7.2 Equipment Request Audit column — was previously between Procedures Scheduled and Special Needs). `.cme-approval-table` (`styles.css`) sets `table-layout: fixed` with 8 column-width rules, plus `td:nth-child(2) { white-space: nowrap; }` on Location (**v1.7.2**, copied verbatim from `.cpt-inpatient-table`'s identical rule). Explanation text templates: `"Diagnosis code {code} present; 'approved by CME' not found in Special Needs."` (clearly unapproved), `"Diagnosis code {code} present; CME-related text found but does not match required approval phrase — review manually."` (needs review), `"Diagnosis code {code} present; case is CME approved."` (approved).
+Date, Location, Case #, Age, Procedures Scheduled, Special Needs (full text, amber `<mark>` inline via `appendCmeHighlightedText()` reusing the shared `AMBER_MARK_CSS` constant), ICD-10, Creation User (**v1.7.2**: moved to rightmost, matching CPT Table 1 and the v1.7.2 Equipment Request Audit column — was previously between Procedures Scheduled and Special Needs). `.cme-approval-table` (`styles.css`) sets `table-layout: fixed` with 8 column-width rules, plus `td:nth-child(2) { white-space: nowrap; }` on Location (**v1.7.2**, copied verbatim from `.cpt-inpatient-table`'s identical rule).
+- **v1.7.3 (2026-08-18):** the 7th column — header text and underlying `row.explanation` field, built by `buildCmeExplanationCell()` in `buildCmeRow()` — was simplified from a full sentence (`"Diagnosis code {code} present; case is CME approved."` and its two unapproved/review variants) down to just the bare ICD-10 code (e.g. `"F64.9"`), since the code and which accordion section (Missing CME Approval vs. CME Approved) a row appears in already conveyed that information; the column header was renamed from "Explanation" to **"ICD-10"** to match. `row.explanation` is now set directly to `code` in all three branches of `auditCmeRows()` (approved/review/unapproved) rather than a template string — `buildCmeExplanationCell()` itself was **not** changed; it still prefixes needs-review rows with `buildQuestionableIcon()` (the amber ⚠ triangle) and colors the cell text `var(--warn)`, so the needs-review-vs-clearly-unapproved visual distinction is unaffected by the text simplification — confirmed via a CDP screenshot that the icon+amber-color treatment on the now-terse code text reads at least as clearly as it did on the full sentence (arguably more so, since the icon isn't buried at the start of a long clause anymore). Click-to-copy on that cell now copies just the code.
 
 ### v1.7.2 refinements (2026-08-18)
 - **Accordion structure**: the two tables are now wrapped in `makeAccordionSection()` — the exact same helper CPT's Table 1/Table 2 use — inside a `#cmeAccordion` div (replacing the old static `<table>` markup + separate `#cmeUnapprovedTable`/`#cmeApprovedTable` tbody elements in `index.html`). `renderCmeResults()` was split into `renderCmeResults` (stores `lastCmeResult`, resets `cmeAgeFilter` to "all", calls the two functions below) / `renderCmeFilterControls()` / `renderCmeTables()` — mirroring the CPT `renderResults`/`renderCptFilterControls`/`renderCptTables` trio exactly. Both sections default closed on every render (no sticky open/closed state across re-renders — consistent with the "no session persistence" design below).
