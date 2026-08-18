@@ -1,5 +1,5 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-08-18 (v1.7.0 — live on dev, not yet on main)
+## Last updated: 2026-08-18 (v1.7.1 — live on dev, not yet on main)
 
 ---
 
@@ -45,7 +45,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.7.0** (live on dev only, not yet on main)
+- Current version: **v1.7.1** (live on dev only, not yet on main)
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
@@ -61,7 +61,7 @@ Sub-views (not home-screen tiles):
 - Only merge `dev` into `main` (which deploys tomboonern.com) when Tom explicitly says **"release"**
 - Releases happen via merging `dev` into `main` — no force pushes or rebases to `main`
 - Version bumps happen on every push, on both branches, as always
-- **Most recent release to main: v1.6.15 (2026-08-18), fast-forwarded.** `dev` is now ahead of `main` at **v1.7.0** (2026-08-18, same day) — the new Gender Reassignment Surgery CME Approval Audit tool (see its own section below) has **not** been released to production yet; it exists only on `dev`/tomboone.io until Tom says "release."
+- **Most recent release to main: v1.6.15 (2026-08-18), fast-forwarded.** `dev` is now ahead of `main` at **v1.7.1** (2026-08-18, same day) — the new Gender Reassignment Surgery CME Approval Audit tool, added at v1.7.0 and patched at v1.7.1 for a header-matching bug (see its own section below), has **not** been released to production yet; it exists only on `dev`/tomboone.io until Tom says "release."
 - **No external script dependencies as of v1.6.12.** `index.html` previously loaded **PDF.js** from cdnjs (added v1.5.6) solely for the OR Staffing Budget Calculator's PDF parsing; it was removed along with that tool's archival — see Archived Tools.
 
 #### v1.6.13 Release Summary (2026-07-29)
@@ -154,7 +154,8 @@ New policy: gender reassignment surgeries require Chief Medical Executive approv
 
 - Fourth tile joined to the **same shared upload/prospective-date pipeline** as CPT/Equipment/Room Rules (`_runAllAudits`, `sharedAuditData`/`sharedAuditResults`, `wireAuditTool({ toolKey: "cme" })`) — one file upload runs all four audits. `renderCmeResults`/`buildCmeRow`/etc. live in a dedicated "CME Approval Audit" section in `app.js`, placed immediately before the "─── Room Rules ───" section comment; `cmeRequiredColumns` is declared alongside `requiredColumns`/`equipmentRequiredColumns` near the top of the file.
 - Home-grid tile (`#openCmeTool`) sits between "OR Schedule and Room Assignment Audit" and "VNC Stocked Supply Item Search" in `index.html`'s `.tool-grid` — a deliberate reorder, not an append.
-- **Required columns** (`cmeRequiredColumns`, `app.js`): Date, Case #, Diagnosis Codes (new — free text, ICD-10 codes bracketed inline e.g. "Gender identity disorder, unspecified [F64.9]"), Special Needs, Flightboard Procedures (new — the ORP, sourced as "Procedures Scheduled" in the UI, distinct from the free-text "Case Procedures"/"Procedures" column used elsewhere), Patient Age, Creation User (reuses the existing `formatCreationUser()` helper — same trailing-bracket-strip logic as the CPT tool's Table 1 column); Room/Department/Location optional, same three-way fallback (`formatRoomDisplay`) as CPT/Equipment. No campus filter — all campuses are in scope (unlike Room Rules' WBVC-only restriction).
+- **Required columns** (`cmeRequiredColumns`, `app.js`): Date, Case #, Diagnosis Codes (new — free text, ICD-10 codes bracketed inline e.g. "Gender identity disorder, unspecified [F64.9]"), Special Needs, Case Procedures (sourced as "Procedures Scheduled" in the UI — **not** a separate "Flightboard Procedures" column; the original v1.7.0 build guessed that name and shipped a header-matching bug as a result, see the v1.7.1 fix note below), Patient Age, Creation User (reuses the existing `formatCreationUser()` helper — same trailing-bracket-strip logic as the CPT tool's Table 1 column); Room/Department/Location optional, same three-way fallback (`formatRoomDisplay`) as CPT/Equipment. No campus filter — all campuses are in scope (unlike Room Rules' WBVC-only restriction).
+- **v1.7.1 bugfix (2026-08-18):** `proceduresScheduled`'s `accepted` list originally only matched a nonexistent "Flightboard Procedures" header. Because `findHeaderInfoForColumns()` requires every non-optional column to resolve on the same scanned row before returning anything (app.js, all-or-nothing per row), that one bad alias made the whole header match fail — and the tool's static error message (which, like every other tool's, lists all required column labels rather than diagnosing which one actually failed) made it look like all five required columns were missing when four matched fine. Fixed by pointing `proceduresScheduled`'s label/accepted list at `"Case Procedures"`, copied verbatim from `roomRulesColumns`' existing `procedures` entry: `["case procedures", "case/appt procedures (as scheduled)", "procedure name", "procedures"]` — the only other place in the app that reads this field. Verified via the same CDP-driven headless-Chrome fixture test as the v1.7.0 build, plus a spot-check that Room Rules and CPT (which also read/pass through the same uploaded rows) still audit cleanly against a fixture using the corrected header shape.
 - Same prospective-only date filter as CPT/Equipment/Room Rules: drop rows dated before tomorrow's local midnight, computed at runtime (`tomorrowMidnight.setHours(24,0,0,0)`).
 
 ### Matching logic (three-state)

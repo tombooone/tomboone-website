@@ -128,8 +128,8 @@
       },
       {
         key: "proceduresScheduled",
-        label: "Flightboard Procedures",
-        accepted: ["flightboard procedures", "flightboard procedure"]
+        label: "Case Procedures",
+        accepted: ["case procedures", "case/appt procedures (as scheduled)", "procedure name", "procedures"]
       },
       {
         key: "patientAge",
@@ -2485,7 +2485,7 @@
       }
 
       const headerInfo = findHeaderInfoForColumns(populatedRows, cmeRequiredColumns);
-      if (!headerInfo) throw new Error("Could not find the required CME approval audit columns: Diagnosis Codes, Special Needs, Flightboard Procedures, Patient Age, and Creation User.");
+      if (!headerInfo) throw new Error("Could not find the required CME approval audit columns: Diagnosis Codes, Special Needs, Case Procedures, Patient Age, and Creation User.");
       const { indexes, headerRowIndex } = headerInfo;
 
       // Prospective only: drop rows dated before tomorrow's local midnight.
