@@ -952,7 +952,8 @@
           const wrap = document.createElement("div");
           wrap.className = "table-wrap";
           const table = document.createElement("table");
-          table.append(makeTableHead("Date", "Location", "Case #", "Creation User", "Explanation"));
+          table.className = "cpt-inpatient-table";
+          table.append(makeTableHead("Date", "Location", "Case #", "Explanation", "Creation User"));
           const tbody = document.createElement("tbody");
           if (inpatientRows.length) {
             inpatientRows.forEach((row) => {
@@ -963,8 +964,8 @@
               caseCell.style.fontWeight = "700";
               makeCopyable(caseCell, row.caseNumber);
               tr.append(caseCell);
-              tr.append(td(row.creationUser || ""));
               tr.append(explanationTd(row.explanation, row.codes));
+              tr.append(td(row.creationUser || ""));
               tbody.append(tr);
             });
           } else {
