@@ -50,6 +50,11 @@
         label: "Payer",
         optional: true,
         accepted: ["payer", "primary payer", "financial class"]
+      },
+      {
+        key: "creationUser",
+        label: "Creation User",
+        accepted: ["creation user"]
       }
     ];
 
@@ -565,6 +570,12 @@
       return campus || String(rawLocation || "").trim();
     }
 
+    // Strips the trailing bracketed Epic user ID, e.g. "HARRIS, JESHURUN [S271161]" -> "HARRIS, JESHURUN".
+    // If the bracket pattern isn't present, returns the raw value unchanged.
+    function formatCreationUser(rawValue) {
+      return String(rawValue || "").replace(/\s*\[[^\]]*\]\s*$/, "").trim();
+    }
+
     function auditRows(rows) {
       const populatedRows = rows.filter(hasData);
 
@@ -598,6 +609,7 @@
         const location = formatRoomDisplay(rawRoom, rawLocation);
         const campus = deriveCampus(rawLocation);
         const payerValue = indexes.payer != null ? cell(row, indexes.payer) : "";
+        const creationUser = formatCreationUser(cell(row, indexes.creationUser));
         const orderExtract = extractCodes(insuranceInfo);
         const caseExtract = extractCodes(panelInfo);
         const orderList = orderExtract.codes;
@@ -661,6 +673,7 @@
             caseNumber,
             location,
             campus,
+            creationUser,
             codes: inpatientMatches,
             explanation: codeSentence(inpatientMatches, "listed by CMS Addendum E as inpatient-only but appears on an outpatient case")
           });
@@ -939,7 +952,7 @@
           const wrap = document.createElement("div");
           wrap.className = "table-wrap";
           const table = document.createElement("table");
-          table.append(makeTableHead("Date", "Location", "Case #", "Explanation"));
+          table.append(makeTableHead("Date", "Location", "Case #", "Creation User", "Explanation"));
           const tbody = document.createElement("tbody");
           if (inpatientRows.length) {
             inpatientRows.forEach((row) => {
@@ -950,11 +963,12 @@
               caseCell.style.fontWeight = "700";
               makeCopyable(caseCell, row.caseNumber);
               tr.append(caseCell);
+              tr.append(td(row.creationUser || ""));
               tr.append(explanationTd(row.explanation, row.codes));
               tbody.append(tr);
             });
           } else {
-            tbody.append(emptyRow(4, "No CMS inpatient-only CPT codes found on outpatient cases."));
+            tbody.append(emptyRow(5, "No CMS inpatient-only CPT codes found on outpatient cases."));
           }
           table.append(tbody);
           wrap.append(table);
