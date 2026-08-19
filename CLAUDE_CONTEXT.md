@@ -11,6 +11,7 @@
 - PHI-safe by design — the only unique identifier in schedule data is Case #
 - Always commit and push to GitHub after every change
 - Always bump the version number with every change
+- At the end of every response, write/overwrite `handoff.txt` at the repo root (gitignored, never committed) — see **Session Handoff File** below for the convention and the no-PHI rule
 
 ---
 
@@ -52,6 +53,15 @@ Sub-views (not home-screen tiles):
 - Deploy: `git add index.html styles.css rules-data.js app.js items.html items-data.js && git commit -m "message" && git push`
 - Cloudflare Web Analytics: snippet added to `<head>` in **both** `index.html` and `items.html`, wrapped in `location.hostname === 'tomboonern.com'` guard — fires only on tomboonern.com (production); tomboone.io (dev) and localhost are intentionally excluded
 - Cloudflare Pages: push to `main` auto-deploys tomboonern.com; push to `dev` auto-deploys tomboone.io
+
+---
+
+## Session Handoff File (2026-08-19)
+
+`handoff.txt` at the repo root is a standing convention so Tom can share a session's work with Claude Chat by uploading one file instead of copy-pasting. Mechanics:
+- **Gitignored, never committed.** Added to `.gitignore` alongside `node_modules/`/`package-lock.json`/`package.json`. It may reference internal implementation details not meant for public repo history, so it must never be staged or pushed.
+- **Overwritten at the end of every response**, this session and every future session — not appended, not versioned. Plain text, short paragraphs/bullets, not a raw tool-call transcript. Content: what was done, key findings, any open questions/decisions needed, verification/test results, and `git log --oneline -3` output if a commit was made that response.
+- **No PHI/PII, ever — not even from a test fixture pasted into the session.** No real patient data, no real Special Needs free text. Describe data structurally instead (e.g. "case with F64.9 diagnosis and a needs-review Special Needs match" rather than quoting the actual field content). When in doubt, leave it out and describe generically — this rule is absolute, not a judgment call to relax under time pressure.
 
 ---
 
