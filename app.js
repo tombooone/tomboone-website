@@ -797,6 +797,16 @@
       };
     }
 
+    // Resolves the display name for an equipment keyword in explanation
+    // text, honoring KEYWORD_CAMPUS_DISPLAY_OVERRIDES (rules-data.js) before
+    // falling back to the campus-agnostic KEYWORD_DISPLAY_NAMES, then the
+    // raw keyword. Does not affect matching/detection — display only.
+    function resolveEquipmentDisplayName(keyword, campus) {
+      const campusOverride = KEYWORD_CAMPUS_DISPLAY_OVERRIDES[keyword] && KEYWORD_CAMPUS_DISPLAY_OVERRIDES[keyword][campus];
+      if (campusOverride) return campusOverride;
+      return KEYWORD_DISPLAY_NAMES[keyword] || keyword;
+    }
+
     function auditEquipmentRows(rows) {
       const populatedRows = rows.filter(hasData);
 
@@ -869,7 +879,7 @@
         };
 
         if (missingTerm) {
-          const displayName = KEYWORD_DISPLAY_NAMES[missingTerm.keyword] || missingTerm.keyword;
+          const displayName = resolveEquipmentDisplayName(missingTerm.keyword, campus);
           includedRows.push({
             ...baseRow,
             flagged: true,
@@ -886,7 +896,7 @@
           // Every candidate was suppressed — nothing is flagged, but the case
           // still surfaces so the suppression trace is auditable in Details.
           const first = suppressedTraces[0];
-          const displayName = KEYWORD_DISPLAY_NAMES[first.keyword] || first.keyword;
+          const displayName = resolveEquipmentDisplayName(first.keyword, campus);
           includedRows.push({
             ...baseRow,
             flagged: false,

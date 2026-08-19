@@ -286,6 +286,17 @@
       "Neoprobe": "TruNode"
     };
 
+    // Per-campus overrides of KEYWORD_DISPLAY_NAMES, keyed by keyword then
+    // campus code. Davies (WBDE) calls the device by its literal name
+    // ("Neoprobe") rather than the TruNode brand name used everywhere else.
+    // Keyword matching itself is unaffected — this only changes which
+    // display name resolveEquipmentDisplayName() (app.js) picks for the
+    // explanation string. Add another keyword entry here if a similar
+    // per-campus override is ever needed.
+    const KEYWORD_CAMPUS_DISPLAY_OVERRIDES = {
+      "Neoprobe": { WBDE: "Neoprobe" }
+    };
+
     const SURGEON_EQUIPMENT_PREFS = {
       "300002": { ultrasound: "W Unit Ultrasound Aloka" },
       "20111453": { microscope: "W Microscope Zeiss Eye" },
