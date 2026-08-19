@@ -490,6 +490,21 @@
       border-radius: 0;
     }
 
+    /* Persistent description/warning text above an accordion table's column
+       headers (CPT Table 1's CMS IPO note, CME's Missing CME Approval note)
+       — shared class so both stay visually consistent. Left-inset to match
+       the table cells' own horizontal padding (th/td: 11px 12px) so the
+       text lines up with the table content below it, not the table-wrap's
+       flush left edge. Font-family/size unchanged from the plain-muted
+       version this replaced — only weight and color were bumped for
+       prominence. */
+    .accordion-description {
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 0.82rem;
+      margin: 0 0 10px 12px;
+    }
+
     /* Shared column-width system (v1.7.6). Columns that recur as "the
        same kind of data" across multiple audit tables get one shared
        class each, applied directly to the relevant <th>/<td> — not

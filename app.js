@@ -1109,7 +1109,7 @@
           // CME tool's accordion description note (above the column headers,
           // below the table title): a muted <p>, first child of the body.
           const note = document.createElement("p");
-          note.style.cssText = "color: var(--muted); font-size: 0.82rem; margin: 0 0 10px;";
+          note.className = "accordion-description";
           note.textContent = "CMS designates these procedures as inpatient-only. Billing or scheduling them as outpatient can result in claim denial and compliance risk. Please verify the CPT was entered correctly against the order — if correct, contact the provider to either change the case to Surgery Admit or select a non-IPO CPT.";
           body.append(note);
 
@@ -2793,7 +2793,7 @@
         filtered.unapprovedRows.length,
         (body) => {
           const note = document.createElement("p");
-          note.style.cssText = "color: var(--muted); font-size: 0.82rem; margin: 0 0 10px;";
+          note.className = "accordion-description";
           note.textContent = `Cases with a gender identity disorder diagnosis (ICD-10 F64.x) whose Special Needs field does NOT contain an accepted approval phrase ("approved by CME/CMO/CNO/CEO", or by name — Anup Singh, Hollie Seeley, or Lauren O'Neill). Rows with approval-related text that doesn't cleanly match one of these are marked for manual review.`;
           body.append(note);
 
