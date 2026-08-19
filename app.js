@@ -756,7 +756,33 @@
           if (!validCptCodes.has(code) || knownProblemSet.has(code)) return;
           if (!orderSet.has(code)) notOnOrderCodes.push(code);
         });
-        const inpatientMatches = orderList.filter((code) => inpatientOnlyCodes.has(code) && !knownProblemSet.has(code));
+        // IPO match checks BOTH sources (order and case), not just the order
+        // side — a code counts once even if it appears in both. Order-side
+        // matches are listed first, then any case-only additions, so display
+        // order stays stable/predictable.
+        const inpatientMatches = [];
+        const seenInpatientCodes = new Set();
+        [orderList, caseList].forEach((list) => {
+          list.forEach((code) => {
+            if (inpatientOnlyCodes.has(code) && !knownProblemSet.has(code) && !seenInpatientCodes.has(code)) {
+              seenInpatientCodes.add(code);
+              inpatientMatches.push(code);
+            }
+          });
+        });
+
+        // Cross-reference each IPO code against this same case's Table 2
+        // discrepancy buckets (missingCodes/notOnOrderCodes are already
+        // computed above, same loop iteration — no separate join needed).
+        // invalidCodes is deliberately never checked: an invalid code can
+        // never be an IPO code, since IPO status only applies to valid,
+        // recognized CPTs — not just deprioritized, structurally impossible.
+        const inpatientCrossRefs = inpatientMatches.map((code) => {
+          let table2State = null;
+          if (missingCodes.includes(code)) table2State = "missing";
+          else if (notOnOrderCodes.includes(code)) table2State = "notOnOrder";
+          return { code, table2State };
+        });
 
         if (missingCodes.length || notOnOrderCodes.length || invalidCodes.length) {
           discrepancyRows.push({
@@ -785,7 +811,8 @@
             campus,
             creationUser,
             codes: inpatientMatches,
-            explanation: codeSentence(inpatientMatches, "listed by CMS Addendum E as inpatient-only but appears on an outpatient case")
+            explanation: codeSentence(inpatientMatches, "listed by CMS Addendum E as inpatient-only but appears on an outpatient case"),
+            crossRefs: inpatientCrossRefs
           });
         }
       });
@@ -1078,6 +1105,14 @@
         "Table 1: Inpatient-Only CPT Codes on Outpatient Cases (Medicare)",
         inpatientRows.length,
         (body) => {
+          // Persistent description — same visual/structural position as the
+          // CME tool's accordion description note (above the column headers,
+          // below the table title): a muted <p>, first child of the body.
+          const note = document.createElement("p");
+          note.style.cssText = "color: var(--muted); font-size: 0.82rem; margin: 0 0 10px;";
+          note.textContent = "CMS designates these procedures as inpatient-only. Billing or scheduling them as outpatient can result in claim denial and compliance risk. Please verify the CPT was entered correctly against the order — if correct, contact the provider to either change the case to Surgery Admit or select a non-IPO CPT.";
+          body.append(note);
+
           const wrap = document.createElement("div");
           wrap.className = "table-wrap";
           const table = document.createElement("table");
@@ -1099,7 +1134,7 @@
               caseCell.style.fontWeight = "700";
               makeCopyable(caseCell, row.caseNumber);
               tr.append(caseCell);
-              tr.append(explanationTd(row.explanation, row.codes));
+              tr.append(buildInpatientExplanationCell(row));
               tr.append(td(row.creationUser || "", "col-creation-user"));
               tbody.append(tr);
             });
@@ -2047,6 +2082,33 @@
     function explanationTd(text, codes) {
       const el = document.createElement("td");
       appendCodeText(el, text, codes);
+      return el;
+    }
+
+    // Table 1 explanation cell: the usual bold-code sentence, plus one
+    // muted line per IPO code that also has a matching missing/not-on-order
+    // discrepancy in Table 2 (row.crossRefs, computed in auditRows() —
+    // invalid-code discrepancies are never cross-referenced there, since an
+    // invalid code can never be an IPO code). Uses "This code" when the row
+    // has only one IPO code total (matching the exact requested wording);
+    // names the specific code when a row has more than one, so multi-code
+    // rows stay unambiguous about which code the line refers to.
+    function buildInpatientExplanationCell(row) {
+      const el = document.createElement("td");
+      appendCodeText(el, row.explanation, row.codes);
+
+      const crossRefs = row.crossRefs || [];
+      const totalCodes = row.codes.length;
+      crossRefs.forEach((ref) => {
+        if (!ref.table2State) return;
+        const stateText = ref.table2State === "missing" ? "missing from case" : "not on order";
+        const subject = totalCodes > 1 ? `CPT ${ref.code}` : "This code";
+        const line = document.createElement("div");
+        line.style.cssText = "color: var(--muted); margin-top: 4px; font-size: 0.82rem;";
+        line.textContent = `${subject} also appears as ${stateText} in Table 2 — see below for details.`;
+        el.append(line);
+      });
+
       return el;
     }
 
