@@ -943,12 +943,20 @@
       return section;
     }
 
+    // Each entry is either a plain label string, or { label, className } to
+    // apply one of the shared column-width classes (.col-date/.col-location/
+    // .col-caseno/.col-creation-user — see styles.css) to that <th>.
     function makeTableHead(...labels) {
       const thead = document.createElement("thead");
       const tr = document.createElement("tr");
-      labels.forEach((label) => {
+      labels.forEach((entry) => {
         const th = document.createElement("th");
-        th.textContent = label;
+        if (typeof entry === "string") {
+          th.textContent = entry;
+        } else {
+          th.textContent = entry.label;
+          if (entry.className) th.className = entry.className;
+        }
         tr.append(th);
       });
       thead.append(tr);
@@ -1064,19 +1072,25 @@
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.className = "cpt-inpatient-table";
-          table.append(makeTableHead("Date", "Location", "Case #", "Explanation", "Creation User"));
+          table.append(makeTableHead(
+            { label: "Date", className: "col-date" },
+            { label: "Location", className: "col-location" },
+            { label: "Case #", className: "col-caseno" },
+            "Explanation",
+            { label: "Creation User", className: "col-creation-user" }
+          ));
           const tbody = document.createElement("tbody");
           if (inpatientRows.length) {
             inpatientRows.forEach((row) => {
               const tr = document.createElement("tr");
-              tr.append(td(row.date));
-              tr.append(td(row.location || ""));
-              const caseCell = td(row.caseNumber);
+              tr.append(td(row.date, "col-date"));
+              tr.append(td(row.location || "", "col-location"));
+              const caseCell = td(row.caseNumber, "col-caseno");
               caseCell.style.fontWeight = "700";
               makeCopyable(caseCell, row.caseNumber);
               tr.append(caseCell);
               tr.append(explanationTd(row.explanation, row.codes));
-              tr.append(td(row.creationUser || ""));
+              tr.append(td(row.creationUser || "", "col-creation-user"));
               tbody.append(tr);
             });
           } else {
@@ -1102,7 +1116,14 @@
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.className = "cpt-discrepancy-table";
-          table.append(makeTableHead("Date", "Location", "Case #", "On Order, Not on Case", "On Case, Not on Order", "Invalid CPT Codes"));
+          table.append(makeTableHead(
+            { label: "Date", className: "col-date" },
+            { label: "Location", className: "col-location" },
+            { label: "Case #", className: "col-caseno" },
+            "On Order, Not on Case",
+            "On Case, Not on Order",
+            "Invalid CPT Codes"
+          ));
           const tbody = document.createElement("tbody");
           if (t2Rows.length) {
             t2Rows.forEach((row) => {
@@ -1123,6 +1144,7 @@
               }, true);
 
               const dateCell = document.createElement("td");
+              dateCell.className = "col-date";
               dateCell.append(document.createTextNode(row.date || ""));
               const toggleAffordance = document.createElement("div");
               toggleAffordance.className = "equip-toggle-affordance";
@@ -1137,9 +1159,10 @@
               dateCell.append(toggleAffordance);
               tr.append(dateCell);
 
-              tr.append(td(row.location || ""));
+              tr.append(td(row.location || "", "col-location"));
 
               const caseCell = document.createElement("td");
+              caseCell.className = "col-caseno";
               const caseSpan = document.createElement("span");
               caseSpan.textContent = row.caseNumber || "";
               caseSpan.style.fontWeight = "700";
@@ -1300,6 +1323,7 @@
           tr.className = "equip-row-main";
 
           const dateCell = document.createElement("td");
+          dateCell.className = "col-date";
           dateCell.append(document.createTextNode(row.date || ""));
           const toggleAffordance = document.createElement("div");
           toggleAffordance.className = "equip-toggle-affordance";
@@ -1313,9 +1337,10 @@
           toggleAffordance.append(icon, toggleLabel);
           dateCell.append(toggleAffordance);
           tr.append(dateCell);
-          tr.append(td(row.location || ""));
+          tr.append(td(row.location || "", "col-location"));
 
           const caseCell = document.createElement("td");
+          caseCell.className = "col-caseno";
           const equipCaseSpan = document.createElement("span");
           equipCaseSpan.textContent = row.caseNumber || "";
           equipCaseSpan.style.fontWeight = "700";
@@ -1325,7 +1350,7 @@
           tr.append(td(row.surgeon || ""));
           tr.append(td(row.specialNeeds));
           tr.append(buildEquipmentExplanationCell(row));
-          tr.append(td(row.creationUser || ""));
+          tr.append(td(row.creationUser || "", "col-creation-user"));
 
           // Detail row (hidden until expanded)
           const detailTr = document.createElement("tr");
@@ -2704,7 +2729,16 @@
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.className = "cme-approval-table";
-          table.append(makeTableHead("Date", "Location", "Case #", "Age", "Procedures Scheduled", "Special Needs", "ICD-10", "Creation User"));
+          table.append(makeTableHead(
+            { label: "Date", className: "col-date" },
+            { label: "Location", className: "col-location" },
+            { label: "Case #", className: "col-caseno" },
+            { label: "Age", className: "col-age" },
+            "Procedures Scheduled",
+            "Special Needs",
+            { label: "ICD-10", className: "col-icd10" },
+            { label: "Creation User", className: "col-creation-user" }
+          ));
           const tbody = document.createElement("tbody");
           if (filtered.unapprovedRows.length) {
             filtered.unapprovedRows.forEach((row) => tbody.append(buildCmeRow(row)));
@@ -2725,7 +2759,16 @@
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.className = "cme-approval-table";
-          table.append(makeTableHead("Date", "Location", "Case #", "Age", "Procedures Scheduled", "Special Needs", "ICD-10", "Creation User"));
+          table.append(makeTableHead(
+            { label: "Date", className: "col-date" },
+            { label: "Location", className: "col-location" },
+            { label: "Case #", className: "col-caseno" },
+            { label: "Age", className: "col-age" },
+            "Procedures Scheduled",
+            "Special Needs",
+            { label: "ICD-10", className: "col-icd10" },
+            { label: "Creation User", className: "col-creation-user" }
+          ));
           const tbody = document.createElement("tbody");
           if (filtered.approvedRows.length) {
             filtered.approvedRows.forEach((row) => tbody.append(buildCmeRow(row)));
@@ -2741,10 +2784,11 @@
 
     function buildCmeRow(row) {
       const tr = document.createElement("tr");
-      tr.append(td(row.date || ""));
-      tr.append(td(row.location || ""));
+      tr.append(td(row.date || "", "col-date"));
+      tr.append(td(row.location || "", "col-location"));
 
       const caseCell = document.createElement("td");
+      caseCell.className = "col-caseno";
       const caseSpan = document.createElement("span");
       caseSpan.textContent = row.caseNumber || "";
       caseSpan.style.fontWeight = "700";
@@ -2752,7 +2796,7 @@
       caseCell.append(caseSpan);
       tr.append(caseCell);
 
-      tr.append(td(row.age !== null && row.age !== undefined ? String(row.age) : ""));
+      tr.append(td(row.age !== null && row.age !== undefined ? String(row.age) : "", "col-age"));
       tr.append(td(row.procedures || ""));
 
       const snCell = document.createElement("td");
@@ -2760,7 +2804,7 @@
       tr.append(snCell);
 
       tr.append(buildCmeExplanationCell(row));
-      tr.append(td(row.creationUser || ""));
+      tr.append(td(row.creationUser || "", "col-creation-user"));
 
       return tr;
     }
@@ -2799,6 +2843,7 @@
     // text is no longer a single sentence to prefix.
     function buildCmeExplanationCell(row) {
       const el = document.createElement("td");
+      el.className = "col-icd10";
       el.style.cursor = "pointer";
 
       const wrap = document.createElement("div");
@@ -3704,12 +3749,12 @@
         tr.className = `violation-tier-${grp.minTier}`;
         tr.dataset.sortDate = String(grp.sortDate);
         tr.dataset.caseNum = String(grp.caseNumber);
-        const violCaseCell = td(first.caseNumber);
+        const violCaseCell = td(first.caseNumber, "col-caseno");
         violCaseCell.style.fontWeight = "700";
         tr.append(violCaseCell);
-        tr.append(td(first.date));
+        tr.append(td(first.date, "col-date"));
         tr.append(td(first.surgeon));
-        tr.append(td(first.room));
+        tr.append(td(first.room, "col-room"));
         tr.append(td(first.procedures));
         const severityCell = document.createElement("td");
         const topBadge = document.createElement("span");

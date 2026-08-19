@@ -490,33 +490,57 @@
       border-radius: 0;
     }
 
+    /* Shared column-width system (v1.7.6). Columns that recur as "the
+       same kind of data" across multiple audit tables get one shared
+       class each, applied directly to the relevant <th>/<td> — not
+       nth-child, since column order differs between tables (e.g. Room
+       Rules puts Case # before Date). Sized in ch (content-relative)
+       rather than % since tables have different total column counts
+       and percentages don't translate between them. Every table using
+       these needs `table-layout: fixed` — under fixed layout, columns
+       without an explicit width (Explanation/Special Needs/Procedures
+       Scheduled/Equipment/the CPT Table 2 code-list columns — all
+       free-text/long-content by design) automatically split the
+       remaining space, which is the desired "flex" behavior for them.
+       See CLAUDE_CONTEXT.md for the full column-membership table. */
+    .col-date {
+      width: 15ch;
+      white-space: nowrap;
+    }
+    .col-location {
+      width: 18ch;
+      /* Intentionally NOT nowrap — the common "WBVC OR 05" pattern fits
+         on one line at this width, but a minority of genuinely long
+         free-text location names (e.g. "WBMB MINOR PROCEDURE ROOM 2")
+         are expected/acceptable to wrap rather than forcing the column
+         wide enough to fit every edge case on one line. */
+    }
+    .col-caseno {
+      width: 12ch;
+      white-space: nowrap;
+    }
+    .col-creation-user {
+      width: 14ch;
+      /* Not nowrap — a two-line "LASTNAME, FIRSTNAME" wrap is expected
+         and acceptable here, same as the pre-refactor CME treatment. */
+    }
+
+    /* Single-table-scoped narrow columns — NOT shared across tables,
+       so no .col-* reuse elsewhere, but ch-sized the same way for
+       consistency with the shared columns above. */
+    .cme-approval-table .col-age { width: 6ch; }
+    /* Wide enough for the code text AND the needs-review ⚠ icon
+       (buildQuestionableIcon(), 15px + 5px margin) that sits beside it
+       in a flex row on review rows — 8ch fit the bare code but
+       overflowed once the icon was added. */
+    .cme-approval-table .col-icd10 { width: 13ch; }
+    .room-rules-table .col-room { width: 8ch; white-space: nowrap; }
+
+    .cpt-inpatient-table { table-layout: fixed; }
     .cpt-discrepancy-table { table-layout: fixed; }
-    .cpt-discrepancy-table th:nth-child(1) { width: 8%; }
-    .cpt-discrepancy-table th:nth-child(2) { width: 10%; }
-    .cpt-discrepancy-table th:nth-child(3) { width: 9%; }
-    .cpt-discrepancy-table th:nth-child(4) { width: 25%; }
-    .cpt-discrepancy-table th:nth-child(5) { width: 25%; }
-    .cpt-discrepancy-table th:nth-child(6) { width: 23%; }
-
-    .equipment-missing-table th:nth-child(1) { width: 7%; }
-    .equipment-missing-table th:nth-child(2) { width: 10%; }
-    .equipment-missing-table th:nth-child(3) { width: 8%; }
-    .equipment-missing-table th:nth-child(4) { width: 10%; }
-    .equipment-missing-table th:nth-child(5) { width: 25%; }
-    .equipment-missing-table th:nth-child(6) { width: 28%; }
-    .equipment-missing-table th:nth-child(7) { width: 12%; }
-
+    .equipment-missing-table { table-layout: fixed; }
     .cme-approval-table { table-layout: fixed; }
-    .cme-approval-table th:nth-child(1) { width: 12%; }
-    .cme-approval-table th:nth-child(2) { width: 9%; }
-    .cme-approval-table th:nth-child(3) { width: 7%; }
-    .cme-approval-table th:nth-child(4) { width: 5%; }
-    .cme-approval-table th:nth-child(5) { width: 15%; }
-    .cme-approval-table th:nth-child(6) { width: 25%; }
-    .cme-approval-table th:nth-child(7) { width: 7%; }
-    .cme-approval-table th:nth-child(8) { width: 20%; }
-    .cme-approval-table td:nth-child(1) { white-space: nowrap; }
-    .cme-approval-table td:nth-child(2) { white-space: nowrap; }
+    .room-rules-table { table-layout: fixed; }
 
     .cme-icd10-stack {
       display: flex;
@@ -643,9 +667,12 @@
     /* ── Violation table rows are clickable ──────────────────────── */
     tr[class*="violation-tier"] { cursor: pointer; }
     tr[class*="violation-tier"]:hover td { filter: brightness(0.94); }
-    tr[class*="violation-tier"] td:nth-child(4) { white-space: nowrap; }
-    .equip-row-main td:nth-child(2) { white-space: nowrap; }
-    .cpt-inpatient-table td:nth-child(2) { white-space: nowrap; }
+    /* Room/Location nowrap now comes from .col-room/.col-date/.col-caseno/
+       .col-creation-user (see the shared column-width system above) —
+       Location is deliberately NOT nowrap, so its old nth-child(2) rule
+       (which applied to both Equipment's and CPT Table 2's rows via the
+       shared .equip-row-main class) and CPT Table 1's equivalent rule
+       were removed rather than migrated. */
 
     /* ── Gantt block highlight (from table row click) ────────────── */
     @keyframes gantt-highlight-pulse {
