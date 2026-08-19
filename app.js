@@ -2430,15 +2430,44 @@
 
     // ─── CME Approval Audit (Gender Reassignment Surgery) ─────────────────────
     // Flags cases with an F64.x (gender identity disorder) diagnosis whose
-    // Special Needs field is missing the exact required approval phrase
-    // "approved by CME". Three-state outcome per case:
-    //   - approved: exact phrase found -> CME Approved table
-    //   - unapproved: no CME mention at all -> Missing CME Approval table
-    //   - review: "CME" appears but not as the exact required phrase (e.g.
-    //     "CME notified", "pending CME") -> Missing CME Approval table,
-    //     marked with the same amber ⚠ "questionable" treatment the Equipment
-    //     Request Audit uses for uncertain negation matches (buildQuestionableIcon()).
+    // Special Needs field is missing an accepted approval phrase. Three-state
+    // outcome per case:
+    //   - approved: exact "approved by <authority>" phrase found for one of
+    //     CME_APPROVAL_AUTHORITIES -> CME Approved table
+    //   - unapproved: no authority-related text at all -> Missing CME Approval table
+    //   - review: authority-related text present but not a clean "approved by
+    //     <authority>" match (e.g. "CME notified", "approved by" with no
+    //     recognized name/role following, a typo'd name) -> Missing CME
+    //     Approval table, marked with the same amber ⚠ "questionable"
+    //     treatment the Equipment Request Audit uses for uncertain negation
+    //     matches (buildQuestionableIcon()).
     let lastCmeResult = null;
+
+    // Accepted approving authorities (v1.7.4): any of these following
+    // "approved by " counts as a clean approval, same phrase structure and
+    // strictness as the original CME-only check. `pattern` is a regex
+    // fragment (lowercase, `\s+` between words) — apostrophe/spacing in
+    // "O'Neill" is tolerated via `['’]?\s*` so "O'Neill"/"ONeill"/"O Neill"
+    // all match; no other spelling variation is tolerated (matches typed by
+    // hand should be flagged for review, not guessed at).
+    const CME_APPROVAL_AUTHORITIES = [
+      { name: "CME", pattern: "cme" },
+      { name: "CMO", pattern: "cmo" },
+      { name: "CNO", pattern: "cno" },
+      { name: "CEO", pattern: "ceo" },
+      { name: "Anup Singh", pattern: "anup\\s+singh" },
+      { name: "Hollie Seeley", pattern: "hollie\\s+seeley" },
+      { name: "Lauren O'Neill", pattern: "lauren\\s+o['’]?\\s*neill" }
+    ];
+
+    // Word-boundary-safe wrapper for a short/name token, reusing the exact
+    // lookaround shape VNC Item Search's matchesTerm() uses for short-token
+    // matching (items.html) — prevents e.g. "CMO" matching inside
+    // "CMOnitoring" or "CNO" inside "CNOted", and likewise prevents a name
+    // matching as a prefix of a longer word (e.g. "Singh" in "Singhal").
+    function boundarySafe(pattern) {
+      return `(?<![a-z0-9])${pattern}(?![a-z0-9])`;
+    }
 
     // Extracts the bracketed diagnosis code containing "F64" from free text
     // like "Gender identity disorder, unspecified [F64.9]". Falls back to a
@@ -2454,33 +2483,67 @@
       return fallback ? fallback[0].toUpperCase() : "F64";
     }
 
-    // Classifies a case's CME approval state from its Special Needs text.
-    // "approved by CME" is matched case-insensitively, tolerant only of
-    // whitespace variation between the words (intentionally not fuzzy —
-    // typos or reworded phrasing do not count). If that exact phrase isn't
-    // present but a standalone "CME" mention is, the surrounding delimited
-    // clause (split on . ; , or newline) is returned as the highlight span
-    // for manual review.
-    function findCmeApprovalMatch(specialNeedsText) {
-      const text = String(specialNeedsText || "");
-      const approvedRe = /approved\s+by\s+cme/i;
-      const approvedMatch = approvedRe.exec(text);
-      if (approvedMatch) {
-        return { state: "approved", start: approvedMatch.index, end: approvedMatch.index + approvedMatch[0].length };
-      }
-
-      const cmeRe = /\bcme\b/i;
-      const cmeMatch = cmeRe.exec(text);
-      if (!cmeMatch) return { state: "unapproved" };
-
-      const before = text.slice(0, cmeMatch.index);
-      const after = text.slice(cmeMatch.index + cmeMatch[0].length);
+    // Returns the delimited clause (split on . ; , or newline, trimmed)
+    // surrounding a match at [index, index+length) — same clause-extraction
+    // logic used since v1.7.0, now shared by every review-state trigger.
+    function extractClauseSpan(text, index, length) {
+      const before = text.slice(0, index);
+      const after = text.slice(index + length);
       const leftBreak = Math.max(before.lastIndexOf("."), before.lastIndexOf(";"), before.lastIndexOf(","), before.lastIndexOf("\n"));
       const rightBreakRel = after.search(/[.;,\n]/);
       let start = leftBreak + 1;
-      let end = rightBreakRel === -1 ? text.length : cmeMatch.index + cmeMatch[0].length + rightBreakRel;
+      let end = rightBreakRel === -1 ? text.length : index + length + rightBreakRel;
       while (start < end && /\s/.test(text[start])) start += 1;
       while (end > start && /\s/.test(text[end - 1])) end -= 1;
+      return { start, end };
+    }
+
+    // Classifies a case's CME approval state from its Special Needs text.
+    // "approved by <authority>" is matched case-insensitively for each
+    // authority in CME_APPROVAL_AUTHORITIES, tolerant only of whitespace
+    // variation between words (plus the specific O'Neill punctuation
+    // variants above) — intentionally not fuzzy; typos or reworded phrasing
+    // do not count. If no authority cleanly matches, but either a literal
+    // "approved by" phrase or a bare mention of one of the authority tokens
+    // is present anywhere in the text, the surrounding clause is returned as
+    // the highlight span for manual review (whichever signal occurs first).
+    function findCmeApprovalMatch(specialNeedsText) {
+      const text = String(specialNeedsText || "");
+
+      let approved = null;
+      for (const authority of CME_APPROVAL_AUTHORITIES) {
+        const re = new RegExp(`approved\\s+by\\s+${boundarySafe(authority.pattern)}`, "i");
+        const m = re.exec(text);
+        if (m && (!approved || m.index < approved.index)) {
+          approved = { index: m.index, length: m[0].length, authority: authority.name };
+        }
+      }
+      if (approved) {
+        return { state: "approved", start: approved.index, end: approved.index + approved.length, authority: approved.authority };
+      }
+
+      // No clean match. Review-worthy signals: a literal "approved by" that
+      // didn't resolve to a known authority (typo/unrecognized name/no name
+      // at all), or a bare mention of any authority token elsewhere in the
+      // text (e.g. "CME notified but pending", no "approved by" nearby).
+      const approvedByMatch = /approved\s+by\b/i.exec(text);
+
+      let bareToken = null;
+      for (const authority of CME_APPROVAL_AUTHORITIES) {
+        const re = new RegExp(boundarySafe(authority.pattern), "i");
+        const m = re.exec(text);
+        if (m && (!bareToken || m.index < bareToken.index)) {
+          bareToken = { index: m.index, length: m[0].length };
+        }
+      }
+
+      const candidates = [approvedByMatch && { index: approvedByMatch.index, length: approvedByMatch[0].length }, bareToken]
+        .filter(Boolean)
+        .sort((a, b) => a.index - b.index);
+      if (!candidates.length) return { state: "unapproved" };
+
+      const seed = candidates[0];
+      const { start, end } = extractClauseSpan(text, seed.index, seed.length);
       return { state: "review", start, end };
     }
 
@@ -2624,7 +2687,7 @@
         (body) => {
           const note = document.createElement("p");
           note.style.cssText = "color: var(--muted); font-size: 0.82rem; margin: 0 0 10px;";
-          note.textContent = `Cases with a gender identity disorder diagnosis (ICD-10 F64.x) whose Special Needs field does NOT contain the exact phrase "approved by CME". Rows with CME-related text that doesn't match the required phrase are marked for manual review.`;
+          note.textContent = `Cases with a gender identity disorder diagnosis (ICD-10 F64.x) whose Special Needs field does NOT contain an accepted approval phrase ("approved by CME/CMO/CNO/CEO", or by name — Anup Singh, Hollie Seeley, or Lauren O'Neill). Rows with approval-related text that doesn't cleanly match one of these are marked for manual review.`;
           body.append(note);
 
           const wrap = document.createElement("div");
@@ -2723,7 +2786,7 @@
       el.style.cursor = "pointer";
       if (row.needsReview) {
         const iconWrap = document.createElement("span");
-        iconWrap.title = "CME-related text found but does not match the required approval phrase — review in context";
+        iconWrap.title = "Approval-related text found but does not cleanly match an accepted approval phrase — review in context";
         iconWrap.append(buildQuestionableIcon());
         el.append(iconWrap);
         const text = document.createElement("span");
