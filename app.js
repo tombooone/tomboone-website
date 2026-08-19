@@ -466,6 +466,7 @@
       document.getElementById("equipmentTermsView").classList.toggle("active", viewName === "equipmentTerms");
       document.getElementById("ruleInfoView").classList.toggle("active", viewName === "ruleInfo");
       document.getElementById("knownProblemCptsView").classList.toggle("active", viewName === "knownProblemCpts");
+      document.getElementById("cmeApproversView").classList.toggle("active", viewName === "cmeApprovers");
       if (viewName === "audit" && _cptTool) _cptTool.showFromShared();
       if (viewName === "equipment" && _equipTool) _equipTool.showFromShared();
       if (viewName === "cme" && _cmeTool) _cmeTool.showFromShared();
@@ -473,6 +474,7 @@
       if (viewName === "ruleManagement") buildRuleManagementView();
       if (viewName === "equipmentTerms") buildEquipmentTermsView();
       if (viewName === "knownProblemCpts") buildKnownProblemCptsView();
+      if (viewName === "cmeApprovers") buildCmeApproversView();
     }
 
     function wireAuditTool({ fileInput, runButton, clearButton, statusEl, resultsPanel, tables, toolKey }) {
@@ -2469,18 +2471,28 @@
       return `(?<![a-z0-9])${pattern}(?![a-z0-9])`;
     }
 
-    // Extracts the bracketed diagnosis code containing "F64" from free text
-    // like "Gender identity disorder, unspecified [F64.9]". Falls back to a
-    // bare F64(.x) match if no bracket is present.
-    function extractF64Code(diagnosisText) {
+    // Extracts every bracketed diagnosis code containing "F64" from free
+    // text like "Gender identity disorder, unspecified [F64.9]" — a case's
+    // Diagnosis Codes field may list more than one F64.x subtype, and all
+    // of them should surface (deduplicated, in order of first appearance),
+    // not just the first. Falls back to a single bare F64(.x) match if no
+    // bracket is present.
+    function extractF64Codes(diagnosisText) {
       const text = String(diagnosisText || "");
       const bracketMatches = text.match(/\[([^\]]+)\]/g) || [];
+      const codes = [];
+      const seen = new Set();
       for (const b of bracketMatches) {
         const inner = b.slice(1, -1).trim();
-        if (/F64/i.test(inner)) return inner;
+        const key = inner.toUpperCase();
+        if (/F64/i.test(inner) && !seen.has(key)) {
+          seen.add(key);
+          codes.push(inner);
+        }
       }
+      if (codes.length) return codes;
       const fallback = text.match(/F64(?:\.\d+)?/i);
-      return fallback ? fallback[0].toUpperCase() : "F64";
+      return fallback ? [fallback[0].toUpperCase()] : ["F64"];
     }
 
     // Returns the delimited clause (split on . ; , or newline, trimmed)
@@ -2572,7 +2584,7 @@
         const diagnosisCodes = cell(row, indexes.diagnosisCodes);
         if (!/F64/i.test(diagnosisCodes)) return;
 
-        const code = extractF64Code(diagnosisCodes);
+        const codes = extractF64Codes(diagnosisCodes);
         const specialNeeds = cell(row, indexes.specialNeeds);
         const match = findCmeApprovalMatch(specialNeeds);
         const dateValue = parseDateCell(cell(row, indexes.date));
@@ -2589,7 +2601,8 @@
           procedures: cell(row, indexes.proceduresScheduled),
           creationUser: formatCreationUser(cell(row, indexes.creationUser)),
           specialNeeds,
-          code
+          codes,
+          explanation: codes.join(", ")
         };
 
         if (match.state === "approved") {
@@ -2597,22 +2610,19 @@
             ...baseRow,
             needsReview: false,
             matchStart: match.start,
-            matchEnd: match.end,
-            explanation: code
+            matchEnd: match.end
           });
         } else if (match.state === "review") {
           unapprovedRows.push({
             ...baseRow,
             needsReview: true,
             matchStart: match.start,
-            matchEnd: match.end,
-            explanation: code
+            matchEnd: match.end
           });
         } else {
           unapprovedRows.push({
             ...baseRow,
-            needsReview: false,
-            explanation: code
+            needsReview: false
           });
         }
       });
@@ -2781,21 +2791,40 @@
     // Equipment Request Audit's QUESTIONABLE state (buildQuestionableIcon()):
     // icon prefix plus amber-colored explanation text, distinguishing an
     // attempted-but-malformed approval note from a clean non-match.
+    // Renders the ICD-10 cell as one code per line (row.codes — a case can
+    // list more than one F64.x subtype) rather than a single string, so a
+    // narrow column never has to wrap a code mid-string; each code is its
+    // own block-level line with white-space: nowrap. The needs-review ⚠
+    // icon sits alongside the stack, not inline with the text, since the
+    // text is no longer a single sentence to prefix.
     function buildCmeExplanationCell(row) {
       const el = document.createElement("td");
       el.style.cursor = "pointer";
+
+      const wrap = document.createElement("div");
+      wrap.style.cssText = "display:flex; align-items:flex-start; gap:4px;";
+
       if (row.needsReview) {
         const iconWrap = document.createElement("span");
         iconWrap.title = "Approval-related text found but does not cleanly match an accepted approval phrase — review in context";
+        iconWrap.style.flexShrink = "0";
         iconWrap.append(buildQuestionableIcon());
-        el.append(iconWrap);
-        const text = document.createElement("span");
-        text.style.color = "var(--warn)";
-        text.textContent = row.explanation || "";
-        el.append(text);
-      } else {
-        el.append(document.createTextNode(row.explanation || ""));
+        wrap.append(iconWrap);
       }
+
+      const codeStack = document.createElement("div");
+      codeStack.className = "cme-icd10-stack";
+      const codeList = (row.codes && row.codes.length) ? row.codes : [row.explanation || ""];
+      codeList.forEach((code) => {
+        const line = document.createElement("div");
+        line.className = "cme-icd10-code";
+        if (row.needsReview) line.style.color = "var(--warn)";
+        line.textContent = code;
+        codeStack.append(line);
+      });
+      wrap.append(codeStack);
+      el.append(wrap);
+
       el.addEventListener("click", (e) => {
         e.stopPropagation();
         navigator.clipboard.writeText(row.explanation || "").then(() => showToast("Copied"));
@@ -2894,6 +2923,8 @@
     document.getElementById("knownProblemCptsBack").addEventListener("click", () => showView("audit"));
     document.getElementById("viewEquipmentTermsBtn").addEventListener("click", () => showView("equipmentTerms"));
     document.getElementById("equipmentTermsBack").addEventListener("click", () => showView("equipment"));
+    document.getElementById("viewCmeApproversBtn").addEventListener("click", () => showView("cmeApprovers"));
+    document.getElementById("cmeApproversBack").addEventListener("click", () => showView("cme"));
     document.getElementById("suggestEquipmentBtn").addEventListener("click", () => {
       window.location.href = "mailto:Thomas.Boone@SutterHealth.org?subject=Equipment%20Term%20Suggestion&body=SUGGESTED%20TERM%3A%20%0A%0AThis%20is%20a%20suggestion%20to%20add%20a%20new%20equipment%20term%20to%20the%20audit%20keyword%20list.";
     });
@@ -3172,6 +3203,25 @@
         section.append(cards);
         content.append(section);
       });
+    }
+
+    // Reads directly from CME_APPROVAL_AUTHORITIES (the same array
+    // findCmeApprovalMatch() matches against) — no duplicate hardcoded
+    // list, so this view automatically reflects any future change to
+    // the accepted-authority list.
+    function buildCmeApproversView() {
+      const content = document.getElementById("cmeApproversContent");
+      if (!content) return;
+      content.textContent = "";
+      const list = document.createElement("div");
+      list.className = "keyword-list";
+      CME_APPROVAL_AUTHORITIES.forEach((authority) => {
+        const pill = document.createElement("span");
+        pill.className = "keyword-pill";
+        pill.textContent = authority.name;
+        list.append(pill);
+      });
+      content.append(list);
     }
 
     function buildEquipmentTermsView() {

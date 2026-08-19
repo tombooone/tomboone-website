@@ -507,15 +507,26 @@
     .equipment-missing-table th:nth-child(7) { width: 12%; }
 
     .cme-approval-table { table-layout: fixed; }
-    .cme-approval-table th:nth-child(1) { width: 7%; }
+    .cme-approval-table th:nth-child(1) { width: 12%; }
     .cme-approval-table th:nth-child(2) { width: 9%; }
     .cme-approval-table th:nth-child(3) { width: 7%; }
     .cme-approval-table th:nth-child(4) { width: 5%; }
-    .cme-approval-table th:nth-child(5) { width: 16%; }
-    .cme-approval-table th:nth-child(6) { width: 22%; }
-    .cme-approval-table th:nth-child(7) { width: 22%; }
-    .cme-approval-table th:nth-child(8) { width: 12%; }
+    .cme-approval-table th:nth-child(5) { width: 15%; }
+    .cme-approval-table th:nth-child(6) { width: 25%; }
+    .cme-approval-table th:nth-child(7) { width: 7%; }
+    .cme-approval-table th:nth-child(8) { width: 20%; }
+    .cme-approval-table td:nth-child(1) { white-space: nowrap; }
     .cme-approval-table td:nth-child(2) { white-space: nowrap; }
+
+    .cme-icd10-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+    .cme-icd10-code {
+      white-space: nowrap;
+    }
 
     .table-wrap {
       overflow-x: auto;
