@@ -497,12 +497,17 @@
        text lines up with the table content below it, not the table-wrap's
        flush left edge. Font-family/size unchanged from the plain-muted
        version this replaced — only weight and color were bumped for
-       prominence. */
+       prominence. Vertical padding is symmetric (12px top and bottom) —
+       .accordion-body has no padding of its own, so without this the note
+       (as the body's first child) sat flush against the header's bottom
+       border with no top breathing room at all, while still keeping its
+       old bottom margin — a visibly top-heavy, cramped result. */
     .accordion-description {
       color: var(--ink);
       font-weight: 700;
       font-size: 0.82rem;
-      margin: 0 0 10px 12px;
+      margin: 0;
+      padding: 12px 0 12px 12px;
     }
 
     /* Shared column-width system (v1.7.6). Columns that recur as "the

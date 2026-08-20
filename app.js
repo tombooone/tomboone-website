@@ -2089,23 +2089,22 @@
     // muted line per IPO code that also has a matching missing/not-on-order
     // discrepancy in Table 2 (row.crossRefs, computed in auditRows() —
     // invalid-code discrepancies are never cross-referenced there, since an
-    // invalid code can never be an IPO code). Uses "This code" when the row
-    // has only one IPO code total (matching the exact requested wording);
-    // names the specific code when a row has more than one, so multi-code
-    // rows stay unambiguous about which code the line refers to.
+    // invalid code can never be an IPO code). Wording mirrors Table 2's own
+    // "on order"/"on case" framing and always names the specific code, so
+    // it stays unambiguous regardless of how many IPO codes a row has.
     function buildInpatientExplanationCell(row) {
       const el = document.createElement("td");
       appendCodeText(el, row.explanation, row.codes);
 
       const crossRefs = row.crossRefs || [];
-      const totalCodes = row.codes.length;
       crossRefs.forEach((ref) => {
         if (!ref.table2State) return;
-        const stateText = ref.table2State === "missing" ? "missing from case" : "not on order";
-        const subject = totalCodes > 1 ? `CPT ${ref.code}` : "This code";
+        const message = ref.table2State === "missing"
+          ? `Please review: CPT ${ref.code} is listed on the surgical order but is missing from the case's CPT codes.`
+          : `Please review: CPT ${ref.code} is on the case's CPT codes but is missing from the surgical order.`;
         const line = document.createElement("div");
         line.style.cssText = "color: var(--muted); margin-top: 4px; font-size: 0.82rem;";
-        line.textContent = `${subject} also appears as ${stateText} in Table 2 — see below for details.`;
+        line.textContent = message;
         el.append(line);
       });
 
