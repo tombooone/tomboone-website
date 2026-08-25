@@ -303,7 +303,7 @@
     // any rendering yet.
     const SERVICE_EMOJI = {
       "Cardiac": "🫀",
-      "Cardiology": "🫀",
+      "Cardiology": "🫥",
       "Dental": "🦷",
       "ENT": "👂🏼",
       "Gastroenterology": "🔬",
@@ -317,7 +317,7 @@
       "Orthopedics": "🦴",
       "Pain Management": "💉",
       "Pediatric General": "🧸",
-      "Plastics": "🎨",
+      "Plastics": "♴",
       "Podiatry": "🦶",
       "Radiation Oncology": "☢️",
       "Robotics": "🤖",
