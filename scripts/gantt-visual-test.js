@@ -6,9 +6,13 @@
  * Chrome install headlessly against index.html, uploads the fixture into the
  * Room Rules tool, and asserts on the rendered Gantt: service emoji, robot
  * badges (case-level and room-level), the 3-light "x3" indicator, the Icon
- * Legend, the service-switching cue (including the Gynecology/Obstetrics
- * suppression pair), the hidden-but-still-rendering violations table, and
- * bracketed-procedure-ID stripping on case blocks.
+ * Legend (position below the Gantt, ~7-column layout, alphabetical service
+ * ordering with the three special entries after it, simplified label text),
+ * the service-switching cue (icon-above-a-line seam design, including the
+ * Gynecology/Obstetrics suppression pair and a stress test against 0-minute-
+ * gap back-to-back cases modeled on OR6/OR10's real density), the
+ * hidden-but-still-rendering violations table, and bracketed-procedure-ID
+ * stripping on case blocks.
  *
  * This is the first committed browser-testing script in this repo (prior
  * sessions used throwaway scratchpad scripts) — reuse/extend this one for
@@ -91,7 +95,9 @@ const rows = [
   ["9000003", DATE, "WBVC OR 05", "Robotic partial nephrectomy", "DaVinci Robot SP", "48 yrs",
    "Urology", "Lin, David, MD [107858]", "07:30:00", "10:00:00", "07:45:00", "09:45:00",
    "Outpatient", "Scheduled", "Elective"],
-  // OR10: General -> General -> Vascular (one switch cue, between the last two only).
+  // OR10: General -> General -> Vascular (one switch cue, between the last two
+  // only). Back-to-back turnover (0-minute gap) between the last two, modeled
+  // on OR10's real tight density — stress-tests the seam at its tightest.
   ["9000004", DATE, "WBVC OR 10", "Hernia repair", "", "50 yrs",
    "General", "Jossart, Karl, MD [105751]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
    "Outpatient", "Scheduled", "Elective"],
@@ -99,7 +105,15 @@ const rows = [
    "General", "Jossart, Karl, MD [105751]", "09:15:00", "10:45:00", "09:30:00", "10:30:00",
    "Outpatient", "Scheduled", "Elective"],
   ["9000006", DATE, "WBVC OR 10", "Varicose vein stripping", "", "58 yrs",
-   "Vascular", "Jossart, Karl, MD [105751]", "11:00:00", "12:30:00", "11:15:00", "12:15:00",
+   "Vascular", "Jossart, Karl, MD [105751]", "10:45:00", "12:15:00", "11:00:00", "12:00:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // OR6: back-to-back (0-minute gap) service change, modeled on OR6's real
+  // tight density — the other explicit stress-test room requested.
+  ["9000011", DATE, "WBVC OR 06", "Kidney transplant", "Cooler Donor", "42 yrs",
+   "Transplant", "Weber, Susan, MD [105621]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000012", DATE, "WBVC OR 06", "Hernia repair", "", "47 yrs",
+   "General", "Weber, Susan, MD [105621]", "09:00:00", "10:30:00", "09:15:00", "10:15:00",
    "Outpatient", "Scheduled", "Elective"],
   // OR9: service absent from SERVICE_EMOJI — graceful no-emoji fallback.
   ["9000007", DATE, "WBVC OR 09", "Trauma exploratory laparotomy", "", "40 yrs",
@@ -170,10 +184,29 @@ XLSX.writeFile(wb, fixturePath);
       surgeonHTML: b.querySelector(".gantt-block-surgeon")?.innerHTML || "",
       proctxt: b.querySelector(".gantt-block-proctxt")?.textContent || ""
     }));
-    const switchCount = document.querySelectorAll(".gantt-service-switch").length;
-    const legendEntries = [...document.querySelectorAll(".gantt-icon-legend-entry")].map(
-      (el) => el.textContent.trim()
-    );
+    const switchMarkers = [...document.querySelectorAll(".gantt-service-switch")];
+    const switchCount = switchMarkers.length;
+    const switchesHaveIconAndLine = switchMarkers.every((m) =>
+      m.querySelector(".gantt-service-switch-icon") && m.querySelector(".gantt-service-switch-line"));
+    const switchLineColor = switchMarkers.length
+      ? getComputedStyle(switchMarkers[0].querySelector(".gantt-service-switch-line")).backgroundColor
+      : null;
+
+    // Label-only text (last child span), not the whole entry's textContent —
+    // the icon/superscript children (e.g. "DV5/SP") would otherwise get
+    // concatenated into the label text since textContent ignores structure.
+    const legendEntryEls = [...document.querySelectorAll(".gantt-icon-legend-entry")];
+    const legendEntries = legendEntryEls.map((el) => el.lastElementChild?.textContent.trim() || "");
+    const legendGridColumns = document.getElementById("ganttIconLegendGrid")
+      ? getComputedStyle(document.getElementById("ganttIconLegendGrid")).gridTemplateColumns.split(" ").length
+      : 0;
+    const legendIsAfterGantt = (() => {
+      const legend = document.getElementById("ganttIconLegend");
+      const gantt = document.getElementById("ganttSection");
+      if (!legend || !gantt) return false;
+      return !!(gantt.compareDocumentPosition(legend) & Node.DOCUMENT_POSITION_FOLLOWING);
+    })();
+
     const tableSection = document.getElementById("roomRulesTableSection");
     const tableDisplay = tableSection ? getComputedStyle(tableSection).display : null;
     const tableRowCount = document.querySelectorAll("#roomRulesViolationsTable tr").length;
@@ -202,7 +235,11 @@ XLSX.writeFile(wb, fixturePath);
 
     const serviceEmojiCount = Object.keys(SERVICE_EMOJI).length;
 
-    return { roomLabels, blocks, switchCount, legendEntries, tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount };
+    return {
+      roomLabels, blocks, switchCount, switchesHaveIconAndLine, switchLineColor,
+      legendEntries, legendGridColumns, legendIsAfterGantt,
+      tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount
+    };
   });
 
   await page.screenshot({ path: OUT_PATH, fullPage: true });
@@ -234,25 +271,37 @@ XLSX.writeFile(wb, fixturePath);
   check("Unmapped service ('Trauma Surgery') renders with no emoji, no error",
     !!unmappedBlock && !/[\u{1F300}-\u{1FAFF}☀-➿]/u.test(unmappedBlock.surgeonHTML));
 
-  // 3 real switches expected: General->Vascular (OR10), Obstetrics->General (OR8).
-  // Gynecology->Obstetrics (OR8) must NOT produce one.
-  check("Exactly 2 service-switch markers rendered (General->Vascular, Obstetrics->General)",
-    data.switchCount === 2);
+  // 3 real switches expected: General->Vascular (OR10, 0-min gap), Transplant->
+  // General (OR6, 0-min gap), Obstetrics->General (OR8). Gynecology->Obstetrics
+  // (OR8) must NOT produce one.
+  check("Exactly 3 service-switch markers rendered (incl. the two 0-gap stress cases)",
+    data.switchCount === 3);
+  check("Every service-switch marker has both an icon and a line element",
+    data.switchesHaveIconAndLine);
+  check("Service-switch line uses the brand-blue accent color",
+    data.switchLineColor === "rgb(0, 103, 166)");
+  check("Service-switch marker does not overlap any case block's text (incl. OR6/OR10 tight gaps)",
+    !data.switchOverlapsText);
 
   check(`Icon Legend has one entry per SERVICE_EMOJI key (${data.serviceEmojiCount}) plus robot/3-light/switch-cue`,
     data.legendEntries.length === data.serviceEmojiCount + 3);
-  check("Icon Legend includes a Cardiac entry", data.legendEntries.some((t) => t.includes("Cardiac")));
-  check("Icon Legend includes the robot platform entry",
-    data.legendEntries.some((t) => t.toLowerCase().includes("robot platform")));
-  check("Icon Legend includes the 3-light room entry",
-    data.legendEntries.some((t) => t.toLowerCase().includes("3-light")));
-  check("Icon Legend includes the service-switch entry",
-    data.legendEntries.some((t) => t.toLowerCase().includes("service change")));
+  check("Icon Legend renders below the Gantt chart (not above)", data.legendIsAfterGantt);
+  check("Icon Legend grid uses ~7 columns", data.legendGridColumns === 7);
+
+  const serviceLabels = data.legendEntries.slice(0, data.serviceEmojiCount);
+  const specialLabels = data.legendEntries.slice(data.serviceEmojiCount);
+  const sortedServiceLabels = [...serviceLabels].sort((a, b) => a.localeCompare(b));
+  check("Service entries are sorted alphabetically",
+    JSON.stringify(serviceLabels) === JSON.stringify(sortedServiceLabels));
+  check("The three special entries (Robotics, 3-light room, Service change) come after the alphabetical list, in that order",
+    JSON.stringify(specialLabels) === JSON.stringify(["Robotics", "3-light room", "Service change"]));
+  check('Robot badge legend label reads exactly "Robotics" (not "Robot platform (DaVinci DV5 or SP)")',
+    specialLabels[0] === "Robotics");
+  check('Service-switch legend label reads exactly "Service change" (not the longer sentence)',
+    specialLabels[2] === "Service change");
 
   check("Bottom violations table is visually hidden (display: none)", data.tableDisplay === "none");
   check("Bottom violations table still has rendered rows (data logic still ran)", data.tableRowCount > 0);
-
-  check("Service-switch marker does not overlap any case block's text", !data.switchOverlapsText);
 
   check("No console/page errors", consoleErrors.length === 0);
   if (consoleErrors.length) consoleErrors.forEach((e) => console.error("  " + e));

@@ -781,32 +781,32 @@
       border: 1px solid transparent;
     }
 
-    /* ── Gantt icon legend (v1.7.13) ─────────────────────────── */
+    /* ── Gantt icon legend (v1.7.13, moved below Gantt + compressed v1.7.14) ── */
     .gantt-icon-legend {
       width: 100%;
       box-sizing: border-box;
       padding: 12px 14px;
-      margin-bottom: 12px;
+      margin-top: 12px;
     }
     .gantt-icon-legend-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px 18px;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px 10px;
     }
     .gantt-icon-legend-entry {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.78rem;
+      gap: 4px;
+      font-size: 0.74rem;
       color: var(--ink);
-      min-width: 190px;
+      min-width: 0;
     }
     .gantt-icon-legend-icon {
       flex-shrink: 0;
       display: inline-flex;
       align-items: center;
-      min-width: 26px;
-      font-size: 1.1em;
+      min-width: 20px;
+      font-size: 1.05em;
     }
 
     /* ── Gantt chart ─────────────────────────────────────────── */
@@ -1080,19 +1080,47 @@
     }
 
     /* Service-switching cue between two consecutive cases in the same room
-       whose Service differs. Centered on the computed gap midpoint, with its
-       own background pill + padding so it never visually collides with
-       adjacent block text/edges. */
+       whose Service differs (v1.7.14 redesign): a dedicated visual seam at
+       the gap's midpoint. This does NOT move or resize the case blocks
+       themselves — both pieces below are a pure overlay anchored to the
+       lane's own top-left origin (the wrapper itself carries no size, just
+       the horizontal position via inline `left`), so it never affects block
+       widths/positions even at a real 0-minute back-to-back gap (the
+       tightest real-world case, e.g. OR6/OR10).
+       - The line spans exactly the case-block vertical band (top/height
+         match .gantt-case-block) as a thin blue accent divider.
+       - The icon sits ABOVE the line, entirely within the lane's own top
+         clearance (above y=7px, where block content starts) — this
+         guarantees it can never vertically overlap any block's text lines,
+         regardless of how tight the surrounding gap is, rather than relying
+         on horizontal spacing alone. */
     .gantt-service-switch {
       position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 0.95rem;
+      top: 0;
+      left: 0;
       z-index: 3;
       pointer-events: none;
+    }
+    .gantt-service-switch-line {
+      position: absolute;
+      top: 7px;
+      height: 46px;
+      left: 0;
+      width: 2px;
+      transform: translateX(-50%);
+      background: var(--brand-blue);
+      border-radius: 1px;
+    }
+    .gantt-service-switch-icon {
+      position: absolute;
+      top: -6px;
+      left: 0;
+      transform: translateX(-50%);
+      font-size: 0.65rem;
+      line-height: 1;
       background: #ffffff;
       border-radius: 50%;
-      padding: 2px 4px;
+      padding: 1px 3px;
       box-shadow: 0 0 0 1px rgba(23, 50, 77, 0.12);
     }
 

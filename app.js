@@ -4188,21 +4188,23 @@
         grid.append(entry);
       }
 
-      Object.keys(SERVICE_EMOJI).forEach((service) => {
+      // Alphabetical for scan-ability; the three special (non-service)
+      // entries below always come after the sorted service list.
+      Object.keys(SERVICE_EMOJI).sort((a, b) => a.localeCompare(b)).forEach((service) => {
         addEntry(emojiNode(SERVICE_EMOJI[service]), service);
       });
 
       const robotIcon = document.createElement("span");
       appendEmoji(robotIcon, "🤖");
       appendSuperscript(robotIcon, "DV5/SP");
-      addEntry(robotIcon, "Robot platform (DaVinci DV5 or SP)");
+      addEntry(robotIcon, "Robotics");
 
       const lightIcon = document.createElement("span");
       appendEmoji(lightIcon, "💡");
       appendSuperscript(lightIcon, "x3");
       addEntry(lightIcon, "3-light room");
 
-      addEntry(emojiNode("🔀"), "Service change between consecutive cases");
+      addEntry(emojiNode("🔀"), "Service change");
     }
     buildGanttIconLegend();
 
@@ -4412,8 +4414,13 @@
               const midMin = (clampE + next.clampS) / 2;
               const marker = document.createElement("div");
               marker.className = "gantt-service-switch";
-              marker.textContent = "🔀";
               marker.style.left = ((midMin - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
+              const switchIcon = document.createElement("span");
+              switchIcon.className = "gantt-service-switch-icon";
+              switchIcon.textContent = "🔀";
+              const switchLine = document.createElement("span");
+              switchLine.className = "gantt-service-switch-line";
+              marker.append(switchIcon, switchLine);
               lane.append(marker);
             }
           });
