@@ -279,11 +279,13 @@
     };
 
     const KEYWORD_ALIASES = {
-      "PTeye": ["parathyroid"]
+      "PTeye": ["parathyroid"],
+      "Spy ICG": ["spy imaging"]
     };
 
     const KEYWORD_DISPLAY_NAMES = {
-      "Neoprobe": "TruNode"
+      "Neoprobe": "TruNode",
+      "Spy ICG": "SPY (ICG) Imaging System"
     };
 
     // Per-campus overrides of KEYWORD_DISPLAY_NAMES, keyed by keyword then
