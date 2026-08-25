@@ -299,11 +299,10 @@
       "Neoprobe": { WBDE: "Neoprobe" }
     };
 
-    // Data only — prep for an upcoming Gantt visual feature. Not wired into
-    // any rendering yet.
+    // Service emoji identifiers for the Gantt visual feature (v1.7.12).
     const SERVICE_EMOJI = {
       "Cardiac": "🫀",
-      "Cardiology": "🫥",
+      "Cardiology": "❤️‍🩹",
       "Dental": "🦷",
       "ENT": "👂🏼",
       "Gastroenterology": "🔬",
@@ -317,6 +316,7 @@
       "Orthopedics": "🦴",
       "Pain Management": "💉",
       "Pediatric General": "🧸",
+      "Pediatrics": "🧸",
       "Plastics": "♴",
       "Podiatry": "🦶",
       "Radiation Oncology": "☢️",
@@ -327,6 +327,27 @@
       "Urology": "🫘",
       "Vascular": "🩸"
     };
+
+    // Rooms with a strong (>~2x next-closest room), recency-weighted 3-year
+    // designated-service signal at WBVC. Keys are room numbers with no
+    // space/prefix (e.g. "OR7") — normalized at lookup time against the
+    // "OR 7"-style strings CAMPUS_CONFIG.WBVC.rooms/case.room actually use.
+    // Rooms/services with weak or scattered signal are deliberately omitted
+    // per Tom's instruction, not force-assigned.
+    const ROOM_DESIGNATED_SERVICE = {
+      "OR1":  ["Gynecology"],           // pre-existing rule, not from this analysis
+      "OR4":  ["Pediatric General"],
+      "OR5":  ["Ophthalmology"],
+      "OR7":  ["Cardiac"],
+      "OR8":  ["Thoracic"],
+      "OR11": ["Neurosurgery", "Orthopedics", "Spine"],
+      "OR12": ["Neurosurgery", "Orthopedics", "Spine"],
+      "OR14": ["Vascular"]
+    };
+
+    // Rooms equipped with 3-light setups. Same no-space room-key format as
+    // ROOM_DESIGNATED_SERVICE.
+    const THREE_LIGHT_ROOMS = ["OR6", "OR7", "OR8", "OR9"];
 
     const SURGEON_EQUIPMENT_PREFS = {
       "300002": { ultrasound: "W Unit Ultrasound Aloka" },

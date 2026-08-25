@@ -878,7 +878,7 @@
 
     .gantt-fixed-col {
       flex-shrink: 0;
-      width: 72px;
+      width: 108px;
       background: #dce7ef;
       border-right: 1px solid var(--line);
     }
@@ -1018,6 +1018,24 @@
       overflow: hidden;
       text-overflow: ellipsis;
       line-height: 1.25;
+    }
+
+    /* Raised small-caps style for multi-letter badges (robot platform, 3-light
+       count) — there's no native Unicode superscript for multi-letter text. */
+    .gantt-superscript {
+      vertical-align: super;
+      font-size: 0.65em;
+    }
+
+    /* Service-switching cue between two consecutive cases in the same room
+       whose Service differs. Centered on the computed gap midpoint. */
+    .gantt-service-switch {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.85rem;
+      z-index: 3;
+      pointer-events: none;
     }
 
     .gantt-tooltip {

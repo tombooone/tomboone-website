@@ -3510,6 +3510,12 @@
           ruleMatchCounts.set(rule.id, (ruleMatchCounts.get(rule.id) || 0) + 1);
         });
 
+        // Reuses the already-computed HARD-1/HARD-2 signal (no new robot
+        // detection) for the Gantt robot-platform badge.
+        const robotType = firedRules.some((rule) => rule.id === "hard-1") ? "DV5"
+          : firedRules.some((rule) => rule.id === "hard-2") ? "SP"
+          : null;
+
         // Explicit suppression (e.g. hard-2 SP Robot suppresses hard-1 DV5 when
         // compliant): tracked as a Map so the specific governing rule is known,
         // not just that suppression happened.
@@ -3569,6 +3575,7 @@
           service:      serviceText,
           patientAge,
           equipmentText,
+          robotType,
           startMin,
           endMin,
           procStartMin,
@@ -3876,7 +3883,7 @@
     const GANTT_PX_MIN    = 1.5;
     const GANTT_ROW_H     = 44;
     const GANTT_AXIS_H    = 28;
-    const GANTT_LABEL_W   = 72;
+    const GANTT_LABEL_W   = 108;
     const GANTT_MIN_W     = 20;
     const GANTT_TOTAL_W   = (CAMPUS_CONFIG.WBVC.ganttEndMin - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN;
 
@@ -4096,6 +4103,38 @@
       _calOnSelect(null, sd);
     }
 
+    // ── Gantt service/robot/room-designation badges ─────────────────────────────
+    // Normalizes "OR 7" (CAMPUS_CONFIG.WBVC.rooms / case.room format) down to
+    // "OR7" to match the no-space keys in ROOM_DESIGNATED_SERVICE/THREE_LIGHT_ROOMS.
+    function roomKeyFor(room) {
+      return String(room || "").replace(/\s+/g, "").toUpperCase();
+    }
+
+    // Case-insensitive lookup against SERVICE_EMOJI (matches the existing
+    // case-insensitive Service comparison used elsewhere, e.g. rule matching).
+    function resolveServiceEmoji(serviceText) {
+      const target = String(serviceText || "").toLowerCase();
+      const key = Object.keys(SERVICE_EMOJI).find((k) => k.toLowerCase() === target);
+      return key ? SERVICE_EMOJI[key] : "";
+    }
+
+    function roomDesignationEmoji(room) {
+      const designated = ROOM_DESIGNATED_SERVICE[roomKeyFor(room)] || [];
+      const emojis = designated.map((svc) => SERVICE_EMOJI[svc]).filter(Boolean);
+      return [...new Set(emojis)].join("");
+    }
+
+    function isThreeLightRoom(room) {
+      return THREE_LIGHT_ROOMS.includes(roomKeyFor(room));
+    }
+
+    function appendSuperscript(parent, text) {
+      const sup = document.createElement("span");
+      sup.className = "gantt-superscript";
+      sup.textContent = text;
+      parent.append(sup);
+    }
+
     // ── buildDailyGantt ───────────────────────────────────────────────────────
     function buildDailyGantt(sortDate, cases, allViolations) {
       const fixedCol   = document.getElementById("ganttFixedCol");
@@ -4112,7 +4151,13 @@
       CAMPUS_CONFIG.WBVC.rooms.forEach((room) => {
         const label = document.createElement("div");
         label.className = "gantt-room-label";
-        label.textContent = room;
+        label.append(room);
+        const designationEmoji = roomDesignationEmoji(room);
+        if (designationEmoji) label.append(" " + designationEmoji);
+        if (isThreeLightRoom(room)) {
+          label.append(" 💡");
+          appendSuperscript(label, "3");
+        }
         fixedCol.append(label);
       });
 
@@ -4165,14 +4210,23 @@
         ref.style.left = ((refMin - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
         lane.append(ref);
 
-        // Case blocks — 3-segment Epic-snapboard style
-        cases.filter((c) => c.room === room && c.startMin !== null && c.endMin !== null)
-          .forEach((c) => {
+        // Case blocks — 3-segment Epic-snapboard style. Sorted by clamped
+        // start time so "consecutive" (for the service-switch cue below)
+        // means visually adjacent left-to-right, not upload-row order.
+        const roomCases = cases
+          .filter((c) => c.room === room && c.startMin !== null && c.endMin !== null)
+          .map((c) => ({
+            c,
+            clampS: Math.max(c.startMin, CAMPUS_CONFIG.WBVC.ganttStartMin),
+            clampE: Math.min(c.endMin,   CAMPUS_CONFIG.WBVC.ganttEndMin)
+          }))
+          .filter((entry) => entry.clampS < entry.clampE)
+          .sort((a, b) => a.clampS - b.clampS);
+
+        roomCases.forEach((entry, caseIdx) => {
+            const { c, clampS, clampE } = entry;
             const viols   = violsByCaseNum.get(c.caseNumber) || [];
             const minTier = viols.length ? Math.min(...viols.map((v) => v.ruleTier)) : null;
-            const clampS  = Math.max(c.startMin, CAMPUS_CONFIG.WBVC.ganttStartMin);
-            const clampE  = Math.min(c.endMin,   CAMPUS_CONFIG.WBVC.ganttEndMin);
-            if (clampS >= clampE) return;
 
             const blockW  = Math.max((clampE - clampS) * GANTT_PX_MIN, GANTT_MIN_W);
             const rangeMin = clampE - clampS;
@@ -4214,7 +4268,14 @@
             txt.className = "gantt-block-text";
             const s1 = document.createElement("div");
             s1.className = "gantt-block-surgeon";
-            s1.textContent = c.surgeon || "";
+            const serviceEmoji = resolveServiceEmoji(c.service);
+            if (serviceEmoji) s1.append(serviceEmoji + " ");
+            if (c.robotType) {
+              s1.append("🤖");
+              appendSuperscript(s1, c.robotType);
+              s1.append(" ");
+            }
+            s1.append(c.surgeon || "");
             const s2 = document.createElement("div");
             s2.className = "gantt-block-proctxt";
             s2.textContent = c.procedures
@@ -4234,6 +4295,18 @@
             });
 
             lane.append(block);
+
+            // Service-switching cue — only between two actual rendered cases
+            // whose Service differs, never at the start/end of the row.
+            const next = roomCases[caseIdx + 1];
+            if (next && String(c.service || "") !== String(next.c.service || "")) {
+              const midMin = (clampE + next.clampS) / 2;
+              const marker = document.createElement("div");
+              marker.className = "gantt-service-switch";
+              marker.textContent = "🔀";
+              marker.style.left = ((midMin - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
+              lane.append(marker);
+            }
           });
 
         scrollable.append(lane);
