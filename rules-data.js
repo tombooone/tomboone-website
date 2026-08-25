@@ -299,6 +299,35 @@
       "Neoprobe": { WBDE: "Neoprobe" }
     };
 
+    // Data only — prep for an upcoming Gantt visual feature. Not wired into
+    // any rendering yet.
+    const SERVICE_EMOJI = {
+      "Cardiac": "🫀",
+      "Cardiology": "🫀",
+      "Dental": "🦷",
+      "ENT": "👂🏼",
+      "Gastroenterology": "🔬",
+      "General": "🪡",
+      "Gynecology": "🚺",
+      "Hand": "✋🏼",
+      "Maxillofacial": "🫤",
+      "Neurosurgery": "🧠",
+      "Obstetrics": "🤰",
+      "Ophthalmology": "👁️",
+      "Orthopedics": "🦴",
+      "Pain Management": "💉",
+      "Pediatric General": "🧸",
+      "Plastics": "🎨",
+      "Podiatry": "🦶",
+      "Radiation Oncology": "☢️",
+      "Robotics": "🤖",
+      "Spine": "🩻",
+      "Thoracic": "🫁",
+      "Transplant": "💞",
+      "Urology": "🫘",
+      "Vascular": "🩸"
+    };
+
     const SURGEON_EQUIPMENT_PREFS = {
       "300002": { ultrasound: "W Unit Ultrasound Aloka" },
       "20111453": { microscope: "W Microscope Zeiss Eye" },
