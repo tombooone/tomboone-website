@@ -349,6 +349,15 @@
     // ROOM_DESIGNATED_SERVICE.
     const THREE_LIGHT_ROOMS = ["OR6", "OR7", "OR8", "OR9"];
 
+    // Explicit service-pair exceptions for the Gantt service-switching cue
+    // (🔀) — an adjacent-service change between these two (in either order)
+    // is not flagged, since Gynecology/Obstetrics cases run together
+    // routinely and aren't a meaningful "switch" for this cue. Deliberately a
+    // narrow named-pair list, not a broader "similar services" heuristic.
+    const SERVICE_SWITCH_SUPPRESS_PAIRS = [
+      ["Gynecology", "Obstetrics"]
+    ];
+
     const SURGEON_EQUIPMENT_PREFS = {
       "300002": { ultrasound: "W Unit Ultrasound Aloka" },
       "20111453": { microscope: "W Microscope Zeiss Eye" },

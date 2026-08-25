@@ -3881,7 +3881,7 @@
 
     // ── Gantt constants ───────────────────────────────────────────────────────
     const GANTT_PX_MIN    = 1.5;
-    const GANTT_ROW_H     = 44;
+    const GANTT_ROW_H     = 60;
     const GANTT_AXIS_H    = 28;
     const GANTT_LABEL_W   = 108;
     const GANTT_MIN_W     = 20;
@@ -4135,6 +4135,77 @@
       parent.append(sup);
     }
 
+    function emojiNode(text) {
+      const span = document.createElement("span");
+      span.className = "gantt-emoji";
+      span.textContent = text;
+      return span;
+    }
+
+    function appendEmoji(parent, text) {
+      parent.append(emojiNode(text));
+    }
+
+    // Room-level robot badges (v1.7.13) — derived directly from HARD-1/HARD-2's
+    // own allowedRooms so this can never drift from the actual rule
+    // definitions (no separate hardcoded room list).
+    const ROOM_ROBOT_BADGE = (() => {
+      const map = {};
+      const hard1 = ROOM_RULES.find((r) => r.id === "hard-1");
+      const hard2 = ROOM_RULES.find((r) => r.id === "hard-2");
+      (hard1?.allowedRooms || []).forEach((room) => { map[roomKeyFor(room)] = "DV5"; });
+      (hard2?.allowedRooms || []).forEach((room) => { map[roomKeyFor(room)] = "SP"; });
+      return map;
+    })();
+
+    // Explicit Gynecology/Obstetrics exception for the service-switching cue.
+    function isSuppressedServiceSwitchPair(serviceA, serviceB) {
+      const a = String(serviceA || "").toLowerCase();
+      const b = String(serviceB || "").toLowerCase();
+      return SERVICE_SWITCH_SUPPRESS_PAIRS.some(([x, y]) => {
+        const lx = x.toLowerCase(), ly = y.toLowerCase();
+        return (a === lx && b === ly) || (a === ly && b === lx);
+      });
+    }
+
+    // Icon Legend (v1.7.13) — built directly from the live data constants
+    // (SERVICE_EMOJI, plus the fixed robot/3-light/switch-cue concepts) so it
+    // can never drift into a stale hardcoded duplicate of the real mapping.
+    function buildGanttIconLegend() {
+      const grid = document.getElementById("ganttIconLegendGrid");
+      if (!grid) return;
+      grid.textContent = "";
+
+      function addEntry(iconContent, label) {
+        const entry = document.createElement("div");
+        entry.className = "gantt-icon-legend-entry";
+        const iconWrap = document.createElement("span");
+        iconWrap.className = "gantt-icon-legend-icon";
+        iconWrap.append(iconContent);
+        const labelSpan = document.createElement("span");
+        labelSpan.textContent = label;
+        entry.append(iconWrap, labelSpan);
+        grid.append(entry);
+      }
+
+      Object.keys(SERVICE_EMOJI).forEach((service) => {
+        addEntry(emojiNode(SERVICE_EMOJI[service]), service);
+      });
+
+      const robotIcon = document.createElement("span");
+      appendEmoji(robotIcon, "🤖");
+      appendSuperscript(robotIcon, "DV5/SP");
+      addEntry(robotIcon, "Robot platform (DaVinci DV5 or SP)");
+
+      const lightIcon = document.createElement("span");
+      appendEmoji(lightIcon, "💡");
+      appendSuperscript(lightIcon, "x3");
+      addEntry(lightIcon, "3-light room");
+
+      addEntry(emojiNode("🔀"), "Service change between consecutive cases");
+    }
+    buildGanttIconLegend();
+
     // ── buildDailyGantt ───────────────────────────────────────────────────────
     function buildDailyGantt(sortDate, cases, allViolations) {
       const fixedCol   = document.getElementById("ganttFixedCol");
@@ -4151,13 +4222,40 @@
       CAMPUS_CONFIG.WBVC.rooms.forEach((room) => {
         const label = document.createElement("div");
         label.className = "gantt-room-label";
-        label.append(room);
+
+        const line1 = document.createElement("div");
+        line1.className = "gantt-room-label-line1";
+        line1.textContent = room;
+        label.append(line1);
+
+        // Badges line: designated-service emoji(s), then robot badge, then
+        // 3-light indicator — only rendered if at least one applies.
+        const line2 = document.createElement("div");
+        line2.className = "gantt-room-label-line2";
+        let hasBadges = false;
+
         const designationEmoji = roomDesignationEmoji(room);
-        if (designationEmoji) label.append(" " + designationEmoji);
-        if (isThreeLightRoom(room)) {
-          label.append(" 💡");
-          appendSuperscript(label, "3");
+        if (designationEmoji) {
+          appendEmoji(line2, designationEmoji);
+          hasBadges = true;
         }
+
+        const robotBadge = ROOM_ROBOT_BADGE[roomKeyFor(room)];
+        if (robotBadge) {
+          if (hasBadges) line2.append(" ");
+          appendEmoji(line2, "🤖");
+          appendSuperscript(line2, robotBadge);
+          hasBadges = true;
+        }
+
+        if (isThreeLightRoom(room)) {
+          if (hasBadges) line2.append(" ");
+          appendEmoji(line2, "💡");
+          appendSuperscript(line2, "x3");
+          hasBadges = true;
+        }
+
+        if (hasBadges) label.append(line2);
         fixedCol.append(label);
       });
 
@@ -4269,9 +4367,12 @@
             const s1 = document.createElement("div");
             s1.className = "gantt-block-surgeon";
             const serviceEmoji = resolveServiceEmoji(c.service);
-            if (serviceEmoji) s1.append(serviceEmoji + " ");
+            if (serviceEmoji) {
+              appendEmoji(s1, serviceEmoji);
+              s1.append(" ");
+            }
             if (c.robotType) {
-              s1.append("🤖");
+              appendEmoji(s1, "🤖");
               appendSuperscript(s1, c.robotType);
               s1.append(" ");
             }
@@ -4279,7 +4380,11 @@
             const s2 = document.createElement("div");
             s2.className = "gantt-block-proctxt";
             s2.textContent = c.procedures
-              ? c.procedures.replace(/\s*\(.*?\)\s*/g, " ").split(/\s*[;,]\s*/)[0].trim()
+              ? c.procedures
+                  .replace(/\s*\(.*?\)\s*/g, " ")
+                  .split(/\s*[;,]\s*/)[0]
+                  .replace(/\s*\[[^\]]*\]\s*$/, "")
+                  .trim()
               : "";
             const s3 = document.createElement("div");
             s3.className = "gantt-block-casenum";
@@ -4298,8 +4403,12 @@
 
             // Service-switching cue — only between two actual rendered cases
             // whose Service differs, never at the start/end of the row.
+            // Gynecology <-> Obstetrics is an explicit exception (see
+            // SERVICE_SWITCH_SUPPRESS_PAIRS).
             const next = roomCases[caseIdx + 1];
-            if (next && String(c.service || "") !== String(next.c.service || "")) {
+            if (next
+              && String(c.service || "") !== String(next.c.service || "")
+              && !isSuppressedServiceSwitchPair(c.service, next.c.service)) {
               const midMin = (clampE + next.clampS) / 2;
               const marker = document.createElement("div");
               marker.className = "gantt-service-switch";

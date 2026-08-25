@@ -427,6 +427,13 @@
       margin-top: 24px;
     }
 
+    /* v1.7.13: visually hidden (Gantt visual badges cover this info now) but
+       its data-building JS still runs normally — data-only, not display:none
+       via JS, so the underlying rendering/update logic stays fully intact. */
+    #roomRulesTableSection {
+      display: none;
+    }
+
     .accordion-section {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -774,6 +781,34 @@
       border: 1px solid transparent;
     }
 
+    /* ── Gantt icon legend (v1.7.13) ─────────────────────────── */
+    .gantt-icon-legend {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .gantt-icon-legend-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+    }
+    .gantt-icon-legend-entry {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--ink);
+      min-width: 190px;
+    }
+    .gantt-icon-legend-icon {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      min-width: 26px;
+      font-size: 1.1em;
+    }
+
     /* ── Gantt chart ─────────────────────────────────────────── */
     .gantt-section { margin-bottom: 28px; }
 
@@ -891,15 +926,24 @@
     }
 
     .gantt-room-label {
-      height: 52px;
+      height: 60px;
       display: flex;
-      align-items: center;
-      padding: 0 8px;
-      font-size: 0.75rem;
-      font-weight: 500;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4px 8px;
       color: var(--ink);
       border-bottom: 1px solid var(--line);
       white-space: nowrap;
+    }
+    .gantt-room-label-line1 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .gantt-room-label-line2 {
+      font-size: 0.78rem;
+      line-height: 1.3;
+      margin-top: 2px;
     }
 
     .gantt-time-axis {
@@ -921,7 +965,7 @@
 
     .gantt-lane {
       position: relative;
-      height: 52px;
+      height: 60px;
       border-bottom: 1px solid var(--line);
       background: #ffffff;
     }
@@ -946,8 +990,8 @@
 
     .gantt-case-block {
       position: absolute;
-      top: 5px;
-      height: 42px;
+      top: 7px;
+      height: 46px;
       border-radius: 4px;
       cursor: pointer;
       overflow: hidden;
@@ -993,49 +1037,63 @@
       padding: 1px 4px;
     }
     .gantt-block-surgeon {
-      font-size: 0.68rem;
+      font-size: 0.76rem;
       font-weight: 700;
       color: var(--ink);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 1.25;
+      line-height: 1.2;
     }
     .gantt-block-proctxt {
-      font-size: 0.68rem;
+      font-size: 0.76rem;
       font-weight: 400;
       color: var(--ink);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 1.25;
+      line-height: 1.2;
     }
     .gantt-block-casenum {
-      font-size: 0.68rem;
+      font-size: 0.76rem;
       font-weight: 700;
       color: var(--ink);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      line-height: 1.25;
+      line-height: 1.2;
+    }
+
+    /* Emoji/icon glyphs (service, robot, 3-light) rendered a bit larger than
+       surrounding text for legibility, since they carry meaning at a glance. */
+    .gantt-emoji {
+      font-size: 1.2em;
+      line-height: 1;
     }
 
     /* Raised small-caps style for multi-letter badges (robot platform, 3-light
        count) — there's no native Unicode superscript for multi-letter text. */
     .gantt-superscript {
       vertical-align: super;
-      font-size: 0.65em;
+      font-size: 0.72em;
+      font-weight: 600;
     }
 
     /* Service-switching cue between two consecutive cases in the same room
-       whose Service differs. Centered on the computed gap midpoint. */
+       whose Service differs. Centered on the computed gap midpoint, with its
+       own background pill + padding so it never visually collides with
+       adjacent block text/edges. */
     .gantt-service-switch {
       position: absolute;
       top: 50%;
       transform: translate(-50%, -50%);
-      font-size: 0.85rem;
+      font-size: 0.95rem;
       z-index: 3;
       pointer-events: none;
+      background: #ffffff;
+      border-radius: 50%;
+      padding: 2px 4px;
+      box-shadow: 0 0 0 1px rgba(23, 50, 77, 0.12);
     }
 
     .gantt-tooltip {

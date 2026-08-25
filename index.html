@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.7.12">
+  <link rel="stylesheet" href="styles.css?v=1.7.13">
   <script>
   if (location.hostname === 'tomboonern.com') {
     var s = document.createElement('script');
@@ -432,6 +432,11 @@
 
           <p style="color: var(--muted); font-size: 0.75rem; letter-spacing: 0.03em; margin: 6px 0 8px;">Cases with pending holds or not yet visible on the schedule may not appear in this audit.</p>
 
+          <div class="panel gantt-icon-legend" id="ganttIconLegend">
+            <div class="gantt-legend-title">Icon Legend</div>
+            <div class="gantt-icon-legend-grid" id="ganttIconLegendGrid"></div>
+          </div>
+
           <div id="ganttSection" hidden>
             <div class="gantt-section">
               <div class="gantt-container">
@@ -441,7 +446,7 @@
             </div>
           </div>
 
-          <div class="table-section">
+          <div class="table-section" id="roomRulesTableSection">
             <div class="table-wrap">
               <table class="room-rules-table">
                 <thead>
@@ -594,7 +599,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.7.12 · 2026-08-25</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.7.13 · 2026-08-25</p>
     </footer>
   </div>
 
@@ -613,7 +618,7 @@
   <div id="devGateOverlay" class="dev-gate-overlay" role="dialog" aria-modal="true" hidden>
     <a href="https://tomboonern.com" class="dev-gate-prod-link">Go to tomboonern.com</a>
   </div>
-  <script src="rules-data.js?v=1.7.12"></script>
-  <script src="app.js?v=1.7.12"></script>
+  <script src="rules-data.js?v=1.7.13"></script>
+  <script src="app.js?v=1.7.13"></script>
 </body>
 </html>
