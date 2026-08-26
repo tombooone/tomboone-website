@@ -11,8 +11,11 @@
  * the service-switching cue (icon-above-a-line seam design, including the
  * Gynecology/Obstetrics suppression pair and a stress test against 0-minute-
  * gap back-to-back cases modeled on OR6/OR10's real density), the
- * hidden-but-still-rendering violations table, and bracketed-procedure-ID
- * stripping on case blocks.
+ * hidden-but-still-rendering violations table, bracketed-procedure-ID
+ * stripping on case blocks, and the HARD-5 (Transplant Room) donor-
+ * nephrectomy/transplant robotic-pairing suppression (read directly from
+ * the audit's in-memory violations list via `_lastAuditResult`, not the
+ * rendered table).
  *
  * This is the first committed browser-testing script in this repo (prior
  * sessions used throwaway scratchpad scripts) — reuse/extend this one for
@@ -128,6 +131,56 @@ const rows = [
    "Outpatient", "Scheduled", "Elective"],
   ["9000010", DATE, "WBVC OR 08", "Hernia repair", "", "50 yrs",
    "General", "Zhang, Irene, MD [20158330]", "11:00:00", "12:30:00", "11:15:00", "12:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // ── HARD-5 donor-nephrectomy/transplant pairing suppression scenarios ──
+  // Scenario 1: DV5 donor nephrectomy immediately followed by a (non-robotic)
+  // transplant, both in OR3 (a valid DV5 room) -> transplant's HARD-5 must
+  // be suppressed.
+  ["9000021", DATE, "WBVC OR 03", "Left Robotic DV5 Assisted Laparoscopic Donor Nephrectomy", "Robot DaVinci DV5", "45 yrs",
+   "Transplant", "Valone, Peter, MD [20041597]", "07:30:00", "09:30:00", "07:45:00", "09:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000022", DATE, "WBVC OR 03", "Living Related Renal Transplant", "Cooler Donor", "50 yrs",
+   "Transplant", "Valone, Peter, MD [20041597]", "09:45:00", "12:15:00", "10:00:00", "12:00:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // Scenario 2: SP donor nephrectomy immediately followed by a (non-robotic)
+  // transplant, both in OR5 (a valid SP room, already hosting an unrelated
+  // earlier SP case 9000003 that ends well before these start) -> suppressed.
+  ["9000023", DATE, "WBVC OR 05", "Left Laparoscopic Donor Nephrectomy", "DaVinci Robot SP", "44 yrs",
+   "Transplant", "Reiter, Anna, MD [20063777]", "10:15:00", "11:45:00", "10:30:00", "11:30:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000024", DATE, "WBVC OR 05", "Living Unrelated Renal Transplant Possible Insertion Of Central Line", "Cooler Donor", "52 yrs",
+   "Transplant", "Reiter, Anna, MD [20063777]", "12:00:00", "14:30:00", "12:15:00", "14:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // Scenario 3: same DV5 pairing, but in OR4 -- NOT a valid room for DV5
+  // (hard-1's allowedRooms are OR2/OR3 only) -> HARD-5 must still fire
+  // normally on the transplant case (suppression must not apply here).
+  ["9000025", DATE, "WBVC OR 04", "Right Robotic DV5 Assisted Laparoscopic Donor Nephrectomy", "Robot DaVinci DV5", "46 yrs",
+   "Transplant", "Kennedy, Owen, MD [515122]", "07:30:00", "09:30:00", "07:45:00", "09:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000026", DATE, "WBVC OR 04", "Living Related Renal Transplant", "Cooler Donor", "49 yrs",
+   "Transplant", "Kennedy, Owen, MD [515122]", "09:45:00", "12:15:00", "10:00:00", "12:00:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // Scenario 4: a transplant case in OR2 immediately preceded by an
+  // UNRELATED DV5 case (the existing 9000002 robotic prostatectomy, ends
+  // 09:30) that is NOT a donor-nephrectomy case -> the pairing requirement
+  // must not be satisfied by "any" preceding case; HARD-5 must still fire.
+  ["9000027", DATE, "WBVC OR 02", "Living Related Renal Transplant", "Cooler Donor", "53 yrs",
+   "Transplant", "Kardos, Alice, MD [108387]", "09:45:00", "12:15:00", "10:00:00", "12:00:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // Scenario 5: non-robotic donor nephrectomy immediately followed by a
+  // non-robotic transplant, both in OR9 (a valid HARD-5 room already, so no
+  // violation exists to suppress in the first place) -> normal compliant
+  // behavior, confirming no regression from the new post-processing pass.
+  ["9000028", DATE, "WBVC OR 09", "Left Laparoscopic Donor Nephrectomy", "", "47 yrs",
+   "Transplant", "Char, Wendy, MD [500276]", "09:45:00", "11:15:00", "10:00:00", "11:00:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000029", DATE, "WBVC OR 09", "Living Related Renal Transplant", "Cooler Donor", "55 yrs",
+   "Transplant", "Char, Wendy, MD [500276]", "11:30:00", "14:00:00", "11:45:00", "13:45:00",
    "Outpatient", "Scheduled", "Elective"]
 ];
 
@@ -235,10 +288,24 @@ XLSX.writeFile(wb, fixturePath);
 
     const serviceEmojiCount = Object.keys(SERVICE_EMOJI).length;
 
+    // HARD-5 donor-nephrectomy/transplant pairing suppression: read directly
+    // from the module's own last-computed audit result (a bare top-level
+    // `let` in this classic, non-module script — still resolvable by name
+    // from an injected page.evaluate() function running in the same realm)
+    // rather than parsing the hidden violations table's rendered text.
+    const violationsByCase = {};
+    (typeof _lastAuditResult !== "undefined" && _lastAuditResult
+      ? _lastAuditResult.violations : []
+    ).forEach((v) => {
+      if (!violationsByCase[v.caseNumber]) violationsByCase[v.caseNumber] = [];
+      violationsByCase[v.caseNumber].push(v.ruleId);
+    });
+
     return {
       roomLabels, blocks, switchCount, switchesHaveIconAndLine, switchLineColor,
       legendEntries, legendGridColumns, legendIsAfterGantt,
-      tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount
+      tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount,
+      violationsByCase
     };
   });
 
@@ -271,11 +338,12 @@ XLSX.writeFile(wb, fixturePath);
   check("Unmapped service ('Trauma Surgery') renders with no emoji, no error",
     !!unmappedBlock && !/[\u{1F300}-\u{1FAFF}☀-➿]/u.test(unmappedBlock.surgeonHTML));
 
-  // 3 real switches expected: General->Vascular (OR10, 0-min gap), Transplant->
-  // General (OR6, 0-min gap), Obstetrics->General (OR8). Gynecology->Obstetrics
-  // (OR8) must NOT produce one.
-  check("Exactly 3 service-switch markers rendered (incl. the two 0-gap stress cases)",
-    data.switchCount === 3);
+  // 6 total: OR10 (General->Vascular), OR6 (Transplant->General), OR8
+  // (Obstetrics->General), plus 3 incidental switches introduced by the
+  // HARD-5 pairing fixture rows (OR2, OR5, OR9 each pick up one switch
+  // against their pre-existing earlier case there).
+  check("Exactly 6 service-switch markers rendered (incl. the two 0-gap stress cases)",
+    data.switchCount === 6);
   check("Every service-switch marker has both an icon and a line element",
     data.switchesHaveIconAndLine);
   check("Service-switch line uses the brand-blue accent color",
@@ -302,6 +370,30 @@ XLSX.writeFile(wb, fixturePath);
 
   check("Bottom violations table is visually hidden (display: none)", data.tableDisplay === "none");
   check("Bottom violations table still has rendered rows (data logic still ran)", data.tableRowCount > 0);
+
+  // ── HARD-5 donor-nephrectomy/transplant pairing suppression ────────────
+  const hasRule = (caseNum, ruleId) => (data.violationsByCase[caseNum] || []).includes(ruleId);
+
+  check("Scenario 1 (DV5 nephrectomy -> transplant, both OR3): transplant's HARD-5 is suppressed",
+    !hasRule("9000022", "hard-5"));
+  check("Scenario 1: nephrectomy case itself has no HARD-5 (or HARD-1) violation of its own",
+    !hasRule("9000021", "hard-5") && !hasRule("9000021", "hard-1"));
+
+  check("Scenario 2 (SP nephrectomy -> transplant, both OR5): transplant's HARD-5 is suppressed",
+    !hasRule("9000024", "hard-5"));
+  check("Scenario 2: nephrectomy case itself has no HARD-5 (or HARD-2) violation of its own",
+    !hasRule("9000023", "hard-5") && !hasRule("9000023", "hard-2"));
+
+  check("Scenario 3 (DV5 pairing in OR4, not a valid DV5 room): transplant's HARD-5 still fires",
+    hasRule("9000026", "hard-5"));
+
+  check("Scenario 4 (transplant preceded by an unrelated DV5 case, not a nephrectomy): HARD-5 still fires",
+    hasRule("9000027", "hard-5"));
+
+  check("Scenario 5 (non-robotic pair in OR9, already a valid HARD-5 room): transplant has no HARD-5 violation (unaffected, not a suppression)",
+    !hasRule("9000029", "hard-5"));
+  check("Scenario 5: nephrectomy case has no HARD-5 violation of its own either",
+    !hasRule("9000028", "hard-5"));
 
   check("No console/page errors", consoleErrors.length === 0);
   if (consoleErrors.length) consoleErrors.forEach((e) => console.error("  " + e));

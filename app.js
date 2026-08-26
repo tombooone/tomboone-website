@@ -3756,10 +3756,57 @@
         }
       });
 
-      const finalViolations = (t3Suppressed.size > 0 || ops2Suppressed.size > 0)
+      // Post-process HARD-5 (Transplant Room): suppress the flag on a
+      // transplant case when it's immediately preceded — same room, same
+      // day, no case between them — by a donor nephrectomy case, AND either
+      // case has DV5/SP robot equipment (reuses the existing HARD-1/HARD-2
+      // robotType signal computed above; no new equipment detection), AND
+      // the room is a valid allowedRoom for whichever platform triggered.
+      // This handles the intentional donor-nephrectomy-then-transplant
+      // pairing done back-to-back in a robotic-capable room (OR2/OR3 for
+      // DV5, OR5 for SP) instead of the normal OR6/OR9 transplant rooms.
+      // Only the transplant case's own HARD-5 violation is touched — the
+      // nephrectomy case's rule evaluation is untouched.
+      const hard5PairSuppressed = new Set(); // "caseNumber:hard-5"
+      const hard1Rule = ROOM_RULES.find((r) => r.id === "hard-1");
+      const hard2Rule = ROOM_RULES.find((r) => r.id === "hard-2");
+      violations.forEach((v) => {
+        if (v.ruleId !== "hard-5") return;
+        const suppressKey = `${v.caseNumber}:hard-5`;
+        if (hard5PairSuppressed.has(suppressKey)) return;
+
+        const ac = cases.find((c) => c.caseNumber === v.caseNumber);
+        if (!ac || ac.startMin === null || ac.endMin === null) return;
+
+        const procText = String(ac.procedures || "").toLowerCase();
+        if (!procText.includes("transplant")) return;
+
+        const sameRoomDay = cases
+          .filter((c) => c.sortDate === v.sortDate && c.room === v.room
+            && c.startMin !== null && c.endMin !== null)
+          .sort((a, b) => a.startMin - b.startMin);
+
+        const idx = sameRoomDay.findIndex((c) => c.caseNumber === ac.caseNumber);
+        if (idx <= 0) return; // no immediately-preceding case in this room/day
+
+        const prev = sameRoomDay[idx - 1];
+        const prevText = String(prev.procedures || "").toLowerCase();
+        if (!(prevText.includes("nephrectomy") && prevText.includes("donor"))) return;
+
+        const triggeredRobotType = ac.robotType || prev.robotType;
+        if (!triggeredRobotType) return;
+
+        const robotRule = triggeredRobotType === "DV5" ? hard1Rule : hard2Rule;
+        if (!robotRule || !robotRule.allowedRooms.includes(v.room)) return;
+
+        hard5PairSuppressed.add(suppressKey);
+      });
+
+      const finalViolations = (t3Suppressed.size > 0 || ops2Suppressed.size > 0 || hard5PairSuppressed.size > 0)
         ? violations.filter((v) => {
             if (v.ruleTier === 3 && t3Suppressed.has(`${v.caseNumber}:${v.ruleId}`)) return false;
             if (v.ruleId === "ops-2" && ops2Suppressed.has(`${v.caseNumber}:ops-2`)) return false;
+            if (v.ruleId === "hard-5" && hard5PairSuppressed.has(`${v.caseNumber}:hard-5`)) return false;
             return true;
           })
         : violations;
