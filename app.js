@@ -4451,23 +4451,28 @@
             lane.append(block);
 
             // Service-switching cue — only between two actual rendered cases
-            // whose Service differs, never at the start/end of the row.
-            // Gynecology <-> Obstetrics is an explicit exception (see
-            // SERVICE_SWITCH_SUPPRESS_PAIRS).
+            // that are directly abutting (same time-position data used to
+            // place the blocks: this case's clamped end === the next case's
+            // clamped start — Epic auto-abuts by default, so any visible gap
+            // reflects a deliberate scheduling constraint, not routine
+            // turnover, and suppresses the cue entirely) whose Service
+            // differs, never at the start/end of the row. Gynecology <->
+            // Obstetrics is an explicit exception (see
+            // SERVICE_SWITCH_SUPPRESS_PAIRS), regardless of gap status.
             const next = roomCases[caseIdx + 1];
             if (next
+              && clampE === next.clampS
               && String(c.service || "") !== String(next.c.service || "")
               && !isSuppressedServiceSwitchPair(c.service, next.c.service)) {
-              const midMin = (clampE + next.clampS) / 2;
               const marker = document.createElement("div");
               marker.className = "gantt-service-switch";
-              marker.style.left = ((midMin - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
+              marker.style.left = ((clampE - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
+              marker.dataset.beforeCase = String(c.caseNumber);
+              marker.dataset.afterCase = String(next.c.caseNumber);
               const switchIcon = document.createElement("span");
               switchIcon.className = "gantt-service-switch-icon";
               switchIcon.textContent = "🔀";
-              const switchLine = document.createElement("span");
-              switchLine.className = "gantt-service-switch-line";
-              marker.append(switchIcon, switchLine);
+              marker.append(switchIcon);
               lane.append(marker);
             }
           });

@@ -8,9 +8,11 @@
  * badges (case-level and room-level), the 3-light "x3" indicator, the Icon
  * Legend (position below the Gantt, ~7-column layout, alphabetical service
  * ordering with the three special entries after it, simplified label text),
- * the service-switching cue (icon-above-a-line seam design, including the
- * Gynecology/Obstetrics suppression pair and a stress test against 0-minute-
- * gap back-to-back cases modeled on OR6/OR10's real density), the
+ * the service-switching cue (icon-only, no line as of this session — only
+ * rendered between two directly ABUTTING cases with no visible time gap;
+ * a genuine scheduling gap suppresses it entirely, including the
+ * Gynecology/Obstetrics exception pair which applies regardless of gap
+ * status), the
  * hidden-but-still-rendering violations table, bracketed-procedure-ID
  * stripping on case blocks, and the HARD-5 (Transplant Room) donor-
  * nephrectomy/transplant robotic-pairing suppression (read directly from
@@ -98,14 +100,15 @@ const rows = [
   ["9000003", DATE, "WBVC OR 05", "Robotic partial nephrectomy", "DaVinci Robot SP", "48 yrs",
    "Urology", "Lin, David, MD [107858]", "07:30:00", "10:00:00", "07:45:00", "09:45:00",
    "Outpatient", "Scheduled", "Elective"],
-  // OR10: General -> General -> Vascular (one switch cue, between the last two
-  // only). Back-to-back turnover (0-minute gap) between the last two, modeled
-  // on OR10's real tight density — stress-tests the seam at its tightest.
+  // OR10: General -> General -> Vascular. Fully back-to-back (0-minute gaps
+  // throughout, modeled on OR10's real tight density): confirms an abutting
+  // SAME-service pair still shows no icon, and the abutting DIFFERENT-service
+  // pair right after it does.
   ["9000004", DATE, "WBVC OR 10", "Hernia repair", "", "50 yrs",
    "General", "Jossart, Karl, MD [105751]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
    "Outpatient", "Scheduled", "Elective"],
   ["9000005", DATE, "WBVC OR 10", "Gallbladder removal", "", "52 yrs",
-   "General", "Jossart, Karl, MD [105751]", "09:15:00", "10:45:00", "09:30:00", "10:30:00",
+   "General", "Jossart, Karl, MD [105751]", "09:00:00", "10:45:00", "09:30:00", "10:30:00",
    "Outpatient", "Scheduled", "Elective"],
   ["9000006", DATE, "WBVC OR 10", "Varicose vein stripping", "", "58 yrs",
    "Vascular", "Jossart, Karl, MD [105751]", "10:45:00", "12:15:00", "11:00:00", "12:00:00",
@@ -181,6 +184,18 @@ const rows = [
    "Outpatient", "Scheduled", "Elective"],
   ["9000029", DATE, "WBVC OR 09", "Living Related Renal Transplant", "Cooler Donor", "55 yrs",
    "Transplant", "Char, Wendy, MD [500276]", "11:30:00", "14:00:00", "11:45:00", "13:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // OR12: Gynecology -> Obstetrics, directly abutting (0-minute gap). Isolates
+  // that the Gyn/Obstetrics suppression pair still applies even when cases
+  // ARE back-to-back (where gap-based suppression alone would NOT apply, so
+  // this specifically proves the pair-exception logic is still functioning,
+  // not just piggybacking on the new gap rule).
+  ["9000031", DATE, "WBVC OR 12", "Hysterectomy", "", "45 yrs",
+   "Gynecology", "Zakaria, Fatima, MD [20144424]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000032", DATE, "WBVC OR 12", "Cesarean section", "", "30 yrs",
+   "Obstetrics", "Zakaria, Fatima, MD [20144424]", "09:00:00", "10:30:00", "09:15:00", "10:15:00",
    "Outpatient", "Scheduled", "Elective"]
 ];
 
@@ -239,11 +254,9 @@ XLSX.writeFile(wb, fixturePath);
     }));
     const switchMarkers = [...document.querySelectorAll(".gantt-service-switch")];
     const switchCount = switchMarkers.length;
-    const switchesHaveIconAndLine = switchMarkers.every((m) =>
-      m.querySelector(".gantt-service-switch-icon") && m.querySelector(".gantt-service-switch-line"));
-    const switchLineColor = switchMarkers.length
-      ? getComputedStyle(switchMarkers[0].querySelector(".gantt-service-switch-line")).backgroundColor
-      : null;
+    const switchesHaveIcon = switchMarkers.every((m) => m.querySelector(".gantt-service-switch-icon"));
+    const switchesHaveNoLine = switchMarkers.every((m) => !m.querySelector(".gantt-service-switch-line"));
+    const switchPairs = switchMarkers.map((m) => `${m.dataset.beforeCase}->${m.dataset.afterCase}`);
 
     // Label-only text (last child span), not the whole entry's textContent —
     // the icon/superscript children (e.g. "DV5/SP") would otherwise get
@@ -302,7 +315,7 @@ XLSX.writeFile(wb, fixturePath);
     });
 
     return {
-      roomLabels, blocks, switchCount, switchesHaveIconAndLine, switchLineColor,
+      roomLabels, blocks, switchCount, switchesHaveIcon, switchesHaveNoLine, switchPairs,
       legendEntries, legendGridColumns, legendIsAfterGantt,
       tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount,
       violationsByCase
@@ -338,18 +351,32 @@ XLSX.writeFile(wb, fixturePath);
   check("Unmapped service ('Trauma Surgery') renders with no emoji, no error",
     !!unmappedBlock && !/[\u{1F300}-\u{1FAFF}☀-➿]/u.test(unmappedBlock.surgeonHTML));
 
-  // 6 total: OR10 (General->Vascular), OR6 (Transplant->General), OR8
-  // (Obstetrics->General), plus 3 incidental switches introduced by the
-  // HARD-5 pairing fixture rows (OR2, OR5, OR9 each pick up one switch
-  // against their pre-existing earlier case there).
-  check("Exactly 6 service-switch markers rendered (incl. the two 0-gap stress cases)",
-    data.switchCount === 6);
-  check("Every service-switch marker has both an icon and a line element",
-    data.switchesHaveIconAndLine);
-  check("Service-switch line uses the brand-blue accent color",
-    data.switchLineColor === "rgb(0, 103, 166)");
-  check("Service-switch marker does not overlap any case block's text (incl. OR6/OR10 tight gaps)",
+  // Exactly 2 real icons expected now that gapped pairs are suppressed:
+  // OR6 (Transplant->General, 0-gap) and OR10 (General->Vascular, 0-gap).
+  // Every other candidate pair in the fixture is either same-service,
+  // Gyn/Obstetrics-excepted, or separated by a genuine 15-minute gap
+  // (OR2, OR5, OR8's second pair, OR9) and must NOT show an icon anymore.
+  check("Exactly 2 service-switch icons rendered (only the abutting pairs)",
+    data.switchCount === 2);
+  check("Both rendered switches are the expected abutting pairs (OR6 9000011->9000012, OR10 9000005->9000006)",
+    JSON.stringify([...data.switchPairs].sort()) ===
+    JSON.stringify(["9000005->9000006", "9000011->9000012"]));
+  check("Every service-switch marker has an icon", data.switchesHaveIcon);
+  check("No service-switch marker has a line element (removed this session)", data.switchesHaveNoLine);
+  check("Service-switch marker does not overlap any case block's text (incl. OR6/OR10 abutting pairs)",
     !data.switchOverlapsText);
+  check("Gapped different-service pair (OR2 9000002->9000027, 15-min gap) shows NO icon",
+    !data.switchPairs.includes("9000002->9000027"));
+  check("Gapped different-service pair (OR5 9000003->9000023, 15-min gap) shows NO icon",
+    !data.switchPairs.includes("9000003->9000023"));
+  check("Gapped different-service pair (OR9 9000007->9000028, 15-min gap) shows NO icon",
+    !data.switchPairs.includes("9000007->9000028"));
+  check("Gapped Obstetrics->General pair (OR8 9000009->9000010, 15-min gap) shows NO icon",
+    !data.switchPairs.includes("9000009->9000010"));
+  check("Abutting Gynecology->Obstetrics pair (OR12 9000031->9000032) still shows NO icon (pair exception applies even when abutting)",
+    !data.switchPairs.includes("9000031->9000032"));
+  check("Abutting SAME-service pair (OR10 9000004->9000005) shows no icon (unchanged behavior)",
+    !data.switchPairs.includes("9000004->9000005"));
 
   check(`Icon Legend has one entry per SERVICE_EMOJI key (${data.serviceEmojiCount}) plus robot/3-light/switch-cue`,
     data.legendEntries.length === data.serviceEmojiCount + 3);

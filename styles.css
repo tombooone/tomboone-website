@@ -1079,37 +1079,25 @@
       font-weight: 600;
     }
 
-    /* Service-switching cue between two consecutive cases in the same room
-       whose Service differs (v1.7.14 redesign): a dedicated visual seam at
-       the gap's midpoint. This does NOT move or resize the case blocks
-       themselves — both pieces below are a pure overlay anchored to the
-       lane's own top-left origin (the wrapper itself carries no size, just
-       the horizontal position via inline `left`), so it never affects block
-       widths/positions even at a real 0-minute back-to-back gap (the
-       tightest real-world case, e.g. OR6/OR10).
-       - The line spans exactly the case-block vertical band (top/height
-         match .gantt-case-block) as a thin blue accent divider.
-       - The icon sits ABOVE the line, entirely within the lane's own top
-         clearance (above y=7px, where block content starts) — this
-         guarantees it can never vertically overlap any block's text lines,
-         regardless of how tight the surrounding gap is, rather than relying
-         on horizontal spacing alone. */
+    /* Service-switching cue (v1.7.16: only rendered between two directly
+       abutting cases — i.e. a genuine back-to-back turnover with no visible
+       scheduling gap, Epic auto-abuts by default so any gap reflects a
+       deliberate constraint, not routine turnover; the blue divider line
+       from v1.7.14 was removed, icon only now). Anchored to the lane's own
+       top-left origin (the wrapper itself carries no size, just the
+       horizontal position via inline `left`), so it never affects block
+       widths/positions. The icon sits ABOVE the case-block band, entirely
+       within the lane's own top clearance (above y=7px, where block content
+       starts) — this guarantees it can never vertically overlap any block's
+       text lines, a carryover from the v1.7.14 redesign that still applies
+       even though the icon now only ever sits exactly on the shared
+       boundary point of two touching blocks (no gap to be tight within). */
     .gantt-service-switch {
       position: absolute;
       top: 0;
       left: 0;
       z-index: 3;
       pointer-events: none;
-    }
-    .gantt-service-switch-line {
-      position: absolute;
-      top: 7px;
-      height: 46px;
-      left: 0;
-      width: 2px;
-      transform: translateX(-50%);
-      background: var(--brand-blue);
-      border-radius: 1px;
     }
     .gantt-service-switch-icon {
       position: absolute;
