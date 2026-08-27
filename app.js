@@ -4193,6 +4193,11 @@
       parent.append(emojiNode(text));
     }
 
+    // Single shared source for the robot-platform badge glyph (case-level
+    // badge, room-level badge, and Icon Legend entry all read this one
+    // constant — v1.7.18, changed from 🤖 to 🦾).
+    const ROBOT_BADGE_EMOJI = "🦾";
+
     // Room-level robot badges (v1.7.13) — derived directly from HARD-1/HARD-2's
     // own allowedRooms so this can never drift from the actual rule
     // definitions (no separate hardcoded room list).
@@ -4242,7 +4247,7 @@
       });
 
       const robotIcon = document.createElement("span");
-      appendEmoji(robotIcon, "🤖");
+      appendEmoji(robotIcon, ROBOT_BADGE_EMOJI);
       appendSuperscript(robotIcon, "DV5/SP");
       addEntry(robotIcon, "Robotics");
 
@@ -4292,7 +4297,7 @@
         const robotBadge = ROOM_ROBOT_BADGE[roomKeyFor(room)];
         if (robotBadge) {
           if (hasBadges) line2.append(" ");
-          appendEmoji(line2, "🤖");
+          appendEmoji(line2, ROBOT_BADGE_EMOJI);
           appendSuperscript(line2, robotBadge);
           hasBadges = true;
         }
@@ -4415,13 +4420,30 @@
             txt.className = "gantt-block-text";
             const s1 = document.createElement("div");
             s1.className = "gantt-block-surgeon";
+            // "Robotics" is both a real SERVICE_EMOJI key (a general
+            // service-line marker) and, independently, cases whose equipment
+            // triggers HARD-1/HARD-2 also get the more specific case-level
+            // robot-platform badge below. A case with Service = "Robotics"
+            // AND detected DV5/SP equipment previously showed BOTH — the
+            // generic service emoji and the platform badge, both robot-
+            // themed (this was the real cause of the reported "double robot
+            // icon", not room-vs-case badge duplication, which was already
+            // structurally impossible — the room-label badge is rendered in
+            // a completely separate DOM section). Skip the generic service
+            // emoji specifically when the service is "Robotics" AND a
+            // robot-platform badge is being shown, since the platform badge
+            // is strictly more specific. A "Robotics"-service case with no
+            // detected robotType (no platform badge to be redundant with)
+            // still shows its own service emoji as normal.
             const serviceEmoji = resolveServiceEmoji(c.service);
-            if (serviceEmoji) {
+            const isGenericRoboticsService = String(c.service || "").toLowerCase() === "robotics";
+            const showServiceEmoji = serviceEmoji && !(c.robotType && isGenericRoboticsService);
+            if (showServiceEmoji) {
               appendEmoji(s1, serviceEmoji);
               s1.append(" ");
             }
             if (c.robotType) {
-              appendEmoji(s1, "🤖");
+              appendEmoji(s1, ROBOT_BADGE_EMOJI);
               appendSuperscript(s1, c.robotType);
               s1.append(" ");
             }

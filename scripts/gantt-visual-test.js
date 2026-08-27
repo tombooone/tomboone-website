@@ -5,7 +5,11 @@
  * Builds a synthetic (non-PHI) OR schedule fixture in memory, drives a local
  * Chrome install headlessly against index.html, uploads the fixture into the
  * Room Rules tool, and asserts on the rendered Gantt: service emoji, robot
- * badges (case-level and room-level), the 3-light "x3" indicator, the Icon
+ * badges (case-level and room-level, both using the shared ROBOT_BADGE_EMOJI
+ * constant 🦾 as of this session — including a regression check for the
+ * "double robot icon" bug where a case with Service="Robotics" AND detected
+ * DV5/SP equipment previously showed both the generic service emoji and the
+ * platform badge, both robot-themed), the 3-light "x3" indicator, the Icon
  * Legend (position below the Gantt, ~7-column layout, alphabetical service
  * ordering with the three special entries after it, simplified label text),
  * the service-switching cue (icon-only, no line as of this session — only
@@ -91,9 +95,13 @@ const rows = [
   ["9000001", DATE, "WBVC OR 07", "CABG (single) [87500876]", "Machine Heart Lung Perfusion", "60 yrs",
    "Cardiac", "Egrie, Jonathan, MD [30059201]", "07:30:00", "10:00:00", "07:45:00", "09:45:00",
    "Inpatient", "Scheduled", "Elective"],
-  // OR2: DV5 room robot badge (case-level + room-level).
+  // OR2: DV5 room robot badge (case-level + room-level). Service is
+  // literally "Robotics" here on purpose -- this exact combination (a real
+  // SERVICE_EMOJI key that ALSO happens to be a robotic case) was the real
+  // cause of the reported "double robot icon" bug: the generic Robotics
+  // service emoji plus the case-level platform badge, both robot-themed.
   ["9000002", DATE, "WBVC OR 02", "Robotic prostatectomy", "Robot DaVinci DV5", "55 yrs",
-   "General", "Kardos, Alice, MD [108387]", "07:30:00", "09:30:00", "07:45:00", "09:15:00",
+   "Robotics", "Kardos, Alice, MD [108387]", "07:30:00", "09:30:00", "07:45:00", "09:15:00",
    "Outpatient", "Scheduled", "Elective"],
   // OR5: SP room robot badge (case-level + room-level). OR3 gets its DV5 room
   // badge checked with no case present at all, purely from the room list.
@@ -263,6 +271,10 @@ XLSX.writeFile(wb, fixturePath);
     // concatenated into the label text since textContent ignores structure.
     const legendEntryEls = [...document.querySelectorAll(".gantt-icon-legend-entry")];
     const legendEntries = legendEntryEls.map((el) => el.lastElementChild?.textContent.trim() || "");
+    const legendEntryIcons = legendEntryEls.map((el) => ({
+      label: el.lastElementChild?.textContent.trim() || "",
+      iconHtml: el.querySelector(".gantt-icon-legend-icon")?.innerHTML || ""
+    }));
     const legendGridColumns = document.getElementById("ganttIconLegendGrid")
       ? getComputedStyle(document.getElementById("ganttIconLegendGrid")).gridTemplateColumns.split(" ").length
       : 0;
@@ -316,7 +328,7 @@ XLSX.writeFile(wb, fixturePath);
 
     return {
       roomLabels, blocks, switchCount, switchesHaveIcon, switchesHaveNoLine, switchPairs,
-      legendEntries, legendGridColumns, legendIsAfterGantt,
+      legendEntries, legendEntryIcons, legendGridColumns, legendIsAfterGantt,
       tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount,
       violationsByCase
     };
@@ -335,13 +347,36 @@ XLSX.writeFile(wb, fixturePath);
   check("OR 5 room label shows SP robot badge", !!or5?.line2Html?.includes(">SP<"));
   check("OR 6 (3-light, no designation) shows x3 not bare '3'", !!or6?.line2Html?.includes(">x3<"));
   check("Room labels use two-line structure (line1 present for OR 2)", !!or2?.line1);
+  check("OR 2/OR 3/OR 5 room-label robot badges use the new 🦾 emoji, not the old 🤖",
+    [or2, or3, or5].every((r) => r?.line2Html?.includes("🦾")) &&
+    [or2, or3, or5].every((r) => !r?.line2Html?.includes("🤖")));
 
+  // 9000002: OR2 (a robot-designated room), Service = "Robotics" (a real
+  // SERVICE_EMOJI key), DV5 equipment -- the exact combination that
+  // previously rendered a double robot icon ("🤖🤖DV5 Kardos"). Fixed
+  // behavior: exactly one 🦾 badge, no leading service emoji at all (the
+  // generic "Robotics" service emoji is suppressed since the more specific
+  // platform badge is already shown).
   const dv5Block = data.blocks.find((b) => b.caseNum === "9000002");
+  check("Robotic case in a robot-designated room (OR2) shows exactly ONE robot badge, not two",
+    (dv5Block?.surgeonHTML.match(/🦾/g) || []).length === 1 && !dv5Block?.surgeonHTML.includes("🤖"));
+  check("That case block reads exactly '🦾DV5 Kardos' (no duplicate/leftover service emoji)",
+    /^🦾DV5 Kardos$/.test((dv5Block?.surgeonHTML || "").replace(/<[^>]+>/g, "")));
+
+  // 9000025: OR4 (NOT a robot-designated room), Service = "Transplant" (not
+  // "Robotics"), DV5 equipment. Confirms the fix didn't overreach: the
+  // case-level badge still renders on its own merits regardless of room,
+  // and an unrelated service emoji is untouched (no suppression, since the
+  // service isn't literally "Robotics").
+  const nonRobotRoomBlock = data.blocks.find((b) => b.caseNum === "9000025");
+  check("Robotic case in a NON-robot-designated room (OR4) still shows its own case-level badge",
+    (nonRobotRoomBlock?.surgeonHTML.match(/🦾/g) || []).length === 1);
+  check("...and its unrelated service emoji (Transplant, not Robotics) is untouched by the suppression",
+    nonRobotRoomBlock?.surgeonHTML.includes("💞"));
+
   const spBlock = data.blocks.find((b) => b.caseNum === "9000003");
-  check("DV5 case block shows service emoji + robot badge + surgeon, in order",
-    /🪡.*🤖.*DV5.*Kardos/.test(dv5Block?.surgeonHTML || ""));
-  check("SP case block shows service emoji + robot badge + surgeon, in order",
-    /🫘.*🤖.*SP.*Lin/.test(spBlock?.surgeonHTML || ""));
+  check("SP case block (unrelated Urology service) shows service emoji + 🦾 robot badge + surgeon, in order",
+    /🫘.*🦾.*SP.*Lin/.test(spBlock?.surgeonHTML || "") && !spBlock?.surgeonHTML.includes("🤖"));
 
   const cardiacBlock = data.blocks.find((b) => b.caseNum === "9000001");
   check("Bracketed procedure ID stripped from case block display",
@@ -382,6 +417,17 @@ XLSX.writeFile(wb, fixturePath);
     data.legendEntries.length === data.serviceEmojiCount + 3);
   check("Icon Legend renders below the Gantt chart (not above)", data.legendIsAfterGantt);
   check("Icon Legend grid uses ~7 columns", data.legendGridColumns === 7);
+
+  // Two distinct "Robotics"-labeled entries are expected: the plain
+  // SERVICE_EMOJI service marker (unchanged 🤖) and the special
+  // robot-platform-badge entry (updated to 🦾 this session).
+  const roboticsEntries = data.legendEntryIcons.filter((e) => e.label === "Robotics");
+  check("Icon Legend has both the plain Robotics service entry and the platform-badge entry",
+    roboticsEntries.length === 2);
+  check("Icon Legend's platform-badge entry uses the new 🦾 emoji (not 🤖)",
+    roboticsEntries.some((e) => e.iconHtml.includes("🦾") && !e.iconHtml.includes("🤖")));
+  check("Icon Legend's plain Robotics service entry is untouched (still 🤖)",
+    roboticsEntries.some((e) => e.iconHtml.includes("🤖") && !e.iconHtml.includes("🦾")));
 
   const serviceLabels = data.legendEntries.slice(0, data.serviceEmojiCount);
   const specialLabels = data.legendEntries.slice(data.serviceEmojiCount);
