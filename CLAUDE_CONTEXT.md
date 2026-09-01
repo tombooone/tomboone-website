@@ -1,5 +1,7 @@
 # CLAUDE_CONTEXT.md — PHI-Safe Work Tools
-## Last updated: 2026-08-26 (v1.7.18 — live on dev, not yet on main)
+## Last updated: 2026-09-01 (v1.7.19 — live on dev, not yet on main)
+
+- **v1.7.19 (2026-09-01):** fixed the "Stealth" equipment keyword false-flagging in the Equipment Request Audit. Surgeons write "Stealth" in Special Needs, but the actual Epic equipment name is "W System Navigation Medtronic Fusion (ENT)" — no substring of "Stealth" appears in it, so `containsEquipmentTerm()`'s substring/token matching could never resolve it. Added `"Stealth": ["System Navigation Medtronic Fusion"]` to `KEYWORD_ALIASES` (`rules-data.js`), same pattern as the existing PTeye→parathyroid and Spy ICG→spy imaging aliases — `containsEquipmentTerm()` (`app.js`) already lowercases and substring-matches against every alias, so no logic change was needed, only data. No `KEYWORD_DISPLAY_NAMES` change — Tom's request was alias/matching-side only. Verified with a standalone Node snippet confirming the alias substring is found (case-insensitively) in the real equipment string.
 
 ---
 
@@ -47,7 +49,7 @@ Sub-views (not home-screen tiles):
 
 ## Current Version & Deployment
 
-- Current version: **v1.7.18** (live on dev only, not yet on main)
+- Current version: **v1.7.19** (live on dev only, not yet on main)
 - Repo: github.com/tombooone/tomboone-website
 - File structure: `index.html` (HTML only), `styles.css` (all CSS), `rules-data.js` (pure data constants), `app.js` (all JS — main app first, worm IIFE second, dev gate IIFE third), `items.html` (standalone item search page), `items-data.js` (generated catalog data), `scripts/build-items.mjs` (catalog build script). **`rules-data.js` is loaded BEFORE `app.js`** in index.html; both are inline-script fragments (top-level code indented 4 spaces, no IIFE wrapper), so their top-level `const`/`let` declarations are shared across the two classic scripts via the global lexical environment — `app.js` references the data constants by name with no import/redeclaration. `items-data.js` follows the same pattern, loaded only by `items.html`.
 - **Cache busting:** `styles.css`, `rules-data.js`, `app.js`, and `items-data.js` are loaded with `?v=X.X.XX` query strings in their respective HTML files. These version numbers **must be bumped in sync with the footer version badge** on every deploy. `items.html` has its own `styles.css?v=` and `items-data.js?v=` query strings — bump both when deploying either file.
