@@ -280,7 +280,8 @@
 
     const KEYWORD_ALIASES = {
       "PTeye": ["parathyroid"],
-      "Spy ICG": ["spy imaging"]
+      "Spy ICG": ["spy imaging"],
+      "Stealth": ["System Navigation Medtronic Fusion"]
     };
 
     const KEYWORD_DISPLAY_NAMES = {
