@@ -19,7 +19,10 @@
  * status), the
  * hidden-but-still-rendering violations table, bracketed-procedure-ID
  * stripping on case blocks, and the HARD-5 (Transplant Room) donor-
- * nephrectomy/transplant robotic-pairing suppression (read directly from
+ * nephrectomy/transplant robotic-pairing suppression -- as of v1.7.20,
+ * symmetric in both directions (the nephrectomy case can be the one flagged
+ * and suppressed, not just the transplant case; the partner case can be
+ * either immediately before or immediately after) -- read directly from
  * the audit's in-memory violations list via `_lastAuditResult`, not the
  * rendered table).
  *
@@ -192,6 +195,39 @@ const rows = [
    "Outpatient", "Scheduled", "Elective"],
   ["9000029", DATE, "WBVC OR 09", "Living Related Renal Transplant", "Cooler Donor", "55 yrs",
    "Transplant", "Char, Wendy, MD [500276]", "11:30:00", "14:00:00", "11:45:00", "13:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // Scenario 6 (v1.7.20 generalization, modeled on the real "Bellingham"
+  // case): the NEPHRECTOMY case itself carries HARD-5-listed equipment
+  // ("Cooler Donor") and is flagged on its own -- its procedure text has no
+  // "transplant" substring at all, only "nephrectomy"+"donor". It is
+  // immediately FOLLOWED (not preceded) by a DV5 robotic transplant case, in
+  // OR3 (a valid DV5 room). A neutral buffer case (9000040) is inserted
+  // right before it so its immediate PRECEDING neighbor is unrelated --
+  // isolating this as a pure forward-direction check, since OR3 already has
+  // Scenario 1's own transplant case ending right beforehand. Under the
+  // pre-v1.7.20 backward-only, transplant-only logic this case was never
+  // suppressed. It must be now.
+  ["9000040", DATE, "WBVC OR 03", "Appendectomy", "", "40 yrs",
+   "General", "Bellingham, Test, MD [999001]", "12:00:00", "12:15:00", "12:00:00", "12:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000041", DATE, "WBVC OR 03", "Left Laparoscopic Donor Nephrectomy", "Cooler Donor", "51 yrs",
+   "Transplant", "Bellingham, Test, MD [999001]", "12:30:00", "14:00:00", "12:45:00", "13:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000042", DATE, "WBVC OR 03", "Left Robotic DV5 Assisted Living Donor Renal Transplant", "Robot DaVinci DV5", "51 yrs",
+   "Transplant", "Bellingham, Test, MD [999001]", "14:15:00", "16:45:00", "14:30:00", "16:30:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // Scenario 7: negative control for the forward direction -- a nephrectomy
+  // case with its own HARD-5-listed equipment ("Cooler Donor"), in OR4 (not
+  // a valid room for any robot platform or for HARD-5 itself), immediately
+  // followed by an UNRELATED case with no "transplant" text. No partner
+  // match exists, so the nephrectomy's own HARD-5 violation must still fire.
+  ["9000043", DATE, "WBVC OR 04", "Left Laparoscopic Donor Nephrectomy", "Cooler Donor", "49 yrs",
+   "Transplant", "Kennedy, Owen, MD [515122]", "12:30:00", "14:00:00", "12:45:00", "13:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000044", DATE, "WBVC OR 04", "Hernia repair", "", "50 yrs",
+   "General", "Kennedy, Owen, MD [515122]", "14:15:00", "15:45:00", "14:30:00", "15:30:00",
    "Outpatient", "Scheduled", "Elective"],
 
   // OR12: Gynecology -> Obstetrics, directly abutting (0-minute gap). Isolates
@@ -467,6 +503,14 @@ XLSX.writeFile(wb, fixturePath);
     !hasRule("9000029", "hard-5"));
   check("Scenario 5: nephrectomy case has no HARD-5 violation of its own either",
     !hasRule("9000028", "hard-5"));
+
+  check("Scenario 6 (Bellingham-style: nephrectomy's own HARD-5 flag, DV5 transplant AFTER it, both OR3): nephrectomy's HARD-5 is suppressed",
+    !hasRule("9000041", "hard-5"));
+  check("Scenario 6: transplant partner case has no HARD-5 (or HARD-1) violation of its own",
+    !hasRule("9000042", "hard-5") && !hasRule("9000042", "hard-1"));
+
+  check("Scenario 7 (nephrectomy's own HARD-5 flag in OR4, followed by an unrelated non-transplant case): HARD-5 still fires",
+    hasRule("9000043", "hard-5"));
 
   check("No console/page errors", consoleErrors.length === 0);
   if (consoleErrors.length) consoleErrors.forEach((e) => console.error("  " + e));

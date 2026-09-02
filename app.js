@@ -3756,20 +3756,29 @@
         }
       });
 
-      // Post-process HARD-5 (Transplant Room): suppress the flag on a
-      // transplant case when it's immediately preceded — same room, same
-      // day, no case between them — by a donor nephrectomy case, AND either
-      // case has DV5/SP robot equipment (reuses the existing HARD-1/HARD-2
-      // robotType signal computed above; no new equipment detection), AND
-      // the room is a valid allowedRoom for whichever platform triggered.
-      // This handles the intentional donor-nephrectomy-then-transplant
-      // pairing done back-to-back in a robotic-capable room (OR2/OR3 for
-      // DV5, OR5 for SP) instead of the normal OR6/OR9 transplant rooms.
-      // Only the transplant case's own HARD-5 violation is touched — the
-      // nephrectomy case's rule evaluation is untouched.
+      // Post-process HARD-5 (Transplant Room): suppress the flag on either
+      // half of a donor-nephrectomy/transplant pair when it's immediately
+      // adjacent — same room, same day, no case between them, checking both
+      // directly-before AND directly-after — to the OTHER half of the pair,
+      // AND either case has DV5/SP robot equipment (reuses the existing
+      // HARD-1/HARD-2 robotType signal computed above; no new equipment
+      // detection), AND the room is a valid allowedRoom for whichever
+      // platform triggered. This handles the intentional donor-nephrectomy-
+      // then-transplant pairing done back-to-back in a robotic-capable room
+      // (OR2/OR3 for DV5, OR5 for SP) instead of the normal OR6/OR9
+      // transplant rooms.
+      // v1.7.15 only suppressed the transplant case's own violation, only
+      // when it was immediately preceded by the nephrectomy case. v1.7.20
+      // generalized this: a donor nephrectomy case can independently match
+      // HARD-5's equipmentContainsAny list (it's often scheduled under
+      // Service=Transplant) and needs the same suppression when it's the
+      // one flagged, whether the paired transplant case comes before or
+      // after it.
       const hard5PairSuppressed = new Set(); // "caseNumber:hard-5"
       const hard1Rule = ROOM_RULES.find((r) => r.id === "hard-1");
       const hard2Rule = ROOM_RULES.find((r) => r.id === "hard-2");
+      const isDonorNephrectomyText = (text) => text.includes("nephrectomy") && text.includes("donor");
+      const isTransplantText = (text) => text.includes("transplant");
       violations.forEach((v) => {
         if (v.ruleId !== "hard-5") return;
         const suppressKey = `${v.caseNumber}:hard-5`;
@@ -3779,7 +3788,9 @@
         if (!ac || ac.startMin === null || ac.endMin === null) return;
 
         const procText = String(ac.procedures || "").toLowerCase();
-        if (!procText.includes("transplant")) return;
+        const ownIsNephrectomy = isDonorNephrectomyText(procText);
+        const ownIsTransplant = isTransplantText(procText);
+        if (!ownIsNephrectomy && !ownIsTransplant) return;
 
         const sameRoomDay = cases
           .filter((c) => c.sortDate === v.sortDate && c.room === v.room
@@ -3787,13 +3798,21 @@
           .sort((a, b) => a.startMin - b.startMin);
 
         const idx = sameRoomDay.findIndex((c) => c.caseNumber === ac.caseNumber);
-        if (idx <= 0) return; // no immediately-preceding case in this room/day
+        if (idx === -1) return;
 
-        const prev = sameRoomDay[idx - 1];
-        const prevText = String(prev.procedures || "").toLowerCase();
-        if (!(prevText.includes("nephrectomy") && prevText.includes("donor"))) return;
+        const adjacent = [
+          idx > 0 ? sameRoomDay[idx - 1] : null,
+          idx < sameRoomDay.length - 1 ? sameRoomDay[idx + 1] : null,
+        ].filter(Boolean);
 
-        const triggeredRobotType = ac.robotType || prev.robotType;
+        const partner = adjacent.find((c) => {
+          const candText = String(c.procedures || "").toLowerCase();
+          return (ownIsTransplant && isDonorNephrectomyText(candText))
+            || (ownIsNephrectomy && isTransplantText(candText));
+        });
+        if (!partner) return;
+
+        const triggeredRobotType = ac.robotType || partner.robotType;
         if (!triggeredRobotType) return;
 
         const robotRule = triggeredRobotType === "DV5" ? hard1Rule : hard2Rule;
