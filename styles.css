@@ -895,12 +895,17 @@
       background: #fff8e1; color: #92400e;
       border-color: #fcd34d; cursor: pointer;
     }
+    .gantt-cal-cell-orange {
+      background: #fff3ed; color: #c2410c;
+      border-color: #fdba74; cursor: pointer;
+    }
     .gantt-cal-cell-red {
       background: #fce8e8; color: #b91c1c;
       border-color: #fca5a5; cursor: pointer;
     }
     .gantt-cal-cell-green:hover,
     .gantt-cal-cell-amber:hover,
+    .gantt-cal-cell-orange:hover,
     .gantt-cal-cell-red:hover { opacity: 0.72; }
     .gantt-cal-cell.active { box-shadow: 0 0 0 2px var(--brand); font-weight: 700; }
 

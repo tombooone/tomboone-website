@@ -71,7 +71,10 @@
     ];
 
     const ROOM_RULES = [
-      // ── Tier 1: Physical Absolute ─────────────────────────────────────────
+      // ── "hard-" rules: tier field is authoritative, not the ID prefix ──────
+      // v1.7.21 narrowed Tier 1 (Physical Absolute) to hard-1/hard-2/hard-6
+      // only; hard-3/hard-4/hard-5/hard-7 moved to Tier 2 (Strong Operational)
+      // but kept their "hard-" IDs — renaming was out of scope.
       {
         id: "hard-1",
         tier: 1,
@@ -91,7 +94,7 @@
       },
       {
         id: "hard-3",
-        tier: 1,
+        tier: 2,
         label: "Neuro/Spine Room",
         description: "Neuro/spine equipment is fixed to OR 11 or OR 12.",
         match: { equipmentContainsAny: ["Robot Neuro Excelsius GPS Globus", "Table Intraop CT Spine AIRO", "Table Intraop CT Cranial AIRO", "Scanner Airo Mobile Intraoperative CT", "System Navigation Brainlab", "Unit Doppler Micro Neuro", "Table Jackson", "Frame Wilson", "Mayfield Basic Unit", "Table Double Decker", "Trios Jackson Spinal", "Cart Electrophysiology Neuro"] },
@@ -100,7 +103,7 @@
       },
       {
         id: "hard-4",
-        tier: 1,
+        tier: 2,
         label: "Cardiac Surgery Room",
         description: "Cardiac surgery equipment is fixed to OR 7.",
         match: { equipmentContainsAny: ["Machine Heart Lung Perfusion", "Mount Table Large Estech", "Stool Hydraulic Ima", "Unit Hemopro 5500", "Cable Pacing Tester"] },
@@ -108,7 +111,7 @@
       },
       {
         id: "hard-5",
-        tier: 1,
+        tier: 2,
         label: "Transplant Room",
         description: "Transplant equipment requires OR 6 or OR 9.",
         match: { equipmentContainsAny: ["Table Back w/o shelf (Transplant)", "Table Small w/o shelf (Transplant)", "Cooler Donor", "Cart Renal Transplant", "ORGANOX"] },
@@ -124,7 +127,7 @@
       },
       {
         id: "hard-7",
-        tier: 1,
+        tier: 2,
         label: "Free Flap Procedure",
         description: "Free flap procedures require a room with three overhead lights. Cases must be in OR 6, OR 7, OR 8, or OR 9.",
         match: { procedureTextContains: "free flap" },

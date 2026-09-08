@@ -80,11 +80,30 @@ if (!CHROME) {
 }
 
 // ── Synthetic, non-PHI fixture ──────────────────────────────────────────────
-const DATE = (() => {
+const fmtDate = (d) => `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+const BASE_DATE_OBJ = (() => {
   const d = new Date();
   d.setDate(d.getDate() + 14); // safely inside the prospective-only window
-  return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+  return d;
 })();
+const DATE = fmtDate(BASE_DATE_OBJ);
+// Same-month offsets from DATE, used for the v1.7.21 re-tiering calendar-color
+// scenarios below — these need their OWN dates (isolated from the mixed-tier
+// violations already on DATE) so a day's color can be attributed to exactly
+// one tier. Falls back to subtracting instead of adding if that would cross
+// a month boundary (calendar month-nav isn't exercised by this script).
+function sameMonthOffset(days) {
+  let d = new Date(BASE_DATE_OBJ);
+  d.setDate(d.getDate() + days);
+  if (d.getMonth() !== BASE_DATE_OBJ.getMonth()) {
+    d = new Date(BASE_DATE_OBJ);
+    d.setDate(d.getDate() - days);
+  }
+  return d;
+}
+const DATE_RED    = fmtDate(sameMonthOffset(1));
+const DATE_ORANGE = fmtDate(sameMonthOffset(2));
+const DATE_MIXED  = fmtDate(sameMonthOffset(3));
 
 const headers = [
   "Case #", "Date", "Room", "Case Procedures", "Equipment", "Patient Age",
@@ -240,6 +259,34 @@ const rows = [
    "Outpatient", "Scheduled", "Elective"],
   ["9000032", DATE, "WBVC OR 12", "Cesarean section", "", "30 yrs",
    "Obstetrics", "Zakaria, Fatima, MD [20144424]", "09:00:00", "10:30:00", "09:15:00", "10:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // ── v1.7.21 re-tiering: calendar-color isolation scenarios ─────────────
+  // DATE_RED: the ONLY violation this day is HARD-6 (Hybrid/Cath Lab,
+  // still Tier 1 post-retier) -- "CV ACCESSION EQ" equipment in OR8 instead
+  // of OR14. The day-level calendar swatch must be red.
+  ["9000060", DATE_RED, "WBVC OR 08", "Cardiac catheterization", "CV ACCESSION EQ", "60 yrs",
+   "General", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // DATE_ORANGE: the ONLY violation this day is HARD-3 (Neuro/Spine Room,
+  // demoted to Tier 2 this session) -- "Table Jackson" equipment in OR1
+  // instead of OR11/OR12. No HARD-1/2/6 violation exists this day, so the
+  // calendar swatch must be the Tier 2 color, NOT red.
+  ["9000061", DATE_ORANGE, "WBVC OR 01", "Spinal fusion", "Table Jackson", "60 yrs",
+   "General", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // DATE_MIXED: negative control -- BOTH a HARD-1 (Tier 1) and a HARD-3
+  // (Tier 2, demoted) violation land on the same day. Proves the red/orange
+  // split is real precedence logic, not a hardcoded/vacuous result: if the
+  // Tier-1 check were broken (e.g. always false, or the orange branch always
+  // won), this day would wrongly show orange instead of red.
+  ["9000062", DATE_MIXED, "WBVC OR 04", "Robotic case in wrong room", "Robot DaVinci DV5", "60 yrs",
+   "General", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000063", DATE_MIXED, "WBVC OR 01", "Spinal fusion", "Table Jackson", "60 yrs",
+   "General", "Testcase, Runner, MD [999099]", "10:00:00", "11:30:00", "10:15:00", "11:15:00",
    "Outpatient", "Scheduled", "Elective"]
 ];
 
@@ -286,13 +333,14 @@ XLSX.writeFile(wb, fixturePath);
   }, { timeout: 15000 });
   await new Promise((r) => setTimeout(r, 300));
 
-  const data = await page.evaluate(() => {
+  const data = await page.evaluate((testDayRed, testDayOrange, testDayMixed) => {
     const roomLabels = [...document.querySelectorAll(".gantt-room-label")].map((el) => ({
       line1: el.querySelector(".gantt-room-label-line1")?.textContent || "",
       line2Html: el.querySelector(".gantt-room-label-line2")?.innerHTML || null
     }));
     const blocks = [...document.querySelectorAll(".gantt-case-block")].map((b) => ({
       caseNum: b.dataset.caseNum,
+      className: b.className,
       surgeonHTML: b.querySelector(".gantt-block-surgeon")?.innerHTML || "",
       proctxt: b.querySelector(".gantt-block-proctxt")?.textContent || ""
     }));
@@ -355,22 +403,51 @@ XLSX.writeFile(wb, fixturePath);
     // from an injected page.evaluate() function running in the same realm)
     // rather than parsing the hidden violations table's rendered text.
     const violationsByCase = {};
+    const violationTiersByCase = {};
     (typeof _lastAuditResult !== "undefined" && _lastAuditResult
       ? _lastAuditResult.violations : []
     ).forEach((v) => {
       if (!violationsByCase[v.caseNumber]) violationsByCase[v.caseNumber] = [];
       violationsByCase[v.caseNumber].push(v.ruleId);
+      if (!violationTiersByCase[v.caseNumber]) violationTiersByCase[v.caseNumber] = [];
+      violationTiersByCase[v.caseNumber].push(v.ruleTier);
     });
+
+    // v1.7.21 re-tiering: calendar day-swatch color, read directly off the
+    // rendered .gantt-cal-cell for a given day-of-month (only one month is
+    // ever in the DOM at a time, so matching on the visible day number alone
+    // is unambiguous).
+    const calendarCellColor = (day) => {
+      const el = [...document.querySelectorAll(".gantt-cal-cell")]
+        .find((c) => c.dataset.sd !== undefined && c.textContent === String(day));
+      if (!el) return null;
+      const m = el.className.match(/gantt-cal-cell-(red|orange|amber|green)/);
+      return m ? m[1] : null;
+    };
 
     return {
       roomLabels, blocks, switchCount, switchesHaveIcon, switchesHaveNoLine, switchPairs,
       legendEntries, legendEntryIcons, legendGridColumns, legendIsAfterGantt,
       tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount,
-      violationsByCase
+      violationsByCase, violationTiersByCase,
+      calRedDay:    calendarCellColor(testDayRed),
+      calOrangeDay: calendarCellColor(testDayOrange),
+      calMixedDay:  calendarCellColor(testDayMixed)
     };
-  });
+  }, sameMonthOffset(1).getDate(), sameMonthOffset(2).getDate(), sameMonthOffset(3).getDate());
 
   await page.screenshot({ path: OUT_PATH, fullPage: true });
+
+  // Sidebar check (v1.7.21 re-tiering): click the demoted HARD-5-only case
+  // (9000026, still on the initially-selected earliest day) and confirm its
+  // alert badge reads "Tier 2" with the Tier-2 (orange) badge class, not
+  // Tier 1.
+  await page.click('.gantt-case-block[data-case-num="9000026"]');
+  await page.waitForSelector("#ganttSidebar:not([hidden])", { timeout: 5000 });
+  const sidebarData = await page.evaluate(() => {
+    const badges = [...document.querySelectorAll("#ganttSidebarContent .sb-viol-item .badge")];
+    return badges.map((b) => ({ className: b.className, text: b.textContent }));
+  });
 
   // ── Assertions ─────────────────────────────────────────────────────────
   const or2 = data.roomLabels.find((r) => r.line1 === "OR 2");
@@ -511,6 +588,34 @@ XLSX.writeFile(wb, fixturePath);
 
   check("Scenario 7 (nephrectomy's own HARD-5 flag in OR4, followed by an unrelated non-transplant case): HARD-5 still fires",
     hasRule("9000043", "hard-5"));
+
+  // ── v1.7.21 re-tiering: HARD-3/4/5/7 moved to Tier 2; HARD-1/2/6 stay Tier 1 ──
+  check("Demoted rule: case 9000026's HARD-5 violation now carries ruleTier 2 (not 1)",
+    (data.violationTiersByCase["9000026"] || [])[
+      (data.violationsByCase["9000026"] || []).indexOf("hard-5")
+    ] === 2);
+  check("Unchanged rule: case 9000025's HARD-1 violation still carries ruleTier 1",
+    (data.violationTiersByCase["9000025"] || [])[
+      (data.violationsByCase["9000025"] || []).indexOf("hard-1")
+    ] === 1);
+
+  const tier1AloneBlock = data.blocks.find((b) => b.caseNum === "9000025");
+  const tier2AloneBlock = data.blocks.find((b) => b.caseNum === "9000026");
+  check("Gantt: case violating HARD-1 alone (9000025) still renders red (.gantt-viol-1)",
+    /\bgantt-viol-1\b/.test(tier1AloneBlock?.className || ""));
+  check("Gantt: case violating demoted HARD-5 alone (9000026) renders Tier 2 styling (.gantt-viol-2), identical class to Ophtho/Peds Tier 2 cases",
+    /\bgantt-viol-2\b/.test(tier2AloneBlock?.className || ""));
+
+  check("Calendar: a day with only a HARD-6 (Hybrid/Cath Lab) violation shows red",
+    data.calRedDay === "red");
+  check("Calendar: a day with only a demoted HARD-3 (Neuro/Spine) violation shows the Tier 2 color (orange), NOT red",
+    data.calOrangeDay === "orange");
+  check("Negative control: a day with BOTH a HARD-1 and a demoted HARD-3 violation still shows red (red takes precedence over orange, proving the split isn't vacuous)",
+    data.calMixedDay === "red");
+
+  check("Sidebar: demoted HARD-5 case (9000026) shows a Tier 2 alert badge, not Tier 1",
+    sidebarData.some((b) => b.className.includes("badge-tier-2") && b.text.trim() === "Tier 2") &&
+    !sidebarData.some((b) => b.className.includes("badge-tier-1")));
 
   check("No console/page errors", consoleErrors.length === 0);
   if (consoleErrors.length) consoleErrors.forEach((e) => console.error("  " + e));

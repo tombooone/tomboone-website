@@ -3977,12 +3977,15 @@
       const sortedDates = [...byDate.keys()].sort((a, b) => a - b);
       _ganttByDate = byDate;
 
-      // Compute per-day violation status
+      // Compute per-day violation status. Red is strictly Tier 1 (true
+      // physical hard-stops); Tier 2 gets its own orange bucket rather than
+      // being folded into red — see v1.7.21 re-tiering note.
       const dayStatus = new Map();
       sortedDates.forEach((sd) => {
-        const hasTier12 = result.violations.some((v) => v.sortDate === sd && v.ruleTier <= 2);
-        const hasViol   = result.violations.some((v) => v.sortDate === sd);
-        dayStatus.set(sd, hasTier12 ? "red" : hasViol ? "amber" : "green");
+        const hasTier1 = result.violations.some((v) => v.sortDate === sd && v.ruleTier === 1);
+        const hasTier2 = result.violations.some((v) => v.sortDate === sd && v.ruleTier === 2);
+        const hasViol  = result.violations.some((v) => v.sortDate === sd);
+        dayStatus.set(sd, hasTier1 ? "red" : hasTier2 ? "orange" : hasViol ? "amber" : "green");
       });
 
       // Build selection handler (shared by calendar cells and day-nav arrows)
