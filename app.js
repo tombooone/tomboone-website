@@ -1574,6 +1574,33 @@
           foundIndex = lowered.indexOf(search, startIndex);
         }
 
+        // Additional trigger synonyms for this keyword (e.g. "Robot" also
+        // fires on "DaVinci"/"DV5"/boundary-safe "SP"/"Single Port") — see
+        // KEYWORD_TRIGGER_SYNONYMS (rules-data.js) for why this is separate
+        // from KEYWORD_ALIASES.
+        const synonyms = KEYWORD_TRIGGER_SYNONYMS[keyword];
+        if (synonyms) {
+          synonyms.forEach((syn) => {
+            if (syn.wordBoundary) {
+              const re = new RegExp(phraseBoundaryPattern(syn.term), "gi");
+              let m;
+              while ((m = re.exec(source)) !== null) {
+                matches.push({ keyword, keywordIndex, startIndex: m.index, matchedText: m[0], matchType: "synonym" });
+                if (re.lastIndex === m.index) re.lastIndex += 1;
+              }
+            } else {
+              const synSearch = syn.term.toLowerCase();
+              let synStart = 0;
+              let synFound = lowered.indexOf(synSearch, synStart);
+              while (synFound !== -1) {
+                matches.push({ keyword, keywordIndex, startIndex: synFound, matchedText: source.slice(synFound, synFound + syn.term.length), matchType: "synonym" });
+                synStart = synFound + 1;
+                synFound = lowered.indexOf(synSearch, synStart);
+              }
+            }
+          });
+        }
+
         if (!matches.some((match) => match.keywordIndex === keywordIndex)) {
           const kwOpts = KEYWORD_OPTIONS[keyword];
           const sepMatch = findSeparatorInsensitiveMatch(source, keyword);
@@ -1687,6 +1714,11 @@
 
     function containsEquipmentTerm(text, termMatch) {
       const source = String(text || "");
+      const override = KEYWORD_EQUIPMENT_MATCH_OVERRIDE[termMatch.keyword];
+      if (override) {
+        const sourceLower = source.toLowerCase();
+        return override.some((term) => sourceLower.includes(term.toLowerCase()));
+      }
       const aliases = KEYWORD_ALIASES[termMatch.keyword];
       if (aliases) {
         const sourceLower = source.toLowerCase();

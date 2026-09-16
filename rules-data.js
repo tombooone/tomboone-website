@@ -80,7 +80,7 @@
         tier: 1,
         label: "DaVinci DV5 Robot",
         description: "DaVinci DV5 robot is immovable. Cases must be in OR 2 or OR 3.",
-        match: { equipmentContainsAny: ["Robot DaVinci DV5", "Davinci Robot Xi"] },
+        match: { equipmentContainsAny: ["Robot DaVinci DV5"] },
         allowedRooms: ["OR 2", "OR 3"]
       },
       {
@@ -270,7 +270,8 @@
       "Stealth",
       "Ultrasound",
       "Spy ICG",
-      "PTeye"
+      "PTeye",
+      "Robot"
     ];
 
     // Optional per-keyword matching constraints.
@@ -285,6 +286,36 @@
       "PTeye": ["parathyroid"],
       "Spy ICG": ["spy imaging"],
       "Stealth": ["System Navigation Medtronic Fusion"]
+    };
+
+    // Additional Special Needs trigger synonyms for a keyword, beyond the
+    // keyword's own text — distinct from KEYWORD_ALIASES, which only affects
+    // the Equipment-field satisfaction check, not trigger detection in
+    // Special Needs. wordBoundary: true requires the term to be bounded by
+    // whitespace, punctuation, or string start/end (prevents e.g. "SP" from
+    // matching inside "Special"/"Specimen"/"Supine").
+    const KEYWORD_TRIGGER_SYNONYMS = {
+      "Robot": [
+        { term: "davinci" },
+        { term: "dv5" },
+        { term: "sp", wordBoundary: true },
+        { term: "single port" }
+      ]
+    };
+
+    // Keywords whose Equipment-field satisfaction check must match ONLY
+    // these exact strings, bypassing containsEquipmentTerm()'s generic
+    // base-keyword substring fallback — used when the keyword itself is too
+    // generic a substring to safely match against Equipment (e.g. "Robot"
+    // would also match unrelated equipment like "Robot Neuro Excelsius GPS
+    // Globus", HARD-3's neuro robot). Reuses HARD-1/HARD-2's own
+    // equipmentContainsAny match strings (ROOM_RULES above) so this list can
+    // never drift from the room-rules engine's own robot-platform strings.
+    const KEYWORD_EQUIPMENT_MATCH_OVERRIDE = {
+      "Robot": [
+        ...ROOM_RULES.find((r) => r.id === "hard-1").match.equipmentContainsAny,
+        ...ROOM_RULES.find((r) => r.id === "hard-2").match.equipmentContainsAny
+      ]
     };
 
     const KEYWORD_DISPLAY_NAMES = {
