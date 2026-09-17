@@ -396,6 +396,13 @@ XLSX.writeFile(wb, fixturePath);
     });
 
     const serviceEmojiCount = Object.keys(SERVICE_EMOJI).length;
+    // Mirrors buildGanttIconLegend()'s own filter/dedupe (v1.7.23): "Robotics"
+    // excluded (shown only via the combined DV5/SP badge entry), then
+    // deduped by emoji value so alias keys sharing an emoji (e.g.
+    // "Pediatrics"/"Pediatric General") count as one legend row.
+    const uniqueServiceEmojiCount = new Set(
+      Object.keys(SERVICE_EMOJI).filter((s) => s !== "Robotics").map((s) => SERVICE_EMOJI[s])
+    ).size;
 
     // HARD-5 donor-nephrectomy/transplant pairing suppression: read directly
     // from the module's own last-computed audit result (a bare top-level
@@ -428,7 +435,7 @@ XLSX.writeFile(wb, fixturePath);
     return {
       roomLabels, blocks, switchCount, switchesHaveIcon, switchesHaveNoLine, switchPairs,
       legendEntries, legendEntryIcons, legendGridColumns, legendIsAfterGantt,
-      tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount,
+      tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount, uniqueServiceEmojiCount,
       violationsByCase, violationTiersByCase,
       calRedDay:    calendarCellColor(testDayRed),
       calOrangeDay: calendarCellColor(testDayOrange),
@@ -526,24 +533,27 @@ XLSX.writeFile(wb, fixturePath);
   check("Abutting SAME-service pair (OR10 9000004->9000005) shows no icon (unchanged behavior)",
     !data.switchPairs.includes("9000004->9000005"));
 
-  check(`Icon Legend has one entry per SERVICE_EMOJI key (${data.serviceEmojiCount}) plus robot/3-light/switch-cue`,
-    data.legendEntries.length === data.serviceEmojiCount + 3);
+  check(`Icon Legend has one entry per unique SERVICE_EMOJI value excluding "Robotics" (${data.uniqueServiceEmojiCount}) plus robot/3-light/switch-cue`,
+    data.legendEntries.length === data.uniqueServiceEmojiCount + 3);
   check("Icon Legend renders below the Gantt chart (not above)", data.legendIsAfterGantt);
   check("Icon Legend grid uses ~7 columns", data.legendGridColumns === 7);
 
-  // Two distinct "Robotics"-labeled entries are expected: the plain
-  // SERVICE_EMOJI service marker (unchanged 🤖) and the special
-  // robot-platform-badge entry (updated to 🦾 this session).
+  // v1.7.23: the bare plain-🤖 "Robotics" service row was removed — only the
+  // combined DV5/SP platform-badge entry (🦾) should remain under that label.
   const roboticsEntries = data.legendEntryIcons.filter((e) => e.label === "Robotics");
-  check("Icon Legend has both the plain Robotics service entry and the platform-badge entry",
-    roboticsEntries.length === 2);
-  check("Icon Legend's platform-badge entry uses the new 🦾 emoji (not 🤖)",
-    roboticsEntries.some((e) => e.iconHtml.includes("🦾") && !e.iconHtml.includes("🤖")));
-  check("Icon Legend's plain Robotics service entry is untouched (still 🤖)",
-    roboticsEntries.some((e) => e.iconHtml.includes("🤖") && !e.iconHtml.includes("🦾")));
+  check("Icon Legend has exactly one 'Robotics'-labeled entry (the platform badge, no more bare service row)",
+    roboticsEntries.length === 1);
+  check("Icon Legend's remaining Robotics entry is the platform-badge one (🦾, not 🤖)",
+    roboticsEntries[0]?.iconHtml.includes("🦾") && !roboticsEntries[0]?.iconHtml.includes("🤖"));
 
-  const serviceLabels = data.legendEntries.slice(0, data.serviceEmojiCount);
-  const specialLabels = data.legendEntries.slice(data.serviceEmojiCount);
+  // v1.7.23: "Pediatrics"/"Pediatric General" (both 🧸) must collapse to a
+  // single row under the alphabetically-first (canonical) label.
+  const pediatricEntries = data.legendEntries.filter((l) => l === "Pediatrics" || l === "Pediatric General");
+  check('Pediatric alias rows collapsed to a single "Pediatric General" entry',
+    JSON.stringify(pediatricEntries) === JSON.stringify(["Pediatric General"]));
+
+  const serviceLabels = data.legendEntries.slice(0, data.uniqueServiceEmojiCount);
+  const specialLabels = data.legendEntries.slice(data.uniqueServiceEmojiCount);
   const sortedServiceLabels = [...serviceLabels].sort((a, b) => a.localeCompare(b));
   check("Service entries are sorted alphabetically",
     JSON.stringify(serviceLabels) === JSON.stringify(sortedServiceLabels));

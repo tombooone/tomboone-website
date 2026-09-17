@@ -4295,10 +4295,24 @@
       }
 
       // Alphabetical for scan-ability; the three special (non-service)
-      // entries below always come after the sorted service list.
-      Object.keys(SERVICE_EMOJI).sort((a, b) => a.localeCompare(b)).forEach((service) => {
-        addEntry(emojiNode(SERVICE_EMOJI[service]), service);
-      });
+      // entries below always come after the sorted service list. "Robotics"
+      // is excluded here — it's shown only via the combined DV5/SP badge
+      // entry below, not as a redundant bare-🤖 service row. Dedupe on emoji
+      // (not raw key) so alias keys that share an emoji (e.g. "Pediatrics"/
+      // "Pediatric General", both 🧸) collapse to one row automatically —
+      // the alphabetically-first key wins, which is "Pediatric General"
+      // here — without needing a hardcoded canonical-name map that could
+      // drift out of sync if another alias is added later.
+      const seenServiceEmoji = new Set();
+      Object.keys(SERVICE_EMOJI)
+        .filter((service) => service !== "Robotics")
+        .sort((a, b) => a.localeCompare(b))
+        .forEach((service) => {
+          const emoji = SERVICE_EMOJI[service];
+          if (seenServiceEmoji.has(emoji)) return;
+          seenServiceEmoji.add(emoji);
+          addEntry(emojiNode(emoji), service);
+        });
 
       const robotIcon = document.createElement("span");
       appendEmoji(robotIcon, ROBOT_BADGE_EMOJI);
