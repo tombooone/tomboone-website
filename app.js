@@ -1620,9 +1620,41 @@
         }
       });
 
-      return matches.sort((a, b) => {
-        if (a.startIndex !== b.startIndex) return a.startIndex - b.startIndex;
-        return a.keywordIndex - b.keywordIndex;
+      return matches
+        .filter((match) => !isExcludedMention(source, match))
+        .sort((a, b) => {
+          if (a.startIndex !== b.startIndex) return a.startIndex - b.startIndex;
+          return a.keywordIndex - b.keywordIndex;
+        });
+    }
+
+    // The comma/semicolon/newline-delimited clause containing [start, end)
+    // in `text` — same hard scope-boundary characters evaluateNegation()
+    // treats as an unconditional break, so this stays consistent with how
+    // "scope" is already defined elsewhere in this file.
+    function extractMentionClause(text, start, end) {
+      let clauseStart = 0;
+      for (let i = start - 1; i >= 0; i--) {
+        if (/[.;,\n]/.test(text[i])) { clauseStart = i + 1; break; }
+      }
+      let clauseEnd = text.length;
+      for (let i = end; i < text.length; i++) {
+        if (/[.;,\n]/.test(text[i])) { clauseEnd = i; break; }
+      }
+      return text.slice(clauseStart, clauseEnd);
+    }
+
+    // True if `match` should be discarded per KEYWORD_MENTION_EXCLUSIONS
+    // (rules-data.js) — a per-mention check: only excludes matches whose
+    // own clause contains an exclusion term, not the whole case.
+    function isExcludedMention(source, match) {
+      const exclusions = KEYWORD_MENTION_EXCLUSIONS[match.keyword];
+      if (!exclusions) return false;
+      const clause = extractMentionClause(source, match.startIndex, match.startIndex + match.matchedText.length);
+      return exclusions.some((ex) => {
+        if (ex.wordBoundary) return new RegExp(phraseBoundaryPattern(ex.term), "i").test(clause);
+        if (ex.wordPrefix) return new RegExp("(?<![a-z0-9])" + escapeRegExp(ex.term), "i").test(clause);
+        return clause.toLowerCase().includes(ex.term.toLowerCase());
       });
     }
 

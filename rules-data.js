@@ -303,6 +303,26 @@
       ]
     };
 
+    // Per-keyword Special Needs mention exclusions: a matched keyword
+    // mention is discarded — per-mention, not per-case — if the same
+    // comma/semicolon/newline-delimited clause containing the match also
+    // contains one of these terms (same hard clause/scope-boundary
+    // convention evaluateNegation() already uses). A genuine mention in a
+    // DIFFERENT clause of the same Special Needs field is unaffected and
+    // still flags normally. wordBoundary: true requires an exact whole-word
+    // match; wordPrefix: true only requires the term to START a word (no
+    // trailing boundary), so "bronch" also excludes "bronchoscopy"/
+    // "bronchial". Added so bronchoscopy-robot mentions ("ION Robotic
+    // Bronch", "Robotic Bronch") never satisfy the Robot keyword — those
+    // reference a different device, not the DV5/SP surgical robot this
+    // check is meant to catch.
+    const KEYWORD_MENTION_EXCLUSIONS = {
+      "Robot": [
+        { term: "ion", wordBoundary: true },
+        { term: "bronch", wordPrefix: true }
+      ]
+    };
+
     // Keywords whose Equipment-field satisfaction check must match ONLY
     // these exact strings, bypassing containsEquipmentTerm()'s generic
     // base-keyword substring fallback — used when the keyword itself is too
