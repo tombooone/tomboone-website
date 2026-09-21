@@ -79,9 +79,9 @@
         id: "hard-1",
         tier: 1,
         label: "DaVinci DV5 Robot",
-        description: "DaVinci DV5 robot is immovable. Cases must be in OR 2 or OR 3.",
+        description: "DaVinci DV5 robot cases must be in OR 2, OR 3, OR 4, or OR 8.",
         match: { equipmentContainsAny: ["Robot DaVinci DV5"] },
-        allowedRooms: ["OR 2", "OR 3"]
+        allowedRooms: ["OR 2", "OR 3", "OR 4", "OR 8"]
       },
       {
         id: "hard-2",

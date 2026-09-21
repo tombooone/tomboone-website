@@ -187,13 +187,16 @@ const rows = [
    "Transplant", "Reiter, Anna, MD [20063777]", "12:00:00", "14:30:00", "12:15:00", "14:15:00",
    "Outpatient", "Scheduled", "Elective"],
 
-  // Scenario 3: same DV5 pairing, but in OR4 -- NOT a valid room for DV5
-  // (hard-1's allowedRooms are OR2/OR3 only) -> HARD-5 must still fire
-  // normally on the transplant case (suppression must not apply here).
-  ["9000025", DATE, "WBVC OR 04", "Right Robotic DV5 Assisted Laparoscopic Donor Nephrectomy", "Robot DaVinci DV5", "46 yrs",
+  // Scenario 3: same DV5 pairing, but in OR1 -- NOT a valid room for DV5
+  // (hard-1's allowedRooms are OR2/OR3/OR4/OR8 as of v1.7.26) -> HARD-5 must
+  // still fire normally on the transplant case (suppression must not apply
+  // here). Moved from OR4 to OR1 this session, since OR4 became a valid DV5
+  // room in v1.7.26 (the Mission Bernal DV5 relocation) -- OR4 no longer
+  // works as a "not a valid DV5 room" negative control.
+  ["9000025", DATE, "WBVC OR 01", "Right Robotic DV5 Assisted Laparoscopic Donor Nephrectomy", "Robot DaVinci DV5", "46 yrs",
    "Transplant", "Kennedy, Owen, MD [515122]", "07:30:00", "09:30:00", "07:45:00", "09:15:00",
    "Outpatient", "Scheduled", "Elective"],
-  ["9000026", DATE, "WBVC OR 04", "Living Related Renal Transplant", "Cooler Donor", "49 yrs",
+  ["9000026", DATE, "WBVC OR 01", "Living Related Renal Transplant", "Cooler Donor", "49 yrs",
    "Transplant", "Kennedy, Owen, MD [515122]", "09:45:00", "12:15:00", "10:00:00", "12:00:00",
    "Outpatient", "Scheduled", "Elective"],
 
@@ -238,14 +241,16 @@ const rows = [
    "Outpatient", "Scheduled", "Elective"],
 
   // Scenario 7: negative control for the forward direction -- a nephrectomy
-  // case with its own HARD-5-listed equipment ("Cooler Donor"), in OR4 (not
+  // case with its own HARD-5-listed equipment ("Cooler Donor"), in OR1 (not
   // a valid room for any robot platform or for HARD-5 itself), immediately
   // followed by an UNRELATED case with no "transplant" text. No partner
   // match exists, so the nephrectomy's own HARD-5 violation must still fire.
-  ["9000043", DATE, "WBVC OR 04", "Left Laparoscopic Donor Nephrectomy", "Cooler Donor", "49 yrs",
+  // Moved from OR4 to OR1 this session for the same reason as Scenario 3
+  // above (OR4 is now a valid DV5 room as of v1.7.26).
+  ["9000043", DATE, "WBVC OR 01", "Left Laparoscopic Donor Nephrectomy", "Cooler Donor", "49 yrs",
    "Transplant", "Kennedy, Owen, MD [515122]", "12:30:00", "14:00:00", "12:45:00", "13:45:00",
    "Outpatient", "Scheduled", "Elective"],
-  ["9000044", DATE, "WBVC OR 04", "Hernia repair", "", "50 yrs",
+  ["9000044", DATE, "WBVC OR 01", "Hernia repair", "", "50 yrs",
    "General", "Kennedy, Owen, MD [515122]", "14:15:00", "15:45:00", "14:30:00", "15:30:00",
    "Outpatient", "Scheduled", "Elective"],
 
@@ -281,12 +286,39 @@ const rows = [
   // (Tier 2, demoted) violation land on the same day. Proves the red/orange
   // split is real precedence logic, not a hardcoded/vacuous result: if the
   // Tier-1 check were broken (e.g. always false, or the orange branch always
-  // won), this day would wrongly show orange instead of red.
-  ["9000062", DATE_MIXED, "WBVC OR 04", "Robotic case in wrong room", "Robot DaVinci DV5", "60 yrs",
+  // won), this day would wrongly show orange instead of red. Room moved
+  // from OR4 to OR10 this session -- OR4 is now a valid DV5 room (v1.7.26),
+  // so it no longer works as the "wrong room" half of this negative control.
+  ["9000062", DATE_MIXED, "WBVC OR 10", "Robotic case in wrong room", "Robot DaVinci DV5", "60 yrs",
    "General", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
    "Outpatient", "Scheduled", "Elective"],
   ["9000063", DATE_MIXED, "WBVC OR 01", "Spinal fusion", "Table Jackson", "60 yrs",
    "General", "Testcase, Runner, MD [999099]", "10:00:00", "11:30:00", "10:15:00", "11:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // ── v1.7.26 HARD-1 expansion: Mission Bernal DV5 relocation (mobile
+  // between OR4/OR8, alongside the existing fixed DV5 in OR2/OR3) ─────────
+  // OR4: DV5 equipment, now a valid room -> compliant, no HARD-1 violation.
+  // Also proves a room can carry both its existing Pediatric General
+  // designation badge (🧸) and the new robot badge together with no
+  // clipping (checked via line2Overflow below).
+  ["9000071", DATE, "WBVC OR 04", "Robotic case, Mission Bernal DV5 relocated here", "Robot DaVinci DV5", "50 yrs",
+   "Urology", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // OR8: DV5 equipment, now a valid room -> compliant, no HARD-1 violation.
+  // OR8 is the first room in the app to combine all three badge slots at
+  // once (Thoracic designation 🫁 + robot badge 🦾 + 3-light 💡) -- scheduled
+  // with a 15-min gap after the existing 9000010 (ends 12:30) so it doesn't
+  // introduce a new abutting service-switch pair.
+  ["9000072", DATE, "WBVC OR 08", "Robotic case, Mission Bernal DV5 relocated here", "Robot DaVinci DV5", "50 yrs",
+   "Urology", "Testcase, Runner, MD [999099]", "12:45:00", "14:15:00", "13:00:00", "14:00:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // OR11: DV5 equipment in a room that is still NOT valid for either DV5
+  // room-set post-expansion -> regression check, must still flag HARD-1
+  // normally (a dedicated case for this, isolated from the HARD-5 pairing
+  // scenarios above which also prove the same point incidentally).
+  ["9000073", DATE, "WBVC OR 11", "Robotic case in a non-DV5 room", "Robot DaVinci DV5", "50 yrs",
+   "Urology", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
    "Outpatient", "Scheduled", "Elective"]
 ];
 
@@ -334,10 +366,19 @@ XLSX.writeFile(wb, fixturePath);
   await new Promise((r) => setTimeout(r, 300));
 
   const data = await page.evaluate((testDayRed, testDayOrange, testDayMixed) => {
-    const roomLabels = [...document.querySelectorAll(".gantt-room-label")].map((el) => ({
-      line1: el.querySelector(".gantt-room-label-line1")?.textContent || "",
-      line2Html: el.querySelector(".gantt-room-label-line2")?.innerHTML || null
-    }));
+    const roomLabels = [...document.querySelectorAll(".gantt-room-label")].map((el) => {
+      const line2El = el.querySelector(".gantt-room-label-line2");
+      return {
+        line1: el.querySelector(".gantt-room-label-line1")?.textContent || "",
+        line2Html: line2El?.innerHTML || null,
+        // True if the nowrap badge line is wider than its box — i.e. the
+        // .gantt-container's overflow:hidden would actually clip it. Added
+        // for the v1.7.26 HARD-1 OR4/OR8 expansion, since OR8 is the first
+        // room to ever combine all three badge slots (designation + robot
+        // + 3-light) on one line at once.
+        line2Overflow: line2El ? line2El.scrollWidth > line2El.clientWidth + 1 : false
+      };
+    });
     const blocks = [...document.querySelectorAll(".gantt-case-block")].map((b) => ({
       caseNum: b.dataset.caseNum,
       className: b.className,
@@ -459,8 +500,10 @@ XLSX.writeFile(wb, fixturePath);
   // ── Assertions ─────────────────────────────────────────────────────────
   const or2 = data.roomLabels.find((r) => r.line1 === "OR 2");
   const or3 = data.roomLabels.find((r) => r.line1 === "OR 3");
+  const or4 = data.roomLabels.find((r) => r.line1 === "OR 4");
   const or5 = data.roomLabels.find((r) => r.line1 === "OR 5");
   const or6 = data.roomLabels.find((r) => r.line1 === "OR 6");
+  const or8 = data.roomLabels.find((r) => r.line1 === "OR 8");
 
   check("OR 2 room label shows DV5 robot badge", !!or2?.line2Html?.includes(">DV5<"));
   check("OR 3 room label shows DV5 robot badge (no case scheduled there)", !!or3?.line2Html?.includes(">DV5<"));
@@ -470,6 +513,22 @@ XLSX.writeFile(wb, fixturePath);
   check("OR 2/OR 3/OR 5 room-label robot badges use the new 🦾 emoji, not the old 🤖",
     [or2, or3, or5].every((r) => r?.line2Html?.includes("🦾")) &&
     [or2, or3, or5].every((r) => !r?.line2Html?.includes("🤖")));
+
+  // ── v1.7.26 HARD-1 expansion: Mission Bernal DV5 (mobile OR4/OR8) ───────
+  check("OR 4 room label shows the new DV5 robot badge (Mission Bernal relocation)",
+    !!or4?.line2Html?.includes(">DV5<"));
+  check("OR 4 room label STILL shows its pre-existing Pediatric General designation emoji (🧸) alongside the robot badge",
+    !!or4?.line2Html?.includes("🧸"));
+  check("OR 4's badge line is not clipped by the fixed-width column (designation + robot, 2 slots)",
+    or4 && or4.line2Overflow === false);
+  check("OR 8 room label shows the new DV5 robot badge (Mission Bernal relocation)",
+    !!or8?.line2Html?.includes(">DV5<"));
+  check("OR 8 room label STILL shows its pre-existing Thoracic designation emoji (🫁)",
+    !!or8?.line2Html?.includes("🫁"));
+  check("OR 8 room label STILL shows its pre-existing 3-light indicator (x3)",
+    !!or8?.line2Html?.includes(">x3<"));
+  check("OR 8's badge line is not clipped by the fixed-width column -- the first room in the app to combine all three badge slots at once (designation + robot + 3-light)",
+    or8 && or8.line2Overflow === false);
 
   // 9000002: OR2 (a robot-designated room), Service = "Robotics" (a real
   // SERVICE_EMOJI key), DV5 equipment -- the exact combination that
@@ -483,13 +542,13 @@ XLSX.writeFile(wb, fixturePath);
   check("That case block reads exactly '🦾DV5 Kardos' (no duplicate/leftover service emoji)",
     /^🦾DV5 Kardos$/.test((dv5Block?.surgeonHTML || "").replace(/<[^>]+>/g, "")));
 
-  // 9000025: OR4 (NOT a robot-designated room), Service = "Transplant" (not
+  // 9000025: OR1 (NOT a robot-designated room), Service = "Transplant" (not
   // "Robotics"), DV5 equipment. Confirms the fix didn't overreach: the
   // case-level badge still renders on its own merits regardless of room,
   // and an unrelated service emoji is untouched (no suppression, since the
   // service isn't literally "Robotics").
   const nonRobotRoomBlock = data.blocks.find((b) => b.caseNum === "9000025");
-  check("Robotic case in a NON-robot-designated room (OR4) still shows its own case-level badge",
+  check("Robotic case in a NON-robot-designated room (OR1) still shows its own case-level badge",
     (nonRobotRoomBlock?.surgeonHTML.match(/🦾/g) || []).length === 1);
   check("...and its unrelated service emoji (Transplant, not Robotics) is untouched by the suppression",
     nonRobotRoomBlock?.surgeonHTML.includes("💞"));
@@ -580,7 +639,7 @@ XLSX.writeFile(wb, fixturePath);
   check("Scenario 2: nephrectomy case itself has no HARD-5 (or HARD-2) violation of its own",
     !hasRule("9000023", "hard-5") && !hasRule("9000023", "hard-2"));
 
-  check("Scenario 3 (DV5 pairing in OR4, not a valid DV5 room): transplant's HARD-5 still fires",
+  check("Scenario 3 (DV5 pairing in OR1, not a valid DV5 room): transplant's HARD-5 still fires",
     hasRule("9000026", "hard-5"));
 
   check("Scenario 4 (transplant preceded by an unrelated DV5 case, not a nephrectomy): HARD-5 still fires",
@@ -596,7 +655,7 @@ XLSX.writeFile(wb, fixturePath);
   check("Scenario 6: transplant partner case has no HARD-5 (or HARD-1) violation of its own",
     !hasRule("9000042", "hard-5") && !hasRule("9000042", "hard-1"));
 
-  check("Scenario 7 (nephrectomy's own HARD-5 flag in OR4, followed by an unrelated non-transplant case): HARD-5 still fires",
+  check("Scenario 7 (nephrectomy's own HARD-5 flag in OR1, followed by an unrelated non-transplant case): HARD-5 still fires",
     hasRule("9000043", "hard-5"));
 
   // ── v1.7.21 re-tiering: HARD-3/4/5/7 moved to Tier 2; HARD-1/2/6 stay Tier 1 ──
@@ -608,6 +667,14 @@ XLSX.writeFile(wb, fixturePath);
     (data.violationTiersByCase["9000025"] || [])[
       (data.violationsByCase["9000025"] || []).indexOf("hard-1")
     ] === 1);
+
+  // ── v1.7.26 HARD-1 expansion: OR4/OR8 (Mission Bernal DV5 relocation) ───
+  check("9000071 (DV5 equipment, OR4): compliant, no HARD-1 violation",
+    !hasRule("9000071", "hard-1"));
+  check("9000072 (DV5 equipment, OR8): compliant, no HARD-1 violation",
+    !hasRule("9000072", "hard-1"));
+  check("9000073 (DV5 equipment, OR11 -- still not a valid DV5 room): HARD-1 still fires (regression check)",
+    hasRule("9000073", "hard-1"));
 
   const tier1AloneBlock = data.blocks.find((b) => b.caseNum === "9000025");
   const tier2AloneBlock = data.blocks.find((b) => b.caseNum === "9000026");
