@@ -1,7 +1,6 @@
 // rules-data.js — pure data constants for the CPMC audit tools (v1.5.6).
 // Loaded BEFORE app.js in index.html; these top-level const bindings are
 // shared with app.js via the global lexical environment of classic scripts.
-// SURGEON_PREFS must be declared before ROOM_RULES (ROOM_RULES spreads it).
 
     const CAMPUS_CONFIG = {
       WBVC: {
@@ -27,48 +26,6 @@
       inpatientOnlyList:     { coveredYear: 2026 },
       roomRulesSurgeonPrefs: { derivedDate: "2026-06-27" }
     };
-
-    const SURGEON_PREFS = [
-      { name: "Jossart",    id: "105751",   rooms: ["OR 10"] },
-      { name: "Zakaria",    id: "20144424", rooms: ["OR 11", "OR 12"] },
-      { name: "Egrie",      id: "30059201", rooms: ["OR 7"] },
-      { name: "Chan",       id: "309844",   rooms: ["OR 1"] },
-      { name: "Lin",        id: "107858",   rooms: ["OR 5"] },
-      { name: "Kardos",     id: "108387",   rooms: ["OR 2"] },
-      { name: "Macdougall", id: "20120390", rooms: ["OR 11", "OR 12"] },
-      { name: "Valone",     id: "20041597", rooms: ["OR 11", "OR 12"] },
-      { name: "Kennedy",    id: "515122",   rooms: ["OR 4"] },
-      { name: "Shah",       id: "20159245", rooms: ["OR 5"] },
-      { name: "So",         id: "30069070", rooms: ["OR 5"] },
-      { name: "Weber",      id: "105621",   rooms: ["OR 11", "OR 12"] },
-      { name: "Sheth",      id: "20137324", rooms: ["OR 4"] },
-      { name: "Kim",        id: "30113240", rooms: ["OR 11", "OR 12"] },
-      { name: "Oshtory",    id: "30079667", rooms: ["OR 11", "OR 12"] },
-      { name: "Leng",       id: "20048503", rooms: ["OR 11", "OR 12"] },
-      { name: "Char",       id: "500276",   rooms: ["OR 10"] },
-      { name: "Seiff",      id: "501360",   rooms: ["OR 10"] },
-      { name: "Reiter",     id: "20063777", rooms: ["OR 5"] },
-      { name: "Goyal",      id: "96086",    rooms: ["OR 14"] },
-      { name: "Hongo",      id: "30068728", rooms: ["OR 14"] },
-      { name: "Nathanson",  id: "30045153", rooms: ["OR 12", "OR 14"] },
-      { name: "Kutzscher",  id: "20002631", rooms: ["OR 5"] },
-      { name: "Zhang",      id: "20158330", rooms: ["OR 11", "OR 12"] },
-      { name: "Liu",        id: "20028386", rooms: ["OR 5"] },
-      { name: "Denny",      id: "20063171", rooms: ["OR 5"] },
-      { name: "Kan",        id: "20126149", rooms: ["OR 4"] },
-      { name: "Agarwal",    id: "20111453", rooms: ["OR 10", "OR 5"] },
-      { name: "Thomas",     id: "20113222", rooms: ["OR 5"] },
-      { name: "Longar",     id: "30068849", rooms: ["OR 10", "OR 5"] },
-      { name: "Korver",     id: "30025215", rooms: ["OR 7", "OR 8"] },
-      { name: "Moscato",    id: "30068912", rooms: ["OR 10", "OR 5"] },
-      { name: "Good",       id: "500568",   rooms: ["OR 4"] },
-      { name: "Yeh",        id: "20150680", rooms: ["OR 5"] },
-      { name: "Ali",        id: "10028590", rooms: ["OR 4", "OR 5"] },
-      { name: "Fuchs",      id: "10003434", rooms: ["OR 4", "OR 5"] },
-      { name: "Charlson",   id: "20131783", rooms: ["OR 10", "OR 5"] },
-      { name: "Lu",         id: "10101593", rooms: ["OR 5"] },
-      { name: "Chen",       id: "30233068", rooms: ["OR 12", "OR 5"] }
-    ];
 
     const ROOM_RULES = [
       // ── "hard-" rules: tier field is authoritative, not the ID prefix ──────
@@ -223,19 +180,12 @@
         match: { anyOf: [{ service: "Gynecology" }, { service: "Obstetrics" }] },
         allowedRooms: ["OR 1"]
       },
-      // ── Tier 4: Surgeon Preference (generated from SURGEON_PREFS) ─────────
-      ...SURGEON_PREFS.map((s) => ({
-        id: `surgeon-${s.id}`,
-        tier: 4,
-        label: `${s.name} Preference`,
-        description: `${s.name} typically operates in ${s.rooms.join(" or ")}.`,
-        match: { surgeonId: s.id },
-        allowedRooms: s.rooms
-      })),
-      // ── Tier 5: Laterality Suggestion ─────────────────────────────────────
+      // ── Tier 2: PCNL Laterality (re-tiered from Tier 5 in v1.7.27; the
+      // Tier 4 surgeon-preference block and Tier 5 category were removed
+      // entirely the same session — see CLAUDE_CONTEXT.md) ────────────────
       {
         id: "lat-001",
-        tier: 5,
+        tier: 2,
         label: "PCNL Right",
         description: "Right PCNL cases are suggested in OR 2, OR 8, or OR 12.",
         match: { procedureTextContains: "PCNL", laterality: "right" },
@@ -243,7 +193,7 @@
       },
       {
         id: "lat-002",
-        tier: 5,
+        tier: 2,
         label: "PCNL Left",
         description: "Left PCNL cases are suggested in OR 4, OR 5, or OR 11.",
         match: { procedureTextContains: "PCNL", laterality: "left" },

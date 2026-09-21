@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.7.26">
+  <link rel="stylesheet" href="styles.css?v=1.7.27">
   <script>
   if (location.hostname === 'tomboonern.com') {
     var s = document.createElement('script');
@@ -416,14 +416,6 @@
                 <span>Tier 3 flag</span>
               </div>
               <div class="gantt-legend-entry">
-                <span class="gantt-legend-swatch" style="background:#eff6ff;border-color:#bfdbfe;"></span>
-                <span>Tier 4 flag</span>
-              </div>
-              <div class="gantt-legend-entry">
-                <span class="gantt-legend-swatch" style="background:#f8f9fa;border-color:#d1d5db;"></span>
-                <span>Tier 5 suggestion</span>
-              </div>
-              <div class="gantt-legend-entry">
                 <span class="gantt-legend-swatch" style="background:#e8d5b0;border-color:#c4a97d;"></span>
                 <span>No violations</span>
               </div>
@@ -576,19 +568,11 @@
           </div>
           <div class="rule-info-section">
             <h3>Tier 2: Strong Operational</h3>
-            <p>These rooms are set up specifically for certain case types. OR 4 is the designated pediatric room. OR 5 and OR 10 are set up for ophthalmology. Neuro/spine equipment is fixed to OR 11 or OR 12, cardiac bypass equipment to OR 7, and transplant equipment to OR 6 or OR 9. Free flap procedures require a room with three overhead surgical lights, which limits them to OR 6, OR 7, OR 8, or OR 9. Cases flagged at this tier should be moved if possible, but there may be legitimate reasons they cannot be.</p>
+            <p>These rooms are set up specifically for certain case types. OR 4 is the designated pediatric room. OR 5 and OR 10 are set up for ophthalmology. Neuro/spine equipment is fixed to OR 11 or OR 12, cardiac bypass equipment to OR 7, and transplant equipment to OR 6 or OR 9. Free flap procedures require a room with three overhead surgical lights, which limits them to OR 6, OR 7, OR 8, or OR 9. Right-sided PCNL cases have historically been performed in OR 2, OR 8, or OR 12, and left-sided in OR 4, OR 5, or OR 11, due to positioning convenience. Cases flagged at this tier should be moved if possible, but there may be legitimate reasons they cannot be.</p>
           </div>
           <div class="rule-info-section">
             <h3>Tier 3: Service Preference</h3>
             <p>Certain services tend to cluster in specific rooms because of setup familiarity, equipment proximity, and turnover efficiency. For example, neurosurgery cases typically run in OR 11 or OR 12. These flags are worth reviewing but are not always actionable. If the preferred room is full, the flag will be suppressed automatically.</p>
-          </div>
-          <div class="rule-info-section">
-            <h3>Tier 4: Surgeon Preference</h3>
-            <p>Some surgeons have a strong preference for a specific room based on familiarity or workflow. These are the lowest-priority flags and are purely informational.</p>
-          </div>
-          <div class="rule-info-section">
-            <h3>Tier 5: Suggestion</h3>
-            <p>Low-confidence patterns based on historical data. For example, right-sided PCNL cases have historically been performed in OR 2, OR 8, or OR 12 due to positioning convenience.</p>
           </div>
           <div class="rule-info-section">
             <h3>How flags are suppressed</h3>
@@ -599,7 +583,7 @@
     </main>
     <footer class="site-footer">
       <p>Site by Tom Boone, BSN, RN, CNOR &middot; <a href="mailto:Thomas.Boone@SutterHealth.org">Thomas.Boone@SutterHealth.org</a></p>
-      <p style="margin-top: 4px; font-size: 0.75rem;">v1.7.26 · 2026-09-21</p>
+      <p style="margin-top: 4px; font-size: 0.75rem;">v1.7.27 · 2026-09-21</p>
     </footer>
   </div>
 
@@ -618,7 +602,7 @@
   <div id="devGateOverlay" class="dev-gate-overlay" role="dialog" aria-modal="true" hidden>
     <a href="https://tomboonern.com" class="dev-gate-prod-link">Go to tomboonern.com</a>
   </div>
-  <script src="rules-data.js?v=1.7.26"></script>
-  <script src="app.js?v=1.7.26"></script>
+  <script src="rules-data.js?v=1.7.27"></script>
+  <script src="app.js?v=1.7.27"></script>
 </body>
 </html>

@@ -104,6 +104,7 @@ function sameMonthOffset(days) {
 const DATE_RED    = fmtDate(sameMonthOffset(1));
 const DATE_ORANGE = fmtDate(sameMonthOffset(2));
 const DATE_MIXED  = fmtDate(sameMonthOffset(3));
+const DATE_PCNL   = fmtDate(sameMonthOffset(4));
 
 const headers = [
   "Case #", "Date", "Room", "Case Procedures", "Equipment", "Patient Age",
@@ -296,6 +297,26 @@ const rows = [
    "General", "Testcase, Runner, MD [999099]", "10:00:00", "11:30:00", "10:15:00", "11:15:00",
    "Outpatient", "Scheduled", "Elective"],
 
+  // ── v1.7.27 Tier 4 removal: a case for a surgeon who previously had a
+  // Tier 4 surgeon-preference rule (id "309844" [Chan], historically OR1
+  // only, per the now-deleted SURGEON_PREFS/Tier 4 generator), scheduled
+  // OUTSIDE that old preferred room -- this would have produced a Tier 4
+  // violation before this session; now there is no such rule at all, so it
+  // must produce ZERO violations of any kind. Generic service/equipment/age
+  // so no other rule (Tier 1-3) can accidentally fire in OR9.
+  ["9000080", DATE, "WBVC OR 09", "Umbilical hernia repair", "", "45 yrs",
+   "General", "Chan, Test, MD [309844]", "15:00:00", "16:30:00", "15:15:00", "16:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // ── v1.7.27 PCNL re-tier (Tier 5 -> Tier 2): isolated day, single
+  // violation, to unambiguously verify the calendar-color and Gantt-color
+  // logic reflect the new tier (orange/.gantt-viol-2), not the old Tier 5
+  // (amber) or Tier 1 (red). Room chosen (OR9) is not in lat-001's
+  // allowedRooms (OR2/OR8/OR12), so it fires.
+  ["9000081", DATE_PCNL, "WBVC OR 09", "Right PCNL", "", "55 yrs",
+   "Urology", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+
   // ── v1.7.26 HARD-1 expansion: Mission Bernal DV5 relocation (mobile
   // between OR4/OR8, alongside the existing fixed DV5 in OR2/OR3) ─────────
   // OR4: DV5 equipment, now a valid room -> compliant, no HARD-1 violation.
@@ -365,7 +386,7 @@ XLSX.writeFile(wb, fixturePath);
   }, { timeout: 15000 });
   await new Promise((r) => setTimeout(r, 300));
 
-  const data = await page.evaluate((testDayRed, testDayOrange, testDayMixed) => {
+  const data = await page.evaluate((testDayRed, testDayOrange, testDayMixed, testDayPcnl) => {
     const roomLabels = [...document.querySelectorAll(".gantt-room-label")].map((el) => {
       const line2El = el.querySelector(".gantt-room-label-line2");
       return {
@@ -445,6 +466,14 @@ XLSX.writeFile(wb, fixturePath);
       Object.keys(SERVICE_EMOJI).filter((s) => s !== "Robotics").map((s) => SERVICE_EMOJI[s])
     ).size;
 
+    // v1.7.27: read the live rule tiers directly off ROOM_RULES, not just
+    // inferred from per-case violation behavior -- confirms the actual rule
+    // count/tier values, not just their observable effect on one fixture.
+    const tier4RuleCount = ROOM_RULES.filter((r) => r.tier === 4).length;
+    const tier5RuleCount = ROOM_RULES.filter((r) => r.tier === 5).length;
+    const lat001Tier = ROOM_RULES.find((r) => r.id === "lat-001")?.tier;
+    const lat002Tier = ROOM_RULES.find((r) => r.id === "lat-002")?.tier;
+
     // HARD-5 donor-nephrectomy/transplant pairing suppression: read directly
     // from the module's own last-computed audit result (a bare top-level
     // `let` in this classic, non-module script — still resolvable by name
@@ -477,12 +506,14 @@ XLSX.writeFile(wb, fixturePath);
       roomLabels, blocks, switchCount, switchesHaveIcon, switchesHaveNoLine, switchPairs,
       legendEntries, legendEntryIcons, legendGridColumns, legendIsAfterGantt,
       tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount, uniqueServiceEmojiCount,
+      tier4RuleCount, tier5RuleCount, lat001Tier, lat002Tier,
       violationsByCase, violationTiersByCase,
       calRedDay:    calendarCellColor(testDayRed),
       calOrangeDay: calendarCellColor(testDayOrange),
-      calMixedDay:  calendarCellColor(testDayMixed)
+      calMixedDay:  calendarCellColor(testDayMixed),
+      calPcnlDay:   calendarCellColor(testDayPcnl)
     };
-  }, sameMonthOffset(1).getDate(), sameMonthOffset(2).getDate(), sameMonthOffset(3).getDate());
+  }, sameMonthOffset(1).getDate(), sameMonthOffset(2).getDate(), sameMonthOffset(3).getDate(), sameMonthOffset(4).getDate());
 
   await page.screenshot({ path: OUT_PATH, fullPage: true });
 
@@ -495,6 +526,23 @@ XLSX.writeFile(wb, fixturePath);
   const sidebarData = await page.evaluate(() => {
     const badges = [...document.querySelectorAll("#ganttSidebarContent .sb-viol-item .badge")];
     return badges.map((b) => ({ className: b.className, text: b.textContent }));
+  });
+
+  // v1.7.27: 9000081 (PCNL) lives on its own isolated day (DATE_PCNL) so the
+  // calendar-color check above can attribute that day's color to PCNL alone
+  // -- but `data.blocks` above only reflects whichever day was initially
+  // selected. Navigate to DATE_PCNL specifically to also confirm the actual
+  // rendered Gantt-block class, not just the tier value and day color.
+  await page.evaluate((day) => {
+    const cell = [...document.querySelectorAll(".gantt-cal-cell")].find(
+      (c) => c.dataset.sd !== undefined && c.textContent === String(day)
+    );
+    if (cell) cell.click();
+  }, sameMonthOffset(4).getDate());
+  await new Promise((r) => setTimeout(r, 300));
+  const pcnlBlockData = await page.evaluate(() => {
+    const el = document.querySelector('.gantt-case-block[data-case-num="9000081"]');
+    return el ? { className: el.className } : null;
   });
 
   // ── Assertions ─────────────────────────────────────────────────────────
@@ -675,6 +723,31 @@ XLSX.writeFile(wb, fixturePath);
     !hasRule("9000072", "hard-1"));
   check("9000073 (DV5 equipment, OR11 -- still not a valid DV5 room): HARD-1 still fires (regression check)",
     hasRule("9000073", "hard-1"));
+
+  // ── v1.7.27: Tier 4 (surgeon preference) removed entirely; PCNL re-tiered
+  // 5 -> 2 ──────────────────────────────────────────────────────────────
+  check("9000080 (surgeon with a formerly-Tier-4 preferred room, scheduled outside it): zero violations of any kind -- the rule no longer exists",
+    !(data.violationsByCase["9000080"] || []).length);
+  check("...specifically, no 'surgeon-*' ruleId ever appears anywhere in the audit output",
+    !Object.values(data.violationsByCase).some((ids) => ids.some((id) => id.startsWith("surgeon-"))));
+  check("9000081 (Right PCNL, OR9 -- not an allowed lat-001 room) fires lat-001",
+    hasRule("9000081", "lat-001"));
+  check("9000081's PCNL violation now carries ruleTier 2 (not 5, not 1)",
+    (data.violationTiersByCase["9000081"] || [])[
+      (data.violationsByCase["9000081"] || []).indexOf("lat-001")
+    ] === 2);
+  check("Gantt: PCNL case (9000081) renders Tier 2 styling (.gantt-viol-2), not Tier 1 (red) or the old Tier 5 styling",
+    /\bgantt-viol-2\b/.test(pcnlBlockData?.className || "") &&
+    !/\bgantt-viol-1\b/.test(pcnlBlockData?.className || "") &&
+    !/\bgantt-viol-5\b/.test(pcnlBlockData?.className || ""));
+  check("Calendar: a day with only the re-tiered PCNL violation shows the Tier 2 color (orange), NOT the old Tier 5/amber and NOT red",
+    data.calPcnlDay === "orange");
+  check("ROOM_RULES has ZERO Tier 4 rules (the entire surgeon-preference generator was deleted)",
+    data.tier4RuleCount === 0);
+  check("ROOM_RULES has ZERO Tier 5 rules (PCNL was the only Tier 5 category and it moved to Tier 2)",
+    data.tier5RuleCount === 0);
+  check("lat-001 (PCNL Right) is tier 2", data.lat001Tier === 2);
+  check("lat-002 (PCNL Left) is tier 2", data.lat002Tier === 2);
 
   const tier1AloneBlock = data.blocks.find((b) => b.caseNum === "9000025");
   const tier2AloneBlock = data.blocks.find((b) => b.caseNum === "9000026");
