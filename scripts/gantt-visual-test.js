@@ -340,6 +340,30 @@ const rows = [
   // scenarios above which also prove the same point incidentally).
   ["9000073", DATE, "WBVC OR 11", "Robotic case in a non-DV5 room", "Robot DaVinci DV5", "50 yrs",
    "Urology", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // ── v1.7.28: new hard-8 (AV Fistula / OR 14 Exclusion, Tier 1, first
+  // disallowedRooms-style rule) ───────────────────────────────────────────
+  // 9000090: AV fistula case scheduled in OR 14 -> must flag hard-8.
+  ["9000090", DATE, "WBVC OR 14", "Left AV fistula creation", "", "60 yrs",
+   "Vascular", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // 9000091: AV fistula case (variant phrasing "arteriovenous fistula"),
+  // scheduled in OR 11 late in the day (any room other than OR 14 is fine;
+  // OR11's only other case this fixture day, 9000073, ends at 09:00) -> no
+  // hard-8 flag.
+  ["9000091", DATE, "WBVC OR 11", "Right arteriovenous fistula revision", "", "65 yrs",
+   "Vascular", "Testcase, Runner, MD [999099]", "17:00:00", "18:00:00", "17:15:00", "17:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // 9000092: non-AV-fistula vascular case in OR 14 -> no hard-8 flag (proves
+  // the match is procedure-text-specific, not a blanket OR14 vascular ban).
+  ["9000092", DATE, "WBVC OR 14", "Lower extremity bypass graft", "", "70 yrs",
+   "Vascular", "Testcase, Runner, MD [999099]", "12:00:00", "13:30:00", "12:15:00", "13:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // 9000093: genuine hybrid/cath case in OR 14 (hard-6's own equipment
+  // match) -> still compliant, unaffected by the new AV fistula rule.
+  ["9000093", DATE, "WBVC OR 14", "Cardiac catheterization", "CV ACCESSION EQ", "55 yrs",
+   "Cardiac", "Testcase, Runner, MD [999099]", "14:00:00", "15:30:00", "14:15:00", "15:15:00",
    "Outpatient", "Scheduled", "Elective"]
 ];
 
@@ -474,6 +498,15 @@ XLSX.writeFile(wb, fixturePath);
     const lat001Tier = ROOM_RULES.find((r) => r.id === "lat-001")?.tier;
     const lat002Tier = ROOM_RULES.find((r) => r.id === "lat-002")?.tier;
 
+    // v1.7.28: read hard-8's own schema directly off ROOM_RULES -- confirms
+    // it's implemented as disallowedRooms (negative constraint), not
+    // simulated via an allowedRooms list of every other room.
+    const hard8Rule = ROOM_RULES.find((r) => r.id === "hard-8");
+    const hard8Tier = hard8Rule?.tier;
+    const hard8HasDisallowedRooms = Array.isArray(hard8Rule?.disallowedRooms) &&
+      JSON.stringify(hard8Rule.disallowedRooms) === JSON.stringify(["OR 14"]);
+    const hard8HasNoAllowedRooms = hard8Rule && hard8Rule.allowedRooms === undefined;
+
     // HARD-5 donor-nephrectomy/transplant pairing suppression: read directly
     // from the module's own last-computed audit result (a bare top-level
     // `let` in this classic, non-module script — still resolvable by name
@@ -507,6 +540,7 @@ XLSX.writeFile(wb, fixturePath);
       legendEntries, legendEntryIcons, legendGridColumns, legendIsAfterGantt,
       tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount, uniqueServiceEmojiCount,
       tier4RuleCount, tier5RuleCount, lat001Tier, lat002Tier,
+      hard8Tier, hard8HasDisallowedRooms, hard8HasNoAllowedRooms,
       violationsByCase, violationTiersByCase,
       calRedDay:    calendarCellColor(testDayRed),
       calOrangeDay: calendarCellColor(testDayOrange),
@@ -766,6 +800,28 @@ XLSX.writeFile(wb, fixturePath);
   check("Sidebar: demoted HARD-5 case (9000026) shows a Tier 2 alert badge, not Tier 1",
     sidebarData.some((b) => b.className.includes("badge-tier-2") && b.text.trim() === "Tier 2") &&
     !sidebarData.some((b) => b.className.includes("badge-tier-1")));
+
+  // ── v1.7.28: hard-8 (AV Fistula / OR 14 Exclusion) -- first
+  // disallowedRooms-style rule ─────────────────────────────────────────────
+  check("hard-8 is implemented as a genuine disallowedRooms field (['OR 14']), not an allowedRooms list of every other room",
+    data.hard8HasDisallowedRooms && data.hard8HasNoAllowedRooms);
+  check("hard-8 is Tier 1", data.hard8Tier === 1);
+  check("9000090 (AV fistula, OR 14): flags hard-8",
+    hasRule("9000090", "hard-8"));
+  check("9000090's hard-8 violation carries ruleTier 1",
+    (data.violationTiersByCase["9000090"] || [])[
+      (data.violationsByCase["9000090"] || []).indexOf("hard-8")
+    ] === 1);
+  check("9000091 (AV fistula, variant phrasing 'arteriovenous fistula', OR 11): no hard-8 flag -- any room but OR 14 is fine",
+    !hasRule("9000091", "hard-8"));
+  check("9000092 (non-AV-fistula vascular case, OR 14): no hard-8 flag -- match is procedure-text-specific, not a blanket OR14 vascular exclusion",
+    !hasRule("9000092", "hard-8"));
+  check("9000093 (genuine hybrid/cath case, OR 14): no hard-8 flag, and still compliant on hard-6 (unaffected by the new rule)",
+    !hasRule("9000093", "hard-8") && !hasRule("9000093", "hard-6"));
+
+  const avFistulaBlock = data.blocks.find((b) => b.caseNum === "9000090");
+  check("Gantt: AV fistula case in OR 14 (9000090) renders Tier 1 styling (.gantt-viol-1)",
+    /\bgantt-viol-1\b/.test(avFistulaBlock?.className || ""));
 
   check("No console/page errors", consoleErrors.length === 0);
   if (consoleErrors.length) consoleErrors.forEach((e) => console.error("  " + e));

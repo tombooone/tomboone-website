@@ -90,6 +90,26 @@
         match: { procedureTextContains: "free flap" },
         allowedRooms: ["OR 6", "OR 7", "OR 8", "OR 9"]
       },
+      {
+        // v1.7.28: first disallowedRooms-style rule (negative constraint) —
+        // see isRoomCompliant() in app.js. OR 14's table is a hybrid/cath lab
+        // table, not suitable for regular open/vascular surgeries, even
+        // though AV fistula creation is technically a vascular procedure.
+        // Every other room is fine for this rule, including OR 14 for its
+        // own intended hybrid/cath cases (hard-6, a separate match condition).
+        id: "hard-8",
+        tier: 1,
+        label: "AV Fistula / OR 14 Exclusion",
+        description: "OR 14 not suitable for AV fistula cases.",
+        match: {
+          anyOf: [
+            { procedureTextContains: "av fistula" },
+            { procedureTextContains: "a-v fistula" },
+            { procedureTextContains: "arteriovenous fistula" }
+          ]
+        },
+        disallowedRooms: ["OR 14"]
+      },
       // ── Tier 2: Strong Operational ────────────────────────────────────────
       {
         id: "ops-1",

@@ -3189,6 +3189,7 @@
     }
 
     function buildExplanation(rule) {
+      if (rule.disallowedRooms) return rule.description;
       const rooms = rule.allowedRooms;
       switch (rule.tier) {
         case 1: {
@@ -3311,7 +3312,9 @@
 
           const roomsRow = document.createElement("div");
           roomsRow.className = "rule-card-rooms";
-          roomsRow.textContent = "Rooms: " + rule.allowedRooms.join(", ");
+          roomsRow.textContent = rule.disallowedRooms
+            ? "Excluded room: " + rule.disallowedRooms.join(", ")
+            : "Rooms: " + rule.allowedRooms.join(", ");
 
           const meta2 = document.createElement("div");
           meta2.className = "rule-card-meta";
@@ -3484,6 +3487,18 @@
         .map((col) => col.label);
     }
 
+    // Generic room-compliance check supporting both rule shapes: a positive
+    // constraint (allowedRooms — case must be in one of these) and a negative
+    // constraint (disallowedRooms — case must NOT be in these; every other
+    // room, including ones used by unrelated rules, is fine). Exactly one of
+    // the two fields is expected per rule. Centralized here so every audit
+    // call site and display path agrees on what "compliant" means, rather
+    // than each one inlining its own allowedRooms.includes() check.
+    function isRoomCompliant(rule, room) {
+      if (rule.disallowedRooms) return !rule.disallowedRooms.includes(room);
+      return rule.allowedRooms.includes(room);
+    }
+
     function ruleTriggersForCase(rule, ctx) {
       if (rule.serviceExclusions) {
         const svc = String(ctx.serviceText || "").toLowerCase();
@@ -3585,13 +3600,13 @@
         // not just that suppression happened.
         const suppressedByRuleMap = new Map(); // suppressedId -> governing rule
         firedRules.forEach((rule) => {
-          if (rule.suppressesWhenCompliant && rule.allowedRooms.includes(normalizedRoom)) {
+          if (rule.suppressesWhenCompliant && isRoomCompliant(rule, normalizedRoom)) {
             rule.suppressesWhenCompliant.forEach((id) => suppressedByRuleMap.set(id, rule));
           }
         });
 
         const compliantTier12 = firedRules.filter(
-          (rule) => rule.tier <= 2 && rule.allowedRooms.includes(normalizedRoom)
+          (rule) => rule.tier <= 2 && isRoomCompliant(rule, normalizedRoom)
         );
         const hasTier12Compliant = compliantTier12.length > 0;
 
@@ -3602,7 +3617,7 @@
         const appliedSatisfied = [];
         const appliedSuppressed = [];
         firedRules.forEach((rule) => {
-          if (rule.allowedRooms.includes(normalizedRoom)) {
+          if (isRoomCompliant(rule, normalizedRoom)) {
             appliedSatisfied.push({
               ruleId:    rule.id,
               ruleLabel: rule.label,
@@ -3651,7 +3666,7 @@
         firedRules.forEach((rule) => {
           if (suppressedByRuleMap.has(rule.id)) return;
           if (hasTier12Compliant && rule.tier >= 3) return;
-          if (!rule.allowedRooms.includes(normalizedRoom)) {
+          if (!isRoomCompliant(rule, normalizedRoom)) {
             violations.push({
               caseNumber,
               date:        dateValue.display,
