@@ -1117,13 +1117,39 @@
           wrap.className = "table-wrap";
           const table = document.createElement("table");
           table.className = "cpt-inpatient-table";
-          table.append(makeTableHead(
-            { label: "Date", className: "col-date" },
+          const dateHeaderTh = document.createElement("th");
+          dateHeaderTh.className = "col-date copy-case";
+          dateHeaderTh.textContent = "Date";
+          dateHeaderTh.title = "Click to copy this table";
+          dateHeaderTh.addEventListener("click", () => {
+            copyTableToClipboard(
+              ["Date", "Location", "Case #", "Explanation", "Creation User"],
+              inpatientRows.map((row) => [
+                escapeHtml(row.date),
+                escapeHtml(row.location || ""),
+                escapeHtml(row.caseNumber),
+                inpatientExplanationHtml(row),
+                escapeHtml(row.creationUser || "")
+              ]),
+              "Table copied"
+            );
+          });
+          const theadTr = document.createElement("tr");
+          theadTr.append(dateHeaderTh);
+          [
             { label: "Location", className: "col-location" },
             { label: "Case #", className: "col-caseno" },
             "Explanation",
             { label: "Creation User", className: "col-creation-user" }
-          ));
+          ].forEach((entry) => {
+            const th = document.createElement("th");
+            if (typeof entry === "string") th.textContent = entry;
+            else { th.textContent = entry.label; if (entry.className) th.className = entry.className; }
+            theadTr.append(th);
+          });
+          const thead = document.createElement("thead");
+          thead.append(theadTr);
+          table.append(thead);
           const tbody = document.createElement("tbody");
           if (inpatientRows.length) {
             inpatientRows.forEach((row) => {
@@ -2020,6 +2046,75 @@
       });
     }
 
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    // Renders text with any of its CPT codes wrapped in <strong>, matching
+    // appendCodeText()'s live-DOM bold-code behavior exactly (same regex,
+    // same longest-code-first ordering) but as an HTML string instead of
+    // DOM nodes -- used to build the copy-to-clipboard table markup below.
+    function codeTextToHtml(text, codes) {
+      const uniqueCodes = [...new Set(codes)].sort((a, b) => b.length - a.length);
+      const pattern = uniqueCodes.length ? new RegExp(`\\b(${uniqueCodes.map(escapeRegExp).join("|")})\\b`, "g") : null;
+      const str = String(text || "");
+      if (!pattern) return escapeHtml(str);
+
+      let lastIndex = 0;
+      let html = "";
+      str.replace(pattern, (match, code, offset) => {
+        html += escapeHtml(str.slice(lastIndex, offset));
+        html += "<strong>" + escapeHtml(code) + "</strong>";
+        lastIndex = offset + match.length;
+        return match;
+      });
+      html += escapeHtml(str.slice(lastIndex));
+      return html;
+    }
+
+    // Copies an entire table (header row through the last data row) to the
+    // clipboard as both text/html (a real <table>, so it pastes formatted
+    // into Outlook/Teams) and text/plain (tab-separated fallback for
+    // destinations that don't accept HTML paste) via the Clipboard API.
+    // This is the first copy feature in the codebase writing more than one
+    // plain-text value -- makeCopyable()/copyCodeMark() above stay
+    // text/plain-only single-value copies; this extends the same
+    // navigator.clipboard + showToast feedback convention to a multi-row,
+    // formatted payload via ClipboardItem instead of writeText().
+    function copyTableToClipboard(headerLabels, rows, toastMessage) {
+      const headHtml = "<tr>" + headerLabels.map((label) =>
+        `<th style="background:#e5e7eb;font-weight:700;text-align:left;padding:4px 8px;border:1px solid #9ca3af;">${escapeHtml(label)}</th>`
+      ).join("") + "</tr>";
+      const bodyHtml = rows.map((cells) =>
+        "<tr>" + cells.map((cellHtml) =>
+          `<td style="padding:4px 8px;border:1px solid #9ca3af;vertical-align:top;">${cellHtml}</td>`
+        ).join("") + "</tr>"
+      ).join("");
+      const html = `<table style="border-collapse:collapse;font-family:Calibri,Arial,sans-serif;font-size:11pt;">${headHtml}${bodyHtml}</table>`;
+
+      const plainRows = [headerLabels.join("\t")].concat(
+        rows.map((cells) => cells.map((cellHtml) => cellHtml.replace(/<[^>]+>/g, "")).join("\t"))
+      );
+      const plain = plainRows.join("\n");
+
+      const finish = () => showToast(toastMessage);
+
+      if (typeof ClipboardItem !== "undefined") {
+        const item = new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([plain], { type: "text/plain" })
+        });
+        navigator.clipboard.write([item]).then(finish).catch(() => {
+          navigator.clipboard.writeText(plain).then(finish);
+        });
+      } else {
+        navigator.clipboard.writeText(plain).then(finish);
+      }
+    }
+
     const AMBER_MARK_CSS = "background:#fef3c7;color:#92400e;font-weight:700;border-radius:2px;padding:0 2px;";
     const BLUE_MARK_CSS = "background:#dbeafe;color:#1e40af;font-weight:700;border-radius:2px;padding:0 2px;";
     const RED_MARK_CSS = "background:#fee2e2;color:#991b1b;font-weight:700;border-radius:2px;padding:0 2px;";
@@ -2173,6 +2268,23 @@
       });
 
       return el;
+    }
+
+    // HTML-string counterpart to buildInpatientExplanationCell(), used only
+    // by the Table 1 copy-to-clipboard feature -- same bold-code text and
+    // same cross-ref muted lines, built from the row data directly instead
+    // of read back off the live DOM.
+    function inpatientExplanationHtml(row) {
+      let html = codeTextToHtml(row.explanation, row.codes);
+      const crossRefs = row.crossRefs || [];
+      crossRefs.forEach((ref) => {
+        if (!ref.table2State) return;
+        const message = ref.table2State === "missing"
+          ? `Please review: CPT ${ref.code} is listed on the surgical order but is missing from the case's CPT codes.`
+          : `Please review: CPT ${ref.code} is on the case's CPT codes but is missing from the surgical order.`;
+        html += `<div style="color:#6b7280;margin-top:4px;font-size:0.82em;">${escapeHtml(message)}</div>`;
+      });
+      return html;
     }
 
     function appendCodeText(container, text, codes) {
