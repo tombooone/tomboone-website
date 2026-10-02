@@ -861,7 +861,7 @@
         const campus = deriveCampus(rawLocation);
         const surgeonRaw = cell(row, indexes.surgeon);
         const dateValue = parseDateCell(cell(row, indexes.date));
-        const foundTerms = findEquipmentTermsInText(specialNeeds);
+        const foundTerms = findEquipmentTermsInText(specialNeeds, campus);
         if (!foundTerms.length) return;
 
         const candidateMissing = foundTerms.filter((term) => !containsEquipmentTerm(equipment, term));
@@ -1578,7 +1578,7 @@
     // evaluated downstream in auditEquipmentRows via evaluateNegation(), which
     // produces an auditable SUPPRESS/QUESTIONABLE/NORMAL classification with a
     // trace, rather than silently dropping the match.
-    function findEquipmentTermsInText(text) {
+    function findEquipmentTermsInText(text, campus) {
       const source = String(text || "");
       const lowered = source.toLowerCase();
       const matches = [];
@@ -1648,6 +1648,7 @@
 
       return matches
         .filter((match) => !isExcludedMention(source, match))
+        .filter((match) => !(KEYWORD_CAMPUS_EXCLUSIONS[match.keyword] || []).includes(campus))
         .sort((a, b) => {
           if (a.startIndex !== b.startIndex) return a.startIndex - b.startIndex;
           return a.keywordIndex - b.keywordIndex;

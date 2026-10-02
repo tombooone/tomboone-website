@@ -324,6 +324,18 @@
       "Neoprobe": { WBDE: "Neoprobe" }
     };
 
+    // Keywords entirely excluded from matching at specific campuses, keyed
+    // by keyword then campus code (same key shape as
+    // KEYWORD_CAMPUS_DISPLAY_OVERRIDES above). Unlike that config, this
+    // actually suppresses detection — not just display text. Davies (WBDE)
+    // has no DaVinci robots at all, so the "Robot" keyword (which also
+    // catches "davinci"/"dv5"/"sp"/"single port" via
+    // KEYWORD_TRIGGER_SYNONYMS) would only ever be a false positive there;
+    // every other keyword still checks normally at WBDE.
+    const KEYWORD_CAMPUS_EXCLUSIONS = {
+      "Robot": ["WBDE"]
+    };
+
     // Service emoji identifiers for the Gantt visual feature (v1.7.12).
     const SERVICE_EMOJI = {
       "Cardiac": "🫀",
