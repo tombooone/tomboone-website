@@ -285,11 +285,22 @@
     // "bronchial". Added so bronchoscopy-robot mentions ("ION Robotic
     // Bronch", "Robotic Bronch") never satisfy the Robot keyword — those
     // reference a different device, not the DV5/SP surgical robot this
-    // check is meant to catch.
+    // check is meant to catch. "stealth" added v1.7.31: confirmed real
+    // phrasing "Stealth autopilot robot" (two real cases, same surgeon,
+    // same exact wording) refers to the Stealth neuronavigation system
+    // ("W System Navigation Stealth Medtronic"), not a DaVinci robot — no
+    // historical export data exists in this repo to confirm further
+    // variants, so this is deliberately clause-proximity-scoped (any
+    // "stealth" mention in the same clause as "robot", not just the one
+    // exact confirmed phrase) rather than a literal-phrase match, to also
+    // catch reasonably-expected variants ("Stealth robot", "robot
+    // autopilot Stealth", etc.) without guessing specific unconfirmed
+    // wording.
     const KEYWORD_MENTION_EXCLUSIONS = {
       "Robot": [
         { term: "ion", wordBoundary: true },
-        { term: "bronch", wordPrefix: true }
+        { term: "bronch", wordPrefix: true },
+        { term: "stealth", wordBoundary: true }
       ]
     };
 
