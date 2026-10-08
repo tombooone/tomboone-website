@@ -319,6 +319,18 @@
       ]
     };
 
+    // Per-campus additional strings accepted by the Robot keyword's
+    // Equipment-field override check, on top of KEYWORD_EQUIPMENT_MATCH_OVERRIDE
+    // above — keyed by keyword then campus code. WBMB (Mission Bernal) still
+    // has a DaVinci Xi robot even though v1.7.22 removed "Davinci Robot Xi"
+    // from HARD-1's room-rules equipmentContainsAny (Van Ness has none), so
+    // the shared override list can't include it without reopening that
+    // room-rule decision; this lets WBMB satisfy the Robot keyword with a Xi
+    // without affecting HARD-1 or any other campus.
+    const KEYWORD_CAMPUS_EQUIPMENT_MATCH_EXTRA = {
+      "Robot": { WBMB: ["Davinci Robot Xi"] }
+    };
+
     const KEYWORD_DISPLAY_NAMES = {
       "Neoprobe": "TruNode",
       "Spy ICG": "SPY (ICG) Imaging System"

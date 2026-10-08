@@ -864,7 +864,7 @@
         const foundTerms = findEquipmentTermsInText(specialNeeds, campus);
         if (!foundTerms.length) return;
 
-        const candidateMissing = foundTerms.filter((term) => !containsEquipmentTerm(equipment, term));
+        const candidateMissing = foundTerms.filter((term) => !containsEquipmentTerm(equipment, term, campus));
         if (!candidateMissing.length) return;
 
         // Classify each missing candidate; SUPPRESS becomes a trace instead of
@@ -1771,12 +1771,13 @@
       return { state: "normal", cuePhrase: null };
     }
 
-    function containsEquipmentTerm(text, termMatch) {
+    function containsEquipmentTerm(text, termMatch, campus) {
       const source = String(text || "");
       const override = KEYWORD_EQUIPMENT_MATCH_OVERRIDE[termMatch.keyword];
       if (override) {
         const sourceLower = source.toLowerCase();
-        return override.some((term) => sourceLower.includes(term.toLowerCase()));
+        const extra = KEYWORD_CAMPUS_EQUIPMENT_MATCH_EXTRA[termMatch.keyword]?.[campus] || [];
+        return [...override, ...extra].some((term) => sourceLower.includes(term.toLowerCase()));
       }
       const aliases = KEYWORD_ALIASES[termMatch.keyword];
       if (aliases) {
