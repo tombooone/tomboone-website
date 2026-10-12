@@ -834,6 +834,14 @@
       return KEYWORD_DISPLAY_NAMES[keyword] || keyword;
     }
 
+    // Joins 1+ display names into an English list: "A" / "A and B" /
+    // "A, B, and C" (Oxford comma for 3+).
+    function joinDisplayNames(names) {
+      if (names.length === 1) return names[0];
+      if (names.length === 2) return `${names[0]} and ${names[1]}`;
+      return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+    }
+
     function auditEquipmentRows(rows) {
       const populatedRows = rows.filter(hasData);
 
@@ -869,10 +877,15 @@
 
         // Classify each missing candidate; SUPPRESS becomes a trace instead of
         // a flag, so the audit trail is preserved without inflating the count.
+        // Non-suppressed candidates are kept in full (not just the first) so
+        // the explanation can name every missing term — deduped by keyword
+        // (a keyword can be mentioned more than once in Special Needs; only
+        // its first occurrence's position is used for highlighting), still
+        // ordered by position since candidateMissing is itself already
+        // position-sorted (inherited from findEquipmentTermsInText's sort).
         const suppressedTraces = [];
-        let missingTerm = null;
-        let questionable = false;
-        let questionableCue = null;
+        const missingTerms = [];
+        const seenKeywords = new Set();
 
         candidateMissing.forEach((term) => {
           const negation = evaluateNegation(specialNeeds, term);
@@ -880,14 +893,18 @@
             suppressedTraces.push({ keyword: term.keyword, cuePhrase: negation.cuePhrase });
             return;
           }
-          if (!missingTerm) {
-            missingTerm = term;
-            if (negation.state === "questionable") {
-              questionable = true;
-              questionableCue = negation.cuePhrase;
-            }
-          }
+          if (seenKeywords.has(term.keyword)) return;
+          seenKeywords.add(term.keyword);
+          missingTerms.push({
+            keyword: term.keyword,
+            matchStart: term.startIndex,
+            matchEnd: term.startIndex + term.matchedText.length,
+            questionable: negation.state === "questionable",
+            cue: negation.state === "questionable" ? negation.cuePhrase : null
+          });
         });
+
+        const missingTerm = missingTerms[0] || null;
 
         if (!missingTerm && !suppressedTraces.length) return;
 
@@ -906,17 +923,22 @@
         };
 
         if (missingTerm) {
-          const displayName = resolveEquipmentDisplayName(missingTerm.keyword, campus);
+          const displayNames = missingTerms.map((term) => resolveEquipmentDisplayName(term.keyword, campus));
+          const verb = displayNames.length === 1 ? "was" : "were";
+          const questionableTerms = missingTerms.filter((term) => term.questionable);
           includedRows.push({
             ...baseRow,
             flagged: true,
             keyword: missingTerm.keyword,
-            matchStart: missingTerm.startIndex,
-            matchEnd: missingTerm.startIndex + missingTerm.matchedText.length,
-            questionable,
-            explanation: `${displayName} was listed in Special Needs but not added to Equipment`,
-            questionableNote: questionable
-              ? `${displayName} flagged, but negation wording ('${questionableCue}') appears nearby — review in context.`
+            matchStart: missingTerm.matchStart,
+            matchEnd: missingTerm.matchEnd,
+            missingTerms,
+            questionable: questionableTerms.length > 0,
+            explanation: `${joinDisplayNames(displayNames)} ${verb} listed in Special Needs but not added to Equipment`,
+            questionableNote: questionableTerms.length
+              ? questionableTerms
+                  .map((term) => `${resolveEquipmentDisplayName(term.keyword, campus)} flagged, but negation wording ('${term.cue}') appears nearby — review in context.`)
+                  .join("\n")
               : null
           });
         } else {
@@ -1448,9 +1470,12 @@
           eqLabel.style.flex = "1";
           eqLabel.textContent = "Equipment List";
           if (row.keyword) {
+            const missingKeywords = (row.missingTerms && row.missingTerms.length)
+              ? row.missingTerms.map((term) => term.keyword)
+              : [row.keyword];
             const missingTag = document.createElement("span");
             missingTag.style.cssText = "margin-left: 6px; font-size: 0.68rem; font-weight: 700; color: #b91c1c; text-transform: none; letter-spacing: 0;";
-            missingTag.textContent = `(${row.keyword} not found)`;
+            missingTag.textContent = `(${missingKeywords.join(", ")} not found)`;
             eqLabel.append(missingTag);
           }
 
@@ -1471,18 +1496,38 @@
           const snValue = document.createElement("div");
           snValue.className = "equip-detail-value";
           const snText = row.specialNeeds || "–";
-          if (row.matchStart !== undefined && row.matchEnd !== undefined && row.matchEnd <= snText.length) {
-            snValue.append(document.createTextNode(snText.slice(0, row.matchStart)));
-            const mark = document.createElement("mark");
-            mark.style.cssText = "background: #fef3c7; font-weight: 700; border-radius: 2px; padding: 0 2px; color: #92400e;";
-            mark.textContent = snText.slice(row.matchStart, row.matchEnd);
-            mark.style.cursor = "pointer";
-            mark.addEventListener("click", (e) => {
-              e.stopPropagation();
-              navigator.clipboard.writeText(mark.textContent).then(() => showToast("Copied: " + mark.textContent));
+          // Highlight every missing term's match span, not just the first —
+          // sorted by start and deduped on overlap (two terms can match the
+          // same span, e.g. a trigger synonym vs. the literal keyword) so
+          // spans never double-render or cross each other.
+          const highlightSpans = ((row.missingTerms && row.missingTerms.length)
+            ? row.missingTerms.map((term) => ({ start: term.matchStart, end: term.matchEnd }))
+            : (row.matchStart !== undefined && row.matchEnd !== undefined ? [{ start: row.matchStart, end: row.matchEnd }] : []))
+            .filter((span) => span.end <= snText.length)
+            .sort((a, b) => a.start - b.start)
+            .reduce((acc, span) => {
+              const prev = acc[acc.length - 1];
+              if (prev && span.start < prev.end) return acc;
+              acc.push(span);
+              return acc;
+            }, []);
+
+          if (highlightSpans.length) {
+            let cursor = 0;
+            highlightSpans.forEach((span) => {
+              snValue.append(document.createTextNode(snText.slice(cursor, span.start)));
+              const mark = document.createElement("mark");
+              mark.style.cssText = "background: #fef3c7; font-weight: 700; border-radius: 2px; padding: 0 2px; color: #92400e;";
+              mark.textContent = snText.slice(span.start, span.end);
+              mark.style.cursor = "pointer";
+              mark.addEventListener("click", (e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(mark.textContent).then(() => showToast("Copied: " + mark.textContent));
+              });
+              snValue.append(mark);
+              cursor = span.end;
             });
-            snValue.append(mark);
-            snValue.append(document.createTextNode(snText.slice(row.matchEnd)));
+            snValue.append(document.createTextNode(snText.slice(cursor)));
           } else {
             snValue.textContent = snText;
           }
@@ -1496,8 +1541,12 @@
             .filter(Boolean);
           eqValue.textContent = eqItems.length ? eqItems.join("\n") : "–";
 
-          // Surgeon Preference section (spans both grid columns) — ultrasound/microscope only, WBVC only
-          const kw = String(row.keyword || "").toLowerCase();
+          // Surgeon Preference section (spans both grid columns) — ultrasound/microscope only, WBVC only.
+          // Checked against every missing term (not just the first) so this still
+          // shows when Ultrasound/Microscope is missing alongside another term.
+          const missingKeywordsLower = ((row.missingTerms && row.missingTerms.length) ? row.missingTerms.map((t) => t.keyword) : [row.keyword])
+            .map((k) => String(k || "").toLowerCase());
+          const kw = missingKeywordsLower.find((k) => k === "ultrasound" || k === "microscope") || "";
           const showSurgPref = (kw === "ultrasound" || kw === "microscope") && (row.campus === CAMPUS_CONFIG.WBVC.campusCode || new RegExp(CAMPUS_CONFIG.WBVC.campusCode, "i").test(row.location || ""));
           let surgPrefSection = null;
 
@@ -2012,7 +2061,7 @@
       el.append(document.createTextNode(row.explanation || ""));
       if (row.questionable && row.questionableNote) {
         const note = document.createElement("div");
-        note.style.cssText = "color: var(--warn); margin-top: 4px; font-size: 0.82rem;";
+        note.style.cssText = "color: var(--warn); margin-top: 4px; font-size: 0.82rem; white-space: pre-line;";
         note.textContent = row.questionableNote;
         el.append(note);
       }
