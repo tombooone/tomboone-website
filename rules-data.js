@@ -116,7 +116,11 @@
         tier: 2,
         label: "Ophthalmology Equipment Room",
         description: "Ophthalmology equipment should be in OR 5 or OR 10.",
-        match: { equipmentContainsAny: ["Unit Phaco Centurion", "Microscope Zeiss Eye", "Microscope Leica Eye", "Suction Irrigation System ROSI", "Cart Eye", "Gurney Eye", "Unit MIRA Diathermy", "Unit MIRA Transilluminator", "Wristrest Chan", "Tower Video Eye", "Ophthalmoscope Indirect Omega", "Unit Vitrectomy Constellation", "Machine Optiwave Refractive Analysis (ORA)", "Cart Vitrectomy"] },
+        // "Gurney Eye" removed (v1.7.34): ENT also uses eye gurneys, so it's
+        // not a reliable ophthalmology-only signal (was false-firing on ENT
+        // free-flap cases). Real eye cases remain covered by the other 13
+        // triggers here and by svc-3 (Tier 3, Ophthalmology service, OR5/10).
+        match: { equipmentContainsAny: ["Unit Phaco Centurion", "Microscope Zeiss Eye", "Microscope Leica Eye", "Suction Irrigation System ROSI", "Cart Eye", "Unit MIRA Diathermy", "Unit MIRA Transilluminator", "Wristrest Chan", "Tower Video Eye", "Ophthalmoscope Indirect Omega", "Unit Vitrectomy Constellation", "Machine Optiwave Refractive Analysis (ORA)", "Cart Vitrectomy"] },
         allowedRooms: ["OR 5", "OR 10"]
       },
       {

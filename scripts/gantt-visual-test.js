@@ -364,6 +364,20 @@ const rows = [
   // match) -> still compliant, unaffected by the new AV fistula rule.
   ["9000093", DATE, "WBVC OR 14", "Cardiac catheterization", "CV ACCESSION EQ", "55 yrs",
    "Cardiac", "Testcase, Runner, MD [999099]", "14:00:00", "15:30:00", "14:15:00", "15:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // ── v1.7.34: "Gurney Eye" removed from ops-1's equipmentContainsAny (ENT
+  // also uses eye gurneys; not a reliable ophthalmology-only signal) ──────
+  // 9000094: ENT free-flap-style case in OR 8 with ONLY "W Gurney Eye" as
+  // equipment -> ops-1 must NOT fire anymore (previously would have).
+  ["9000094", DATE, "WBVC OR 08", "Free flap reconstruction", "W Gurney Eye", "55 yrs",
+   "ENT", "Testcase, Runner, MD [999099]", "18:00:00", "20:00:00", "18:15:00", "19:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // 9000095: genuine ophthalmology equipment ("Cart Eye", a different,
+  // untouched ops-1 trigger) in OR 8 -> ops-1 still fires Tier 2 (regression
+  // check: the rule itself still works, only the one trigger was removed).
+  ["9000095", DATE, "WBVC OR 08", "Cataract extraction", "Cart Eye", "68 yrs",
+   "Ophthalmology", "Testcase, Runner, MD [999099]", "20:15:00", "21:45:00", "20:30:00", "21:30:00",
    "Outpatient", "Scheduled", "Elective"]
 ];
 
@@ -822,6 +836,12 @@ XLSX.writeFile(wb, fixturePath);
   const avFistulaBlock = data.blocks.find((b) => b.caseNum === "9000090");
   check("Gantt: AV fistula case in OR 14 (9000090) renders Tier 1 styling (.gantt-viol-1)",
     /\bgantt-viol-1\b/.test(avFistulaBlock?.className || ""));
+
+  // ── v1.7.34: "Gurney Eye" removed from ops-1's equipmentContainsAny ─────
+  check("9000094 (ENT case, OR 8, equipment ONLY 'W Gurney Eye'): ops-1 does NOT fire -- Gurney Eye removed as an unreliable ophthalmology signal",
+    !hasRule("9000094", "ops-1"));
+  check("9000095 (Ophthalmology case, OR 8, equipment 'Cart Eye'): ops-1 still fires Tier 2 -- rule itself still works, only one trigger removed",
+    hasRule("9000095", "ops-1"));
 
   check("No console/page errors", consoleErrors.length === 0);
   if (consoleErrors.length) consoleErrors.forEach((e) => console.error("  " + e));
