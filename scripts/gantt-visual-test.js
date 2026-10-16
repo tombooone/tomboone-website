@@ -133,8 +133,10 @@ const rows = [
    "Outpatient", "Scheduled", "Elective"],
   // OR10: General -> General -> Vascular. Fully back-to-back (0-minute gaps
   // throughout, modeled on OR10's real tight density): confirms an abutting
-  // SAME-service pair still shows no icon, and the abutting DIFFERENT-service
-  // pair right after it does.
+  // SAME-service pair still shows no icon, and the abutting DIFFERENT-service,
+  // DIFFERENT-surgeon pair right after it does. 9000006's surgeon was changed
+  // from Jossart to Reiter (v1.7.35) so this pair still exercises the cue now
+  // that same-surgeon pairs are suppressed regardless of service.
   ["9000004", DATE, "WBVC OR 10", "Hernia repair", "", "50 yrs",
    "General", "Jossart, Karl, MD [105751]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
    "Outpatient", "Scheduled", "Elective"],
@@ -142,15 +144,17 @@ const rows = [
    "General", "Jossart, Karl, MD [105751]", "09:00:00", "10:45:00", "09:30:00", "10:30:00",
    "Outpatient", "Scheduled", "Elective"],
   ["9000006", DATE, "WBVC OR 10", "Varicose vein stripping", "", "58 yrs",
-   "Vascular", "Jossart, Karl, MD [105751]", "10:45:00", "12:15:00", "11:00:00", "12:00:00",
+   "Vascular", "Reiter, Anna, MD [20063777]", "10:45:00", "12:15:00", "11:00:00", "12:00:00",
    "Outpatient", "Scheduled", "Elective"],
   // OR6: back-to-back (0-minute gap) service change, modeled on OR6's real
-  // tight density — the other explicit stress-test room requested.
+  // tight density — the other explicit stress-test room requested. 9000012's
+  // surgeon was changed from Weber to Char (v1.7.35), same reason as OR10
+  // above.
   ["9000011", DATE, "WBVC OR 06", "Kidney transplant", "Cooler Donor", "42 yrs",
    "Transplant", "Weber, Susan, MD [105621]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
    "Outpatient", "Scheduled", "Elective"],
   ["9000012", DATE, "WBVC OR 06", "Hernia repair", "", "47 yrs",
-   "General", "Weber, Susan, MD [105621]", "09:00:00", "10:30:00", "09:15:00", "10:15:00",
+   "General", "Char, Wendy, MD [500276]", "09:00:00", "10:30:00", "09:15:00", "10:15:00",
    "Outpatient", "Scheduled", "Elective"],
   // OR9: service absent from SERVICE_EMOJI — graceful no-emoji fallback.
   ["9000007", DATE, "WBVC OR 09", "Trauma exploratory laparotomy", "", "40 yrs",
@@ -295,6 +299,44 @@ const rows = [
    "Outpatient", "Scheduled", "Elective"],
   ["9000063", DATE_MIXED, "WBVC OR 01", "Spinal fusion", "Table Jackson", "60 yrs",
    "General", "Testcase, Runner, MD [999099]", "10:00:00", "11:30:00", "10:15:00", "11:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+
+  // ── v1.7.35: service-switch cue suppressed for same-surgeon pairs ──────
+  // All four scenarios live in OR 2 on DATE_ORANGE, a room/day otherwise
+  // empty (DATE_ORANGE's only other case is OR1 9000061 above), spaced out
+  // so none of these pairs abuts or interacts with another.
+  // (a) Abutting, different services, SAME surgeon -> no cue (new behavior).
+  ["9000101", DATE_ORANGE, "WBVC OR 02", "Hernia repair", "", "50 yrs",
+   "General", "Ortiz, Priya, MD [700101]", "06:30:00", "07:30:00", "06:45:00", "07:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000102", DATE_ORANGE, "WBVC OR 02", "Varicose vein stripping", "", "58 yrs",
+   "Vascular", "Ortiz, Priya, MD [700101]", "07:30:00", "08:30:00", "07:45:00", "08:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // (b) Same pair shape, DIFFERENT surgeons -> cue still present (regression
+  // check that the new same-surgeon check doesn't over-suppress).
+  ["9000103", DATE_ORANGE, "WBVC OR 02", "Hernia repair", "", "50 yrs",
+   "General", "Ortiz, Priya, MD [700101]", "09:00:00", "10:00:00", "09:15:00", "09:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000104", DATE_ORANGE, "WBVC OR 02", "Varicose vein stripping", "", "58 yrs",
+   "Vascular", "Lam, Cecilia, MD [700104]", "10:00:00", "11:00:00", "10:15:00", "10:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // (c) Different services, SAME surgeon, but a genuine 15-minute gap -> no
+  // cue (unchanged from before -- the gap alone already suppressed this;
+  // confirms the new surgeon check doesn't somehow interact with gap logic).
+  ["9000105", DATE_ORANGE, "WBVC OR 02", "Hernia repair", "", "50 yrs",
+   "General", "Ortiz, Priya, MD [700101]", "11:30:00", "12:30:00", "11:45:00", "12:15:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000106", DATE_ORANGE, "WBVC OR 02", "Varicose vein stripping", "", "58 yrs",
+   "Vascular", "Ortiz, Priya, MD [700101]", "12:45:00", "13:45:00", "13:00:00", "13:30:00",
+   "Outpatient", "Scheduled", "Elective"],
+  // (d) Abutting Gynecology -> Obstetrics, DIFFERENT surgeons -> still no
+  // cue (the explicit SERVICE_SWITCH_SUPPRESS_PAIRS exception still applies
+  // and is independent of the new same-surgeon check).
+  ["9000107", DATE_ORANGE, "WBVC OR 02", "Hysterectomy", "", "45 yrs",
+   "Gynecology", "Ortiz, Priya, MD [700101]", "14:15:00", "15:15:00", "14:30:00", "15:00:00",
+   "Outpatient", "Scheduled", "Elective"],
+  ["9000108", DATE_ORANGE, "WBVC OR 02", "Cesarean section", "", "30 yrs",
+   "Obstetrics", "Lam, Cecilia, MD [700104]", "15:15:00", "16:15:00", "15:30:00", "16:00:00",
    "Outpatient", "Scheduled", "Elective"],
 
   // ── v1.7.27 Tier 4 removal: a case for a surgeon who previously had a
@@ -593,6 +635,23 @@ XLSX.writeFile(wb, fixturePath);
     return el ? { className: el.className } : null;
   });
 
+  // v1.7.35: the four same-surgeon service-switch-cue fixtures (9000101-
+  // 9000108) live on DATE_ORANGE (OR 2), not the initially-selected day, for
+  // the same reason as the DATE_PCNL navigation above -- `data.switchPairs`
+  // only reflects whichever day was selected on load. Navigate to
+  // DATE_ORANGE and re-read the switch markers there.
+  await page.evaluate((day) => {
+    const cell = [...document.querySelectorAll(".gantt-cal-cell")].find(
+      (c) => c.dataset.sd !== undefined && c.textContent === String(day)
+    );
+    if (cell) cell.click();
+  }, sameMonthOffset(2).getDate());
+  await new Promise((r) => setTimeout(r, 300));
+  const orangeDaySwitchPairs = await page.evaluate(() => {
+    return [...document.querySelectorAll(".gantt-service-switch")]
+      .map((m) => `${m.dataset.beforeCase}->${m.dataset.afterCase}`);
+  });
+
   // ── Assertions ─────────────────────────────────────────────────────────
   const or2 = data.roomLabels.find((r) => r.line1 === "OR 2");
   const or3 = data.roomLabels.find((r) => r.line1 === "OR 3");
@@ -687,6 +746,18 @@ XLSX.writeFile(wb, fixturePath);
     !data.switchPairs.includes("9000031->9000032"));
   check("Abutting SAME-service pair (OR10 9000004->9000005) shows no icon (unchanged behavior)",
     !data.switchPairs.includes("9000004->9000005"));
+  check("Both OR10/OR6 abutting different-service cues now use different-surgeon pairs (9000005/9000006, 9000011/9000012 repointed off same-surgeon data)",
+    data.switchPairs.includes("9000005->9000006") && data.switchPairs.includes("9000011->9000012"));
+
+  // v1.7.35: same-surgeon service-switch-cue suppression (DATE_ORANGE, OR 2).
+  check("(a) Abutting, different services, SAME surgeon (9000101->9000102): no cue",
+    !orangeDaySwitchPairs.includes("9000101->9000102"));
+  check("(b) Abutting, different services, DIFFERENT surgeons (9000103->9000104): cue present",
+    orangeDaySwitchPairs.includes("9000103->9000104"));
+  check("(c) Different services, SAME surgeon, 15-min gap (9000105->9000106): no cue (gap alone already suppressed this)",
+    !orangeDaySwitchPairs.includes("9000105->9000106"));
+  check("(d) Abutting Gynecology->Obstetrics, DIFFERENT surgeons (9000107->9000108): still no cue (explicit pair exception, independent of surgeon)",
+    !orangeDaySwitchPairs.includes("9000107->9000108"));
 
   check(`Icon Legend has one entry per unique SERVICE_EMOJI value excluding "Robotics" (${data.uniqueServiceEmojiCount}) plus robot/3-light/switch-cue`,
     data.legendEntries.length === data.uniqueServiceEmojiCount + 3);

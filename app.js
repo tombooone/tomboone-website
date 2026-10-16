@@ -3814,6 +3814,7 @@
           room:         normalizedRoom || rawRoom,
           procedures:   proceduresText,
           surgeon:      surgeonName,
+          surgeonId,
           service:      serviceText,
           patientAge,
           equipmentText,
@@ -4474,6 +4475,21 @@
       return map;
     })();
 
+    // Same-surgeon check for the service-switching cue: one surgeon moving
+    // between their own related services usually shares setup, so the cue
+    // (meant to flag a full equipment changeover) is suppressed when both
+    // cases are the same surgeon. Prefers comparing by surgeonId when both
+    // cases have one (unambiguous); falls back to a case-insensitive,
+    // trimmed name comparison otherwise. Never treats missing/blank surgeon
+    // data on either side as a match.
+    function isSameSurgeon(caseA, caseB) {
+      if (caseA.surgeonId && caseB.surgeonId) return caseA.surgeonId === caseB.surgeonId;
+      const nameA = String(caseA.surgeon || "").trim().toLowerCase();
+      const nameB = String(caseB.surgeon || "").trim().toLowerCase();
+      if (!nameA || !nameB) return false;
+      return nameA === nameB;
+    }
+
     // Explicit Gynecology/Obstetrics exception for the service-switching cue.
     function isSuppressedServiceSwitchPair(serviceA, serviceB) {
       const a = String(serviceA || "").toLowerCase();
@@ -4492,9 +4508,10 @@
       if (!grid) return;
       grid.textContent = "";
 
-      function addEntry(iconContent, label) {
+      function addEntry(iconContent, label, title) {
         const entry = document.createElement("div");
         entry.className = "gantt-icon-legend-entry";
+        if (title) entry.title = title;
         const iconWrap = document.createElement("span");
         iconWrap.className = "gantt-icon-legend-icon";
         iconWrap.append(iconContent);
@@ -4534,7 +4551,8 @@
       appendSuperscript(lightIcon, "x3");
       addEntry(lightIcon, "3-light room");
 
-      addEntry(emojiNode("🔀"), "Service change");
+      addEntry(emojiNode("🔀"), "Service change",
+        "Appears between two directly abutting cases when the service and the surgeon are both different.");
     }
     buildGanttIconLegend();
 
@@ -4755,15 +4773,19 @@
             // place the blocks: this case's clamped end === the next case's
             // clamped start — Epic auto-abuts by default, so any visible gap
             // reflects a deliberate scheduling constraint, not routine
-            // turnover, and suppresses the cue entirely) whose Service
-            // differs, never at the start/end of the row. Gynecology <->
-            // Obstetrics is an explicit exception (see
-            // SERVICE_SWITCH_SUPPRESS_PAIRS), regardless of gap status.
+            // turnover, and suppresses the cue entirely) whose Service AND
+            // surgeon both differ, never at the start/end of the row. Same
+            // surgeon is suppressed even across different services, since
+            // one surgeon's related services usually share setup (see
+            // isSameSurgeon). Gynecology <-> Obstetrics is an explicit
+            // exception (see SERVICE_SWITCH_SUPPRESS_PAIRS), regardless of
+            // gap status.
             const next = roomCases[caseIdx + 1];
             if (next
               && clampE === next.clampS
               && String(c.service || "") !== String(next.c.service || "")
-              && !isSuppressedServiceSwitchPair(c.service, next.c.service)) {
+              && !isSuppressedServiceSwitchPair(c.service, next.c.service)
+              && !isSameSurgeon(c, next.c)) {
               const marker = document.createElement("div");
               marker.className = "gantt-service-switch";
               marker.style.left = ((clampE - CAMPUS_CONFIG.WBVC.ganttStartMin) * GANTT_PX_MIN) + "px";
