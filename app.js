@@ -872,7 +872,7 @@
         const foundTerms = findEquipmentTermsInText(specialNeeds, campus);
         if (!foundTerms.length) return;
 
-        const candidateMissing = foundTerms.filter((term) => !containsEquipmentTerm(equipment, term, campus));
+        const candidateMissing = foundTerms.filter((term) => !containsEquipmentTerm(equipment, term, campus, specialNeeds));
         if (!candidateMissing.length) return;
 
         // Classify each missing candidate; SUPPRESS becomes a trace instead of
@@ -1720,6 +1720,15 @@
       return text.slice(clauseStart, clauseEnd);
     }
 
+    // True if `clause` contains `term` per its matching mode — shared by
+    // isExcludedMention() and findContextEquipmentMatchRule() so both read
+    // a { term, wordBoundary | wordPrefix } entry identically.
+    function clauseContainsTerm(clause, term) {
+      if (term.wordBoundary) return new RegExp(phraseBoundaryPattern(term.term), "i").test(clause);
+      if (term.wordPrefix) return new RegExp("(?<![a-z0-9])" + escapeRegExp(term.term), "i").test(clause);
+      return clause.toLowerCase().includes(term.term.toLowerCase());
+    }
+
     // True if `match` should be discarded per KEYWORD_MENTION_EXCLUSIONS
     // (rules-data.js) — a per-mention check: only excludes matches whose
     // own clause contains an exclusion term, not the whole case.
@@ -1727,11 +1736,20 @@
       const exclusions = KEYWORD_MENTION_EXCLUSIONS[match.keyword];
       if (!exclusions) return false;
       const clause = extractMentionClause(source, match.startIndex, match.startIndex + match.matchedText.length);
-      return exclusions.some((ex) => {
-        if (ex.wordBoundary) return new RegExp(phraseBoundaryPattern(ex.term), "i").test(clause);
-        if (ex.wordPrefix) return new RegExp("(?<![a-z0-9])" + escapeRegExp(ex.term), "i").test(clause);
-        return clause.toLowerCase().includes(ex.term.toLowerCase());
-      });
+      return exclusions.some((ex) => clauseContainsTerm(clause, ex));
+    }
+
+    // The first KEYWORD_CONTEXT_EQUIPMENT_MATCH (rules-data.js) entry whose
+    // clauseTerms match `match`'s own clause in `specialNeedsText`, or null —
+    // a per-mention check, same clause-scoping convention as
+    // isExcludedMention(). Returns null (falls through to the normal
+    // KEYWORD_EQUIPMENT_MATCH_OVERRIDE/alias/fuzzy path) when specialNeedsText
+    // isn't available, so this is a strictly additive, opt-in override.
+    function findContextEquipmentMatchRule(specialNeedsText, match) {
+      const rules = KEYWORD_CONTEXT_EQUIPMENT_MATCH[match.keyword];
+      if (!rules || specialNeedsText === undefined) return null;
+      const clause = extractMentionClause(String(specialNeedsText || ""), match.startIndex, match.startIndex + match.matchedText.length);
+      return rules.find((rule) => rule.clauseTerms.some((term) => clauseContainsTerm(clause, term))) || null;
     }
 
     // ── Equipment negation detection ────────────────────────────────────────
@@ -1820,8 +1838,13 @@
       return { state: "normal", cuePhrase: null };
     }
 
-    function containsEquipmentTerm(text, termMatch, campus) {
+    function containsEquipmentTerm(text, termMatch, campus, specialNeedsText) {
       const source = String(text || "");
+      const contextRule = findContextEquipmentMatchRule(specialNeedsText, termMatch);
+      if (contextRule) {
+        const sourceLower = source.toLowerCase();
+        return contextRule.equipmentAny.some((term) => sourceLower.includes(term.toLowerCase()));
+      }
       const override = KEYWORD_EQUIPMENT_MATCH_OVERRIDE[termMatch.keyword];
       if (override) {
         const sourceLower = source.toLowerCase();

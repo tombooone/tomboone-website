@@ -335,6 +335,36 @@
       "Robot": { WBMB: ["Davinci Robot Xi"] }
     };
 
+    // Per-keyword, clause-scoped context overrides of the Equipment-field
+    // satisfaction check — keyed by keyword, each entry a
+    // { clauseTerms, equipmentAny } pair. If the matched mention's own
+    // comma/semicolon/newline-delimited clause (same scope convention as
+    // KEYWORD_MENTION_EXCLUSIONS) contains ANY of clauseTerms, that mention
+    // is satisfied by equipmentAny instead of KEYWORD_EQUIPMENT_MATCH_OVERRIDE/
+    // KEYWORD_CAMPUS_EQUIPMENT_MATCH_EXTRA. Added for "Robot": real Special
+    // Needs text references the Globus Excelsius neuro/spine robot in the
+    // same breath as the word "Robot" (e.g. "Excelsius 3D GPS Plus Robot"),
+    // which is a completely different platform from the DV5/SP surgical
+    // robot the plain "Robot" keyword is meant to catch — HARD-3's own
+    // equipment string is "Robot Neuro Excelsius GPS Globus". A misspelling
+    // ("Excelcius") has been seen in real exports, so it's included as its
+    // own clause term rather than relying on fuzzy matching. Applies at
+    // every campus (no campus scoping needed here, unlike the WBMB Xi
+    // extra above) — the Excelsius platform's presence/absence doesn't vary
+    // by campus the way the DaVinci Xi carve-out does.
+    const KEYWORD_CONTEXT_EQUIPMENT_MATCH = {
+      "Robot": [
+        {
+          clauseTerms: [
+            { term: "excelsius" },
+            { term: "excelcius" },
+            { term: "globus", wordBoundary: true }
+          ],
+          equipmentAny: ["Robot Neuro Excelsius"]
+        }
+      ]
+    };
+
     const KEYWORD_DISPLAY_NAMES = {
       "Neoprobe": "TruNode",
       "Spy ICG": "SPY (ICG) Imaging System"
