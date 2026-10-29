@@ -106,12 +106,13 @@
       {
         key: "procedures",
         label: "Procedure/Code(s)",
-        optional: true,
         // normalizeHeader() turns "/" and "_" into spaces, so
         // "Procedure/Code(s)" normalizes to "procedure code(s)" here —
         // doesn't collide with the Date column's "procedure date" alias
         // (neither string is a substring of the other) or any other
-        // column in this array.
+        // column in this array. Required as of v1.7.38 (Tom overwrites the
+        // Epic export daily, so an older-format file lacking this column
+        // will never actually be uploaded).
         accepted: ["procedure/code(s)", "procedure/codes", "procedures"]
       },
       {
@@ -861,7 +862,10 @@
       }
 
       const headerInfo = findHeaderInfoForColumns(populatedRows, equipmentRequiredColumns);
-      if (!headerInfo) throw new Error("Could not find the required equipment audit columns: Case #, Special Needs, Equipment, and Creation User.");
+      if (!headerInfo) {
+        const requiredLabels = equipmentRequiredColumns.filter((c) => !c.optional).map((c) => c.label);
+        throw new Error(`Could not find the required equipment audit columns: ${joinDisplayNames(requiredLabels)}.`);
+      }
       const { indexes, headerRowIndex } = headerInfo;
       // Prospective only: drop rows dated before tomorrow's local midnight.
       const tomorrowMidnight = new Date();
@@ -880,19 +884,20 @@
         const campus = deriveCampus(rawLocation);
         const surgeonRaw = cell(row, indexes.surgeon);
         const dateValue = parseDateCell(cell(row, indexes.date));
-        // Procedures column is optional (older report exports lack it); when
-        // absent (index -1), hasProceduresColumn is false and the gate below
-        // is skipped entirely so behavior matches today exactly.
-        const hasProceduresColumn = indexes.procedures !== -1;
-        const procedureText = hasProceduresColumn ? cell(row, indexes.procedures) : "";
+        const procedureText = cell(row, indexes.procedures);
+
+        // Campus-only procedure flags (e.g. Da Vinci Xi at WBVC) are
+        // evaluated here, before the Special-Needs-keyword early return, so
+        // a case can flag purely on its procedure text with no Special
+        // Needs equipment mention at all.
+        const campusFlags = evaluateProcedureCampusFlags(procedureText, campus);
+
         const foundTermsRaw = findEquipmentTermsInText(specialNeeds, campus);
-        const foundTerms = hasProceduresColumn
-          ? foundTermsRaw.filter((term) => isProcedureGateSatisfied(term, procedureText, specialNeeds))
-          : foundTermsRaw;
-        if (!foundTerms.length) return;
+        const foundTerms = foundTermsRaw.filter((term) => isProcedureGateSatisfied(term, procedureText, specialNeeds));
+        if (!foundTerms.length && !campusFlags.length) return;
 
         const candidateMissing = foundTerms.filter((term) => !containsEquipmentTerm(equipment, term, campus, specialNeeds));
-        if (!candidateMissing.length) return;
+        if (!candidateMissing.length && !campusFlags.length) return;
 
         // Classify each missing candidate; SUPPRESS becomes a trace instead of
         // a flag, so the audit trail is preserved without inflating the count.
@@ -925,7 +930,7 @@
 
         const missingTerm = missingTerms[0] || null;
 
-        if (!missingTerm && !suppressedTraces.length) return;
+        if (!missingTerm && !suppressedTraces.length && !campusFlags.length) return;
 
         const baseRow = {
           date: dateValue.display,
@@ -938,8 +943,15 @@
           creationUser: formatCreationUser(cell(row, indexes.creationUser)),
           specialNeeds,
           equipment,
+          procedureText,
+          campusFlagged: campusFlags.length > 0,
           suppressedTraces
         };
+
+        // Campus flags never produce a suppressed trace; they're appended
+        // to whichever explanation branch below actually fires, as a
+        // second sentence when a missing-term explanation already exists.
+        const campusFlagSentence = campusFlags.map((f) => f.explanation).join(" ");
 
         if (missingTerm) {
           const displayNames = missingTerms.map((term) => resolveEquipmentDisplayName(term.keyword, campus));
@@ -953,24 +965,40 @@
             matchEnd: missingTerm.matchEnd,
             missingTerms,
             questionable: questionableTerms.length > 0,
-            explanation: `${joinDisplayNames(displayNames)} ${verb} listed in Special Needs but not added to Equipment`,
+            explanation: campusFlags.length
+              ? `${joinDisplayNames(displayNames)} ${verb} listed in Special Needs but not added to Equipment. ${campusFlagSentence}`
+              : `${joinDisplayNames(displayNames)} ${verb} listed in Special Needs but not added to Equipment`,
             questionableNote: questionableTerms.length
               ? questionableTerms
                   .map((term) => `${resolveEquipmentDisplayName(term.keyword, campus)} flagged, but negation wording ('${term.cue}') appears nearby — review in context.`)
                   .join("\n")
               : null
           });
-        } else {
-          // Every candidate was suppressed — nothing is flagged, but the case
-          // still surfaces so the suppression trace is auditable in Details.
+        } else if (suppressedTraces.length) {
+          // Every candidate was suppressed — nothing is flagged on that
+          // basis, but the case still surfaces so the suppression trace is
+          // auditable in Details. A campus flag can still fire alongside.
           const first = suppressedTraces[0];
           const displayName = resolveEquipmentDisplayName(first.keyword, campus);
+          const suppressedSentence = `${displayName} mentioned with '${first.cuePhrase}' — not flagged`;
           includedRows.push({
             ...baseRow,
-            flagged: false,
+            flagged: campusFlags.length > 0,
             keyword: null,
             questionable: false,
-            explanation: `${displayName} mentioned with '${first.cuePhrase}' — not flagged`,
+            explanation: campusFlags.length ? `${suppressedSentence}. ${campusFlagSentence}` : suppressedSentence,
+            questionableNote: null
+          });
+        } else {
+          // No missing Special Needs term and nothing suppressed — only a
+          // campus flag fired.
+          includedRows.push({
+            ...baseRow,
+            flagged: true,
+            keyword: null,
+            missingTerms: [],
+            questionable: false,
+            explanation: campusFlagSentence,
             questionableNote: null
           });
         }
@@ -1622,9 +1650,26 @@
             suppressedSection.append(suppressedLabel, suppressedValue);
           }
 
+          // Procedure section — only shown when a campus procedure flag
+          // fired (e.g. Da Vinci Xi at WBVC), so the reviewer can see the
+          // exact procedure text the flag matched against.
+          let procedureSection = null;
+          if (row.campusFlagged) {
+            procedureSection = document.createElement("div");
+            procedureSection.style.cssText = "grid-column:1/-1;";
+            const procedureLabel = document.createElement("div");
+            procedureLabel.className = "equip-detail-label";
+            procedureLabel.textContent = "Procedure";
+            const procedureValue = document.createElement("div");
+            procedureValue.className = "equip-detail-value";
+            procedureValue.textContent = row.procedureText || "–";
+            procedureSection.append(procedureLabel, procedureValue);
+          }
+
           detailDiv.append(detailHeaderRow, snValue, eqValue);
           if (surgPrefSection) detailDiv.append(surgPrefSection);
           if (suppressedSection) detailDiv.append(suppressedSection);
+          if (procedureSection) detailDiv.append(procedureSection);
           detailCell.append(detailDiv);
           detailTr.append(detailCell);
 
@@ -1771,6 +1816,22 @@
       if (!gate) return true;
       if (gate.procedureTerms.some((term) => clauseContainsTerm(procedureText, term))) return true;
       return gate.specialNeedsTerms.some((term) => clauseContainsTerm(specialNeedsText, term));
+    }
+
+    // PROCEDURE_CAMPUS_FLAGS (rules-data.js) entries whose procedureTerms
+    // match anywhere in `procedureText` and whose campuses include `campus`
+    // — independent of Special Needs/Equipment keyword matching entirely
+    // (e.g. a Da Vinci Xi procedure at WBVC, which has no Xi robot).
+    // procedureTerms reuses clauseContainsTerm() against the whole
+    // procedureText (not clause-scoped — same reasoning as
+    // isProcedureGateSatisfied above). Returns [] when procedureText is
+    // blank or no rule's campuses include this campus.
+    function evaluateProcedureCampusFlags(procedureText, campus) {
+      if (!procedureText) return [];
+      return PROCEDURE_CAMPUS_FLAGS.filter((rule) => {
+        if (!rule.campuses.includes(campus)) return false;
+        return rule.procedureTerms.some((term) => clauseContainsTerm(procedureText, term));
+      });
     }
 
     // The first KEYWORD_CONTEXT_EQUIPMENT_MATCH (rules-data.js) entry whose

@@ -430,6 +430,42 @@
       }
     };
 
+    // Campus-only procedure flags for the Equipment Request Audit — fire
+    // purely from the case's Epic procedure name, independent of any
+    // Special Needs/Equipment keyword matching (so a case can flag even
+    // with no equipment mention at all). Each entry: { id, campuses,
+    // procedureTerms, explanation }. A rule fires when the case's campus is
+    // in `campuses` and any procedureTerms entry matches the whole
+    // Procedure/Code(s) cell text (all lines joined) — reuses
+    // clauseContainsTerm()'s { term, wordBoundary } shape, checked against
+    // the whole cell rather than a clause (same reasoning as
+    // KEYWORD_PROCEDURE_GATE above: the cell holds up to 5 unrelated
+    // procedure lines with no clause-scoping convention of its own).
+    // "xi-wbvc": WBVC (Van Ness) has no Da Vinci Xi robot — only Dv5/Sp are
+    // there — while WBMB (Mission Bernal) does (see
+    // KEYWORD_CAMPUS_EQUIPMENT_MATCH_EXTRA above). WBDE is deliberately out
+    // of scope (Tom's decision — Davies has no Da Vinci robots at all, a
+    // separate pre-existing situation already fully handled by
+    // KEYWORD_CAMPUS_EXCLUSIONS["Robot"]). Real Epic Xi procedure names
+    // follow the same two naming families as KEYWORD_PROCEDURE_GATE: "...,
+    // Robot-Assisted, ..., Using Da Vinci Xi, ..." and "Robotic (Xi)
+    // Laparoscopic ...". None of these terms is bare "xi" alone — every
+    // term is a multi-word phrase or the parenthesized "(xi)" form — so
+    // "xi" can never match inside an unrelated word like "Excision" or
+    // "Maxillary".
+    const PROCEDURE_CAMPUS_FLAGS = [
+      {
+        id: "xi-wbvc",
+        campuses: ["WBVC"],
+        procedureTerms: [
+          { term: "da vinci xi" },
+          { term: "davinci xi" },
+          { term: "(xi)" }
+        ],
+        explanation: "Da Vinci Xi procedure scheduled at WBVC OR (no Xi robot at this campus)"
+      }
+    ];
+
     // Service emoji identifiers for the Gantt visual feature (v1.7.12).
     const SERVICE_EMOJI = {
       "Cardiac": "🫀",
