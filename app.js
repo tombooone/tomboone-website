@@ -104,6 +104,17 @@
         accepted: ["location", "department location", "or location"]
       },
       {
+        key: "procedures",
+        label: "Procedure/Code(s)",
+        optional: true,
+        // normalizeHeader() turns "/" and "_" into spaces, so
+        // "Procedure/Code(s)" normalizes to "procedure code(s)" here —
+        // doesn't collide with the Date column's "procedure date" alias
+        // (neither string is a substring of the other) or any other
+        // column in this array.
+        accepted: ["procedure/code(s)", "procedure/codes", "procedures"]
+      },
+      {
         key: "creationUser",
         label: "Creation User",
         accepted: ["creation user"]
@@ -869,7 +880,15 @@
         const campus = deriveCampus(rawLocation);
         const surgeonRaw = cell(row, indexes.surgeon);
         const dateValue = parseDateCell(cell(row, indexes.date));
-        const foundTerms = findEquipmentTermsInText(specialNeeds, campus);
+        // Procedures column is optional (older report exports lack it); when
+        // absent (index -1), hasProceduresColumn is false and the gate below
+        // is skipped entirely so behavior matches today exactly.
+        const hasProceduresColumn = indexes.procedures !== -1;
+        const procedureText = hasProceduresColumn ? cell(row, indexes.procedures) : "";
+        const foundTermsRaw = findEquipmentTermsInText(specialNeeds, campus);
+        const foundTerms = hasProceduresColumn
+          ? foundTermsRaw.filter((term) => isProcedureGateSatisfied(term, procedureText, specialNeeds))
+          : foundTermsRaw;
         if (!foundTerms.length) return;
 
         const candidateMissing = foundTerms.filter((term) => !containsEquipmentTerm(equipment, term, campus, specialNeeds));
@@ -1737,6 +1756,21 @@
       if (!exclusions) return false;
       const clause = extractMentionClause(source, match.startIndex, match.startIndex + match.matchedText.length);
       return exclusions.some((ex) => clauseContainsTerm(clause, ex));
+    }
+
+    // True if `match` passes KEYWORD_PROCEDURE_GATE (rules-data.js) — gates
+    // whether a mention is checked against Equipment at all, based on the
+    // case's Epic procedure name. Not clause-scoped (unlike
+    // isExcludedMention/findContextEquipmentMatchRule): the procedure cell
+    // can hold up to 5 newline-separated procedures with no reliable
+    // correspondence to Special Needs clauses, so the whole procedureText
+    // and the whole specialNeedsText are each checked as one string.
+    // Returns true (no gate) when the keyword has no gate configured.
+    function isProcedureGateSatisfied(match, procedureText, specialNeedsText) {
+      const gate = KEYWORD_PROCEDURE_GATE[match.keyword];
+      if (!gate) return true;
+      if (gate.procedureTerms.some((term) => clauseContainsTerm(procedureText, term))) return true;
+      return gate.specialNeedsTerms.some((term) => clauseContainsTerm(specialNeedsText, term));
     }
 
     // The first KEYWORD_CONTEXT_EQUIPMENT_MATCH (rules-data.js) entry whose

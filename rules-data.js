@@ -393,6 +393,43 @@
       "Robot": ["WBDE"]
     };
 
+    // Per-keyword gate on whether a Special Needs mention is checked against
+    // Equipment at all, based on the case's Epic procedure name (the new
+    // "Procedure/Code(s)" report column, v1.7.37) — distinct from every
+    // config above, which only ever adjust an ALREADY-checked mention's
+    // satisfaction/exclusion. For "Robot": a mention is dropped entirely
+    // (no flag, no suppressed trace) unless EITHER (a) the case's procedure
+    // text itself names a real Da Vinci procedure, or (b) the Special Needs
+    // text names a Da Vinci platform directly. Two real Epic naming families
+    // for (a): "Robotic (Dv5|Xi) Laparoscopic ..." and "..., Robot-Assisted,
+    // ..., Using Da Vinci (Dv5|5|Sp|Xi)". Neuro/spine robots (Globus
+    // Excelsius, Medtronic Stealth) and the ION bronchoscopy platform are
+    // real non-Da-Vinci "robot" mentions that must NOT satisfy this gate —
+    // spine/neuro procedure names never mention a robot at all, so they fail
+    // branch (a) by construction; ION's own procedure name
+    // ("Robotic Bronchoscopy W/ Navigation") also fails it since it has no
+    // Da Vinci term. procedureTerms reuses the same { term, wordBoundary }
+    // shape clauseContainsTerm() already reads; specialNeedsTerms reuses
+    // KEYWORD_TRIGGER_SYNONYMS[keyword] (branch b) plus the two-word "da
+    // vinci" phrase, which isn't itself a trigger synonym since plain
+    // "vinci" alone should never fire the keyword.
+    const KEYWORD_PROCEDURE_GATE = {
+      "Robot": {
+        procedureTerms: [
+          { term: "da vinci" },
+          { term: "davinci" },
+          { term: "dv5", wordBoundary: true },
+          { term: "(dv5)" },
+          { term: "(xi)" },
+          { term: "(sp)" }
+        ],
+        specialNeedsTerms: [
+          ...(KEYWORD_TRIGGER_SYNONYMS["Robot"] || []),
+          { term: "da vinci" }
+        ]
+      }
+    };
+
     // Service emoji identifiers for the Gantt visual feature (v1.7.12).
     const SERVICE_EMOJI = {
       "Cardiac": "🫀",
