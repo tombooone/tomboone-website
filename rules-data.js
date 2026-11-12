@@ -123,15 +123,17 @@
         match: { equipmentContainsAny: ["Unit Phaco Centurion", "Microscope Zeiss Eye", "Microscope Leica Eye", "Suction Irrigation System ROSI", "Cart Eye", "Unit MIRA Diathermy", "Unit MIRA Transilluminator", "Wristrest Chan", "Tower Video Eye", "Ophthalmoscope Indirect Omega", "Unit Vitrectomy Constellation", "Machine Optiwave Refractive Analysis (ORA)", "Cart Vitrectomy"] },
         allowedRooms: ["OR 5", "OR 10"]
       },
+      // ── Tier 3: Service Preference ────────────────────────────────────────
       {
+        // Demoted from Tier 2 (v1.7.40) and softened accordingly — see
+        // buildExplanation() case 3 (app.js) for the special-cased wording.
         id: "ops-2",
-        tier: 2,
+        tier: 3,
         label: "Pediatric Room",
-        description: "Pediatric cases should be in OR 4.",
+        description: "Pediatric cases are preferably in OR 4 when possible; OR 3 or OR 5 also acceptable.",
         match: { anyOf: [{ equipmentContainsAny: ["Cart Pediatric", "Warmer Overhead (French Fry)"] }, { patientAgeUnder: 18 }] },
         allowedRooms: ["OR 4", "OR 3", "OR 5"]
       },
-      // ── Tier 3: Service Preference ────────────────────────────────────────
       {
         id: "svc-1",
         tier: 3,

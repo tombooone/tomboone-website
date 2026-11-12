@@ -359,6 +359,22 @@ const rows = [
    "Urology", "Testcase, Runner, MD [999099]", "07:30:00", "09:00:00", "07:45:00", "08:45:00",
    "Outpatient", "Scheduled", "Elective"],
 
+  // ── v1.7.40 ops-2 (Pediatric Room) demotion Tier 2 -> Tier 3: an
+  // under-18 case in OR9 (not an allowed ops-2 room) on DATE_ORANGE, a day
+  // already used for isolated Tier-2/3 scenarios -- OR4 and OR9 are both
+  // otherwise free that day, so the feasibility post-process must NOT
+  // suppress this flag. Confirms the new tier, the new explanation
+  // wording, and that ops-2's own isPeds()-based feasibility logic still
+  // runs (unaffected by the generic Tier 3 post-process now skipping it).
+  // Deliberately NOT given its own new isolated date: this fixture's
+  // "same-month offset from DATE" helper flips to subtracting days once an
+  // offset would cross a month boundary, which can silently land a new
+  // date BEFORE DATE itself and displace it as the auto-selected default
+  // day -- reusing an already-vetted date avoids that trap entirely.
+  ["9000082", DATE_ORANGE, "WBVC OR 09", "Tonsillectomy", "", "9 yrs",
+   "ENT", "Testcase, Runner, MD [999099]", "10:00:00", "11:00:00", "10:15:00", "10:45:00",
+   "Outpatient", "Scheduled", "Elective"],
+
   // ── v1.7.26 HARD-1 expansion: Mission Bernal DV5 relocation (mobile
   // between OR4/OR8, alongside the existing fixed DV5 in OR2/OR3) ─────────
   // OR4: DV5 equipment, now a valid room -> compliant, no HARD-1 violation.
@@ -570,6 +586,7 @@ XLSX.writeFile(wb, fixturePath);
     // rather than parsing the hidden violations table's rendered text.
     const violationsByCase = {};
     const violationTiersByCase = {};
+    const violationExplanationsByCase = {};
     (typeof _lastAuditResult !== "undefined" && _lastAuditResult
       ? _lastAuditResult.violations : []
     ).forEach((v) => {
@@ -577,6 +594,8 @@ XLSX.writeFile(wb, fixturePath);
       violationsByCase[v.caseNumber].push(v.ruleId);
       if (!violationTiersByCase[v.caseNumber]) violationTiersByCase[v.caseNumber] = [];
       violationTiersByCase[v.caseNumber].push(v.ruleTier);
+      if (!violationExplanationsByCase[v.caseNumber]) violationExplanationsByCase[v.caseNumber] = {};
+      violationExplanationsByCase[v.caseNumber][v.ruleId] = v.explanation;
     });
 
     // v1.7.21 re-tiering: calendar day-swatch color, read directly off the
@@ -597,7 +616,7 @@ XLSX.writeFile(wb, fixturePath);
       tableDisplay, tableRowCount, switchOverlapsText, serviceEmojiCount, uniqueServiceEmojiCount,
       tier4RuleCount, tier5RuleCount, lat001Tier, lat002Tier,
       hard8Tier, hard8HasDisallowedRooms, hard8HasNoAllowedRooms,
-      violationsByCase, violationTiersByCase,
+      violationsByCase, violationTiersByCase, violationExplanationsByCase,
       calRedDay:    calendarCellColor(testDayRed),
       calOrangeDay: calendarCellColor(testDayOrange),
       calMixedDay:  calendarCellColor(testDayMixed),
@@ -868,11 +887,22 @@ XLSX.writeFile(wb, fixturePath);
   check("lat-001 (PCNL Right) is tier 2", data.lat001Tier === 2);
   check("lat-002 (PCNL Left) is tier 2", data.lat002Tier === 2);
 
+  // ── v1.7.40: ops-2 (Pediatric Room) demoted Tier 2 -> Tier 3 ────────────
+  check("9000082 (under-18 case, OR9 -- not an allowed ops-2 room, OR4 free) fires ops-2",
+    hasRule("9000082", "ops-2"));
+  check("9000082's ops-2 violation now carries ruleTier 3 (not 2)",
+    (data.violationTiersByCase["9000082"] || [])[
+      (data.violationsByCase["9000082"] || []).indexOf("ops-2")
+    ] === 3);
+  check("9000082's ops-2 explanation uses the new softened wording",
+    (data.violationExplanationsByCase["9000082"] || {})["ops-2"] ===
+      "Consider moving this pediatric case to OR 4 if possible. OR 3 or OR 5 are also acceptable.");
+
   const tier1AloneBlock = data.blocks.find((b) => b.caseNum === "9000025");
   const tier2AloneBlock = data.blocks.find((b) => b.caseNum === "9000026");
   check("Gantt: case violating HARD-1 alone (9000025) still renders red (.gantt-viol-1)",
     /\bgantt-viol-1\b/.test(tier1AloneBlock?.className || ""));
-  check("Gantt: case violating demoted HARD-5 alone (9000026) renders Tier 2 styling (.gantt-viol-2), identical class to Ophtho/Peds Tier 2 cases",
+  check("Gantt: case violating demoted HARD-5 alone (9000026) renders Tier 2 styling (.gantt-viol-2), identical class to other Tier 2 cases (e.g. Ophthalmology)",
     /\bgantt-viol-2\b/.test(tier2AloneBlock?.className || ""));
 
   check("Calendar: a day with only a HARD-6 (Hybrid/Cath Lab) violation shows red",

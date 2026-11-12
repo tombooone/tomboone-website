@@ -3495,13 +3495,13 @@
           return `${rule.label} is fixed in ${fixed}. Please move this case to ${move}.`;
         }
         case 2: {
-          if (rule.id === "ops-2") {
-            return "Pediatric cases belong in OR 4. If unavailable, consider OR 3 or OR 5.";
-          }
           const list = formatRoomList(rooms, "and");
           return `${rule.label} equipment is designated for ${list}. Please move this case if available.`;
         }
         case 3: {
+          if (rule.id === "ops-2") {
+            return "Consider moving this pediatric case to OR 4 if possible. OR 3 or OR 5 are also acceptable.";
+          }
           const list = formatRoomList(rooms, "and");
           const subject = rule.match.service || rule.label.replace(/ Room$| Service$/, "");
           return `${subject} cases are generally assigned to ${list}. Please verify this room assignment.`;
@@ -3988,6 +3988,12 @@
       const t3ProcessedBlocks = new Set(); // "sortDate:room:ruleId:blockStart"
       violations.forEach((v) => {
         if (v.ruleTier !== 3) return;
+        // ops-2 (Pediatric Room) is Tier 3 as of v1.7.40 but keeps its own
+        // dedicated, isPeds()-based feasibility post-process below (grouping
+        // by pediatric-case identity, not by service/surgeon match) — skip
+        // it here so it isn't independently evaluated twice against two
+        // different grouping criteria.
+        if (v.ruleId === "ops-2") return;
         const suppressKey = `${v.caseNumber}:${v.ruleId}`;
         if (t3Suppressed.has(suppressKey)) return;
 
