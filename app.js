@@ -2566,6 +2566,15 @@
       const multiplierPattern = /(\d{4,5})X(\d{1,3})\b/g;
       const codePattern = /[A-Z]\d{4}|\d{5}|\d{4}[A-Z]/g;
       const shortPattern = /\d{3,4}/g;
+      // A standalone run of exactly 6 digits (e.g. "550590") is too long to
+      // match codePattern (5 digits) or shortPattern (3-4 digits) — every
+      // 5-digit or 3-4-digit window inside it touches another digit, so
+      // isCodeBoundary rejects all of them and the whole run silently
+      // vanishes from both codes and errors. 7+ digit runs are left alone
+      // (no evidence they're ever a CPT typo rather than some other kind of
+      // long number), so this pattern is deliberately exact-6 only, using a
+      // trailing boundary check against a 7th digit.
+      const sixDigitPattern = /\d{6}(?!\d)/g;
       let match;
 
       while ((match = multiplierPattern.exec(source)) !== null) {
@@ -2592,6 +2601,13 @@
         const shortCode = match[0];
         if (isCodeBoundary(source, match.index, match.index + shortCode.length, true)) {
           errors.push(shortCode);
+        }
+      }
+
+      while ((match = sixDigitPattern.exec(source)) !== null) {
+        const sixDigitCode = match[0];
+        if (isCodeBoundary(source, match.index, match.index + sixDigitCode.length, true)) {
+          errors.push(sixDigitCode);
         }
       }
 
